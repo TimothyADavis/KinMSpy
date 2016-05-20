@@ -37,7 +37,6 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
     velinterfunc = interpolate.interp1d(velrad,velprof,kind='linear')
     vrad=velinterfunc(r_flat)
     los_vel=np.empty(len(vrad))
-  # include random motions
     np.random.seed(seed[3])
     veldisp=np.random.randn(len(xpos)) 
     if isinstance(gassigma, (list, tuple, np.ndarray)):
@@ -45,11 +44,11 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
         veldisp*=gassigmainterfunc(r_flat)
     else:
         veldisp*=gassigma
-  # project velocities taking into account inclination, which may change with radius
-    sin=np.sin
-    radians=np.radians
-    cos=np.cos
-    arctan2=np.arctan 
+    if isinstance(vradial, (list, tuple, np.ndarray)):
+        vradialinterfunc = interpolate.interp1d(velrad,vradial,kind='linear')
+        vradial_rad=vradialinterfunc(r_flat)
+    else:
+        vradial_rad=np.full(len(r_flat),vradial)
     if not vposang:
         ang2rot=0.0
     else:
@@ -60,14 +59,14 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
             vposang_rad=np.full(len(r_flat),vposang)
         ang2rot=((posang_rad-vposang_rad))
     los_vel=veldisp                                                                                                                    
-    los_vel+=(-1)*vrad*(cos(arctan2((ypos+vphasecent[1]),(xpos+vphasecent[0]))+(radians(ang2rot)))*sin(radians(inc_rad)))
+    los_vel+=(-1)*vrad*(np.cos(np.arctan2((ypos+vphasecent[1]),(xpos+vphasecent[0]))+(np.radians(ang2rot)))*np.sin(np.radians(inc_rad)))           
     if vradial != 0:
         if isinstance(vradial, (list, tuple, np.ndarray)):
             vradialinterfunc = interpolate.interp1d(velrad,vradial,kind='linear')
             vradial_rad=vradialinterfunc(r_flat)
         else:
-            vradial_rad=np.full(len(r_flat),vradial)       
-            los_vel+=vradial_rad*(sin(arctan2((ypos+vphasecent[1]),(xpos+vphasecent[0]))+(radians(ang2rot)))*sin(radians(inc_rad)))
+            vradial_rad=np.full(len(r_flat),vradial)
+        los_vel+=vradial_rad*(np.sin(np.arctan2((ypos+vphasecent[1]),(xpos+vphasecent[0]))+(np.radians(ang2rot)))*np.sin(np.radians(inc_rad)))
     return los_vel
 
 
