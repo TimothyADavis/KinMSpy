@@ -3,7 +3,7 @@ import scipy.integrate
 from scipy import interpolate, fftpack
 from astropy.io import fits
 from astropy.convolution import convolve_fft
-import makebeam
+from makebeam import makebeam
 
 def kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,fixseed,diskthick=0):
     px=np.zeros(len(sbprof))
@@ -156,7 +156,7 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
     
     
     if not cleanout:
-       psf=makebeam.beam(xsize,ysize,[beamsize[0]/dx,beamsize[1]/dy],rot=beamsize[2])
+       psf=makebeam(xsize,ysize,[beamsize[0]/dx,beamsize[1]/dy],rot=beamsize[2])
        w2do=np.where(cube.sum(axis=0).sum(axis=0) >0)[0]
        for i in range(0,w2do.size): cube[:,:,w2do[i]]=convolve_fft(cube[:,:,w2do[i]], psf)
     if intflux > 0:

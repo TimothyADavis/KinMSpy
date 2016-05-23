@@ -2,7 +2,7 @@ from KinMS import *
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate,ndimage
-import makebeam
+from makebeam import makebeam
 from sauron_colormap import sauron
 from astropy.io import fits
 import time
@@ -35,7 +35,7 @@ def makeplots(f,xsize,ysize,vsize,dx,dy,dv,beamsize,posang=0,overcube=False,pvdt
     
     if not isinstance(beamsize, (list, tuple, np.ndarray)):
         beamsize=np.array([beamsize,beamsize,0])
-    beamtot=(makebeam.beam(xsize,ysize,[beamsize[0]/dx,beamsize[1]/dy],rot=beamsize[2])).sum()
+    beamtot=(makebeam(xsize,ysize,[beamsize[0]/dx,beamsize[1]/dy],rot=beamsize[2])).sum()
     spec=f.sum(axis=0).sum(axis=0)/beamtot
     if np.any(overcube): specover=overcube.sum(axis=0).sum(axis=0)/beamtot
      
@@ -128,12 +128,12 @@ def KinMStest_ngc4324():
 # ;;;;;;;;;;;
 
 # ;;; Define the simulated observation parameters ;;;
-    xsize=100 # arcseconds
-    ysize=100 #;; arcseconds
-    vsize=420 #;; km/s
-    dx=1 #;; arcseconds/pixel
-    dy=1 #;; arcseconds/pixel
-    dv=20 #;; km/s/channel
+    xsize=100. # arcseconds
+    ysize=100. #;; arcseconds
+    vsize=420. #;; km/s
+    dx=1. #;; arcseconds/pixel
+    dy=1. #;; arcseconds/pixel
+    dv=20. #;; km/s/channel
     beamsize=np.array([4.68,3.85,15.54]) #;; arcseconds
 # ;;;
 #
