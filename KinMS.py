@@ -49,7 +49,7 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
         vradialinterfunc = interpolate.interp1d(velrad,vradial,kind='linear')
         vradial_rad=vradialinterfunc(r_flat)
     else:
-        vradial_rad=np.full(len(r_flat),vradial)
+        vradial_rad=np.full(len(r_flat),vradial,np.double)
     if not vposang:
         ang2rot=0.0
     else:
@@ -57,7 +57,7 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
             vposanginterfunc = interpolate.interp1d(velrad,vposang,kind='linear')
             vposang_rad=vposanginterfunc(r_flat)
         else:
-            vposang_rad=np.full(len(r_flat),vposang)
+            vposang_rad=np.full(len(r_flat),vposang,np.double)
         ang2rot=((posang_rad-vposang_rad))
     los_vel=veldisp                                                                                                                    
     los_vel+=(-1)*vrad*(np.cos(np.arctan2((ypos+vphasecent[1]),(xpos+vphasecent[0]))+(np.radians(ang2rot)))*np.sin(np.radians(inc_rad)))           
@@ -66,7 +66,7 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
             vradialinterfunc = interpolate.interp1d(velrad,vradial,kind='linear')
             vradial_rad=vradialinterfunc(r_flat)
         else:
-            vradial_rad=np.full(len(r_flat),vradial)
+            vradial_rad=np.full(len(r_flat),vradial,np.double)
         los_vel+=vradial_rad*(np.sin(np.arctan2((ypos+vphasecent[1]),(xpos+vphasecent[0]))+(np.radians(ang2rot)))*np.sin(np.radians(inc_rad)))
     return los_vel
 
@@ -91,7 +91,7 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
     vsize = float(round(vs/dv))
     cent=[(xsize/2.)+(phasecen[0]/dx),(ysize/2.)+(phasecen[1]/dy),(vsize/2.)+(voffset/dv)]
     vphasecent=(vphasecen-phasecen)/[dx,dy]
-    
+
     
     if not len(inclouds):
         inclouds=kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,fixseed,diskthick=diskthick)
@@ -111,13 +111,13 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
             posangradinterfunc = interpolate.interp1d(velrad,posang,kind='linear')
             posang_rad=posangradinterfunc(r_flat)
         else:
-            posang_rad=np.full(len(r_flat),posang)
+            posang_rad=np.full(len(r_flat),posang,np.double)
         
         if isinstance(inc, (list, tuple, np.ndarray)):
             incradinterfunc = interpolate.interp1d(velrad,inc,kind='linear')
             inc_rad=incradinterfunc(r_flat)
         else:
-            inc_rad=np.full(len(r_flat),inc)
+            inc_rad=np.full(len(r_flat),inc,np.double)
         
         los_vel=kinms_create_velfield_onesided(velrad/dx,velprof,r_flat,inc,posang,gassigma,fixseed,xpos,ypos,vphasecent=vphasecent,vposang=vposang,vradial=vradial,inc_rad=inc_rad,posang_rad=posang_rad)
         c = np.cos(np.radians(inc_rad))
