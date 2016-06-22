@@ -1,9 +1,10 @@
 import numpy as np
 import scipy.integrate
-from scipy import interpolate, fftpack
+from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
 from makebeam import makebeam
+
 
 def kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,fixseed,diskthick=0):
     px=np.zeros(len(sbprof))
@@ -118,7 +119,7 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
         else:
             inc_rad=np.full(len(r_flat),inc)
         
-        los_vel=kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,fixseed,xpos,ypos,vphasecent=vphasecent,vposang=vposang,vradial=vradial,inc_rad=inc_rad,posang_rad=posang_rad)
+        los_vel=kinms_create_velfield_onesided(velrad/dx,velprof,r_flat,inc,posang,gassigma,fixseed,xpos,ypos,vphasecent=vphasecent,vposang=vposang,vradial=vradial,inc_rad=inc_rad,posang_rad=posang_rad)
         c = np.cos(np.radians(inc_rad))
         s = np.sin(np.radians(inc_rad))
         x2 =  xpos
