@@ -150,7 +150,7 @@ def KinMStest_ngc4324():
 # ;;;
 
 # ;;; Run KinMS
-    f=KinMS(xsize,ysize,vsize,dx,dy,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=5e5,posang=posang,intflux=27.2,phasecen=phasecen,voffset=voffset,gassigma=10.,galname="NGC4234_test")
+    f=KinMS(xsize,ysize,vsize,dx,dy,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=5e5,posang=posang,intflux=27.2,phasecen=phasecen,voffset=voffset,gassigma=10.,filename="NGC4234_test")
 # ;;;
 
 # ;;; Read in data
