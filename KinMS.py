@@ -190,12 +190,6 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
     else:
         veldisp*=gassigma
     
-    #Add radial inflow/outflow (runs twice - this version is not necessary?)
-    if isinstance(vradial, (list, tuple, np.ndarray)):
-        vradialinterfunc = interpolate.interp1d(velrad,vradial,kind='linear')
-        vradial_rad=vradialinterfunc(r_flat)
-    else:
-        vradial_rad=np.full(len(r_flat),vradial,np.double)
     # Find the rotation angle so the velocity field has the correct position angle (allows warps)
     if not vposang:
         ang2rot=0.0
