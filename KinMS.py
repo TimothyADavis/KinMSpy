@@ -220,7 +220,7 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
 
 
 
-def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[],velprof=[],filename=False,diskthick=0,cleanout=False,ra=0,dec=0,nsamps=100000,posang=0.0,intflux=0,inclouds=[],vlos_clouds=[],flux_clouds=0,vsys=0,restfreq=115.271e9,phasecen=np.array([0.,0.]),voffset=0,fixseed=False,vradial=0,vposang=0,vphasecen=np.array([0.,0.])):
+def KinMS(xs,ys,vs,cellsize,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[],velprof=[],filename=False,diskthick=0,cleanout=False,ra=0,dec=0,nsamps=100000,posang=0.0,intflux=0,inclouds=[],vlos_clouds=[],flux_clouds=0,vsys=0,restfreq=115.271e9,phasecen=np.array([0.,0.]),voffset=0,fixseed=False,vradial=0,vposang=0,vphasecen=np.array([0.,0.])):
     """
     
     The main KinMS function. Takes inputs specifing the observing parameters and type of model.
@@ -237,11 +237,8 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
     vs : float
         Velocity axis size for resultant cube (in km/s)
     
-    dx : float
-        Pixel size in x-direction (arcsec/pixel)
-    
-    dy : float
-        Pixel size in y-direction (arcsec/pixel)
+    cellsize : float
+        Pixel size required (arcsec/pixel)
     
     dv : float
         Channel size in velocity direction (km/s/channel)
@@ -393,29 +390,29 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
         beamsize=np.array([beamsize,beamsize,0])
     
     # work out images sizes
-    xsize = float(round(xs/dx))
-    ysize = float(round(ys/dy))
+    xsize = float(round(xs/cellsize))
+    ysize = float(round(ys/cellsize))
     vsize = float(round(vs/dv))
-    cent=[(xsize/2.)+(phasecen[0]/dx),(ysize/2.)+(phasecen[1]/dy),(vsize/2.)+(voffset/dv)]
-    vphasecent=(vphasecen-phasecen)/[dx,dy]
+    cent=[(xsize/2.)+(phasecen[0]/cellsize),(ysize/2.)+(phasecen[1]/cellsize),(vsize/2.)+(voffset/dv)]
+    vphasecent=(vphasecen-phasecen)/[cellsize,cellsize]
 
     #If cloudlets not previously specified, generate them
     if not len(inclouds):
         inclouds=kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,fixseed,diskthick=diskthick)
-    xpos=(inclouds[:,0]/dx)
-    ypos=(inclouds[:,1]/dy)
-    zpos=(inclouds[:,2]/dx)
+    xpos=(inclouds[:,0]/cellsize)
+    ypos=(inclouds[:,1]/cellsize)
+    zpos=(inclouds[:,2]/cellsize)
     r_flat=np.sqrt((xpos*xpos) + (ypos*ypos))
     
     #Find the los velocity and cube position of the clouds
     if len(vlos_clouds):
+        #As los velocity specified assume that the clouds have already been projected correctly.
         los_vel=vlos_clouds
         x2=xpos
         y2=ypos
         z2=zpos
     else:     
         # As los velocities not specified, calculate them
-        # Setup to project onto the line of sight
         posang=90-posang
         if isinstance(posang, (list, tuple, np.ndarray)):
             posangradinterfunc = interpolate.interp1d(velrad,posang,kind='linear')
@@ -429,8 +426,10 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
         else:
             inc_rad=np.full(len(r_flat),inc,np.double)
         
-        # Calculate the los velocity and cube position of the clouds
-        los_vel=kinms_create_velfield_onesided(velrad/dx,velprof,r_flat,inc,posang,gassigma,fixseed,xpos,ypos,vphasecent=vphasecent,vposang=vposang,vradial=vradial,inc_rad=inc_rad,posang_rad=posang_rad)
+        # Calculate the los velocity
+        los_vel=kinms_create_velfield_onesided(velrad/cellsize,velprof,r_flat,inc,posang,gassigma,fixseed,xpos,ypos,vphasecent=vphasecent,vposang=vposang,vradial=vradial,inc_rad=inc_rad,posang_rad=posang_rad)
+       
+        # Project the clouds to take into account inclination
         c = np.cos(np.radians(inc_rad))
         s = np.sin(np.radians(inc_rad))
         x2 =  xpos
@@ -474,7 +473,7 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
     
     # Convolve with the beam point spread function to obtain a dirty cube
     if not cleanout:
-       psf=makebeam(xsize,ysize,[beamsize[0]/dx,beamsize[1]/dy],rot=beamsize[2])
+       psf=makebeam(xsize,ysize,[beamsize[0]/cellsize,beamsize[1]/cellsize],rot=beamsize[2])
        w2do=np.where(cube.sum(axis=0).sum(axis=0) >0)[0]
        for i in range(0,w2do.size): cube[:,:,w2do[i]]=convolve_fft(cube[:,:,w2do[i]], psf)
     # Normalise by the known integrated flux
@@ -492,8 +491,8 @@ def KinMS(xs,ys,vs,dx,dy,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[]
     # If appropriate, generate the FITS file header and save to disc
     if filename:
         hdu = fits.PrimaryHDU(cube.T)
-        hdu.header['CDELT1']=(dx)/(-3600.0)
-        hdu.header['CDELT2']=(dy)/3600.0
+        hdu.header['CDELT1']=(cellsize)/(-3600.0)
+        hdu.header['CDELT2']=(cellsize)/3600.0
         hdu.header['CDELT3']=(dv)*1000.0
         hdu.header['CRPIX1']=(cent[0]-1)
         hdu.header['CRPIX2']=(cent[1])
