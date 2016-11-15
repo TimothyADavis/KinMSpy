@@ -455,6 +455,63 @@ def KinMStest_warp():
 # ;;;; Plot
     plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,vrange=[-250,250],posang=270)
 
+def KinMStest_retclouds():
+# ;;;;;;;;;;;
+# ;
+# ; A test procedure to demonstrate the KinMS code, and check if it
+# ; works on your system. This procedure demonstrates how to use the
+# ; return clouds feature to recursivly build models - here a 
+# ; misaligned central and outer disc.
+# ;
+# ;;;;;;;;;;;
+
+# ;;;; Setup cube parameters ;;;;
+    xsize=64.
+    ysize=64.
+    vsize=1000
+    cellsize=1
+    dv=10
+    beamsize=[4.,4.,0.]
+
+
+# ;;;; Set up exponential disk SB profile/velocity for disc one ;;;;
+    inc=75.
+    x=np.arange(0,100,0.1)
+    fx = np.exp(-x/4.)
+    fx[np.where(x > 5.)]=0.0
+    velfunc = interpolate.interp1d([0.0,0.5,1,3,500],[0,50,100,210,210], kind='linear')
+    vel=velfunc(x)
+    nsamps=5e4
+# ;;;;
+
+# ;;;; Simulate disc 1 ;;;;
+    __,inclouds1,vlos1=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=90,gassigma=10.,returnclouds=True)
+
+# ;;;; Set up exponential disk SB profile for disc two ;;;;
+    inc=35.
+    x=np.arange(0,100,0.1)
+    fx = np.exp(-x/15.)
+    fx[np.where(x < 10.)]=0.0
+    nsamps=1e6
+# ;;;;
+
+# ;;;; Simulate disc 2 ;;;;
+    __,inclouds2,vlos2=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=270,gassigma=10.,returnclouds=True)
+
+# ;;;; Combine ;;;;
+
+    inclouds=np.concatenate((inclouds1,inclouds2),axis=0)
+    vlos=np.concatenate((vlos1,vlos2))
+
+# ;;;; Simulate whole thing ;;;;
+    
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,inclouds=inclouds,vlos_clouds=vlos,intflux=30.)
+    
+
+# ;;;; Plot
+    plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.)
+
+
 def run_tests():
     print("Test - simulate the gas ring in NGC4324")
     print("[Close plot to continue]")
@@ -480,3 +537,6 @@ def run_tests():
     print("Test - simulate a warped exponential disk")
     print("[Close plot to finish]")
     KinMStest_warp()
+    print("Test - using the returnclouds mechanism")
+    print("[Close plot to finish]")
+    KinMStest_retclouds()
