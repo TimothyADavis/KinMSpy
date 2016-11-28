@@ -10,7 +10,7 @@ import time
 def gaussian(x,x0,sigma):
   return np.exp(-np.power((x - x0)/(sigma), 2.)/2.)
 
-def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,pvdthick=2,nconts=11., **kwargs):
+def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,pvdthick=2,nconts=11.,title=False, **kwargs):
     
 # ;;;; Create plot data from cube ;;;;
     mom0rot=f.sum(axis=2)
@@ -30,8 +30,8 @@ def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,p
     pvdcube=ndimage.interpolation.rotate(f, 90-posang, axes=(1, 0), reshape=False)
     if np.any(overcube): pvdcubeover=ndimage.interpolation.rotate(overcube, 90-posang, axes=(1, 0), reshape=False)
         
-    pvd=pvdcube[:,(ysize/2.)-pvdthick:(ysize/2.)+pvdthick,:].sum(axis=1)
-    if np.any(overcube): pvdover=pvdcubeover[:,(ysize/2.)-pvdthick:(ysize/2.)+pvdthick,:].sum(axis=1)
+    pvd=pvdcube[:,np.int((ysize/2.)-pvdthick):np.int((ysize/2.)+pvdthick),:].sum(axis=1)
+    if np.any(overcube): pvdover=pvdcubeover[:,np.int((ysize/2.)-pvdthick):np.int((ysize/2.)+pvdthick),:].sum(axis=1)
     
     if not isinstance(beamsize, (list, tuple, np.ndarray)):
         beamsize=np.array([beamsize,beamsize,0])
@@ -62,7 +62,7 @@ def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,p
     plt.xlabel('Offset (")')
     plt.ylabel(r'Velocity (km s$^{-1}$)')
     ax3.contourf(x1,v1,pvd.T,levels=np.linspace(1,0,num=10,endpoint=False)[::-1]*np.max(pvd), cmap="YlOrBr" ,aspect='auto')
-    if np.any(overcube): ax3.contour(x1,v1*(-1),pvdover.T,colors=('black'),levels=np.arange(0.1, 1.1, 0.1)*np.max(pvdover))
+    if np.any(overcube): ax3.contour(x1,v1,pvdover.T,colors=('black'),levels=np.arange(0.1, 1.1, 0.1)*np.max(pvdover))
     if 'vrange' in kwargs: ax3.set_ylim(kwargs['vrange'])
     if 'xrange' in kwargs: ax3.set_xlim(kwargs['xrange'])
     ax4 = fig.add_subplot(224)
@@ -71,6 +71,7 @@ def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,p
     ax4.plot(v1,spec, drawstyle='steps')
     if np.any(overcube): ax4.plot(v1,specover,'r', drawstyle='steps')
     if 'vrange' in kwargs: ax4.set_xlim(kwargs['vrange'])
+    if title: plt.suptitle(title)
     plt.show()
 # ;;;;
 
@@ -115,6 +116,52 @@ def KinMStest_expdisk(scalerad=10.,inc=45.):
     plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.)
 
 
+
+def KinMStest_expdisk_gasgrav(scalerad=5.,inc=45.,gasmass=5e10):
+# ;;;;;;;;;;;
+# ;
+# ; A test procedure to demonstrate the KinMS code, and check if it
+# ; works on your system. This procedure demonstrates how to create a simulation of an
+# ; exponential disk of molecular gas, including the effect of the potential of the gas on its own rotation.
+# ; The user can input values for the scalerad and inc variables, and the procedure will 
+# ; the create the simulation and display it to screen. 
+# ;
+# ;  INPUTS:
+# ;       Scalerad -    Scale radius for the exponential disk (arcseconds)
+# ;       Inc      -    Inclination to project the disk (degrees)
+# ;       Gasmass  -    Total mass of the gas (solar masses)
+# ;
+# ;;;;;;;;;;;
+
+# ;;;; Setup cube parameters ;;;;
+    xsize=64
+    ysize=64
+    vsize=1400
+    cellsize=1
+    dv=10
+    beamsize=[4.,4.,0.]
+    nsamps=5e5
+    dist=16.5 # Mpc
+
+# ;;;; Set up exponential disk SB profile/velocity ;;;;
+    x=np.arange(0,100,0.1)
+    fx = np.exp(-x/scalerad)
+    velfunc = interpolate.interp1d([0.0,0.5,1,3,500],[0,50,100,210,210], kind='linear')
+    vel=velfunc(x)
+# ;;;;
+
+# ;;;; Simulate and plot ;;;;
+    plt.ion()
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=270,gassigma=10.)
+    plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.,title="Without Potential of Gas")
+        
+
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=270,gassigma=10.,gasgrav=np.array([gasmass,dist]))
+    plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.,title="With Potential of Gas Included")
+
+
+    
+
 def KinMStest_ngc4324():
 # ;;;;;;;;;;;
 # ;
@@ -138,7 +185,7 @@ def KinMStest_ngc4324():
 # ;;; Define the gas distribution required ;;;
     diskthick=1. # arcseconds
     inc=65. # degrees
-    posang=230.-180 # degrees
+    posang=230. # degrees
     x=np.arange(0.,64.)
     fx = 0.1*gaussian(x,20.0,2.0)
     velfunc = interpolate.interp1d([0.0,1,3,5,7,10,200],[0,50,100,175,175,175,175], kind='linear')
@@ -540,3 +587,6 @@ def run_tests():
     print("Test - using the returnclouds mechanism")
     print("[Close plot to finish]")
     KinMStest_retclouds()
+    print("Test - using the gravgas mechanism")
+    KinMStest_expdisk_gasgrav()
+    

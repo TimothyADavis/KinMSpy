@@ -19,7 +19,7 @@ from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
 from makebeam import makebeam
-
+import pdb
 
 def kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,seed,diskthick=0.0):
     """
@@ -216,11 +216,45 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
     return los_vel
 
 
+def gasgravity_velocity(xpos,ypos,zpos,massdist,phasecen,velrad):
+    """
+    This function takes the position of the input cloudlets, and calculates the
+    potential, and thus the increase in the circular velocity due to the gas mass itself.
+    
+    Parameters
+    ----------
+    xpos : np.ndarray of double
+            X position of each cloudlet. Units of arcseconds. 
+    
+    ypos : np.ndarray of double
+            Y position of each cloudlet. Units of arcseconds.
+    
+    zpos : np.ndarray of double
+            Z position of each cloudlet. Units of arcseconds
+    
+    massdist : list of double
+            List of [gasmass,distance] - gas mass in solar masses, distance in Mpc.
+   
+    phasecen : list of double
+         (Default value = [0, 0])
+            Morphological centre of the gas in the x-y plane. Units of arcseconds.
+    
+    velrad : np.ndarray of double
+            Radius vector (in units of pixels).
+  
+    Returns
+    -------
+    np.ndarray of double
+            Addition to the circular velocity just due to the mass of the gas itself, in units of km/s.
+    """
+    rad=np.sqrt(((xpos-(phasecen[0]))**2) + ((ypos-(phasecen[1]))**2)+zpos**2)						## 3D radius	
+    cummass=((np.arange(xpos.size+1))*(massdist[0]/np.float(xpos.size)))					    ## cumulative mass
+    cummas_interfunc = interpolate.interp1d(np.append(np.insert(sorted(rad),0,0),np.max(velrad).clip(min=np.max(rad), max=None)+1),np.append(cummass,np.max(cummass)),kind='linear')    
+    return 	np.append(0.0,np.sqrt((4.301e-3*cummas_interfunc(velrad[1:]))/(4.84*velrad[1:]*massdist[1])))					    ## return velocity
 
 
 
-
-def KinMS(xs,ys,vs,cellsize,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[],velprof=[],filename=False,diskthick=0,cleanout=False,ra=0,dec=0,nsamps=100000,posang=0.0,intflux=0,inclouds=[],vlos_clouds=[],flux_clouds=0,vsys=0,restfreq=115.271e9,phasecen=np.array([0.,0.]),voffset=0,fixseed=False,vradial=0,vposang=0,vphasecen=np.array([0.,0.]),returnclouds=False):
+def KinMS(xs,ys,vs,cellsize,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[],velprof=[],filename=False,diskthick=0,cleanout=False,ra=0,dec=0,nsamps=100000,posang=0.0,intflux=0,inclouds=[],vlos_clouds=[],flux_clouds=0,vsys=0,restfreq=115.271e9,phasecen=np.array([0.,0.]),voffset=0,fixseed=False,vradial=0,vposang=0,vphasecen=np.array([0.,0.]),returnclouds=False,gasgrav=False):
     """
     
     The main KinMS function. Takes inputs specifing the observing parameters and type of model.
@@ -428,6 +462,13 @@ def KinMS(xs,ys,vs,cellsize,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad
         z2=zpos
     else:     
         # As los velocities not specified, calculate them
+        if np.any(gasgrav):
+            # ;;; include the potential of the gas
+            gasgravvel=gasgravity_velocity(xpos*cellsize,ypos*cellsize,zpos*cellsize,gasgrav,phasecen,velrad)
+            velprof=np.sqrt(velprof**2 + gasgravvel**2)
+            
+        
+        
         posang=90-posang
         if isinstance(posang, (list, tuple, np.ndarray)):
             posangradinterfunc = interpolate.interp1d(velrad,posang,kind='linear')
