@@ -19,7 +19,6 @@ from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
 from makebeam import makebeam
-import pdb
 
 def kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,seed,diskthick=0.0):
     """
