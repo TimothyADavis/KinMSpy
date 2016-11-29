@@ -110,7 +110,7 @@ def KinMStest_expdisk(scalerad=10.,inc=45.):
 # ;;;;
 
 # ;;;; Simulate ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=270,gassigma=10.)
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.)
 
 # ;;;; Plot
     plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.)
@@ -152,11 +152,11 @@ def KinMStest_expdisk_gasgrav(scalerad=5.,inc=45.,gasmass=5e10):
 
 # ;;;; Simulate and plot ;;;;
     plt.ion()
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=270,gassigma=10.)
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.)
     plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.,title="Without Potential of Gas")
         
 
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=270,gassigma=10.,gasgrav=np.array([gasmass,dist]))
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,gasGrav=np.array([gasmass,dist]))
     plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.,title="With Potential of Gas Included")
 
 
@@ -195,7 +195,7 @@ def KinMStest_ngc4324():
 # ;;;
 
 # ;;; Run KinMS
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=5e5,posang=posang,intflux=27.2,phasecen=phasecen,voffset=voffset,gassigma=10.,filename="NGC4234_test")
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=5e5,posAng=posang,intFlux=27.2,phaseCen=phasecen,vOffset=voffset,gasSigma=10.,fileName="NGC4234_test")
 # ;;;
 
 # ;;; Read in data
@@ -238,7 +238,7 @@ def KinMStest_inclouds():
 # ;;;;
 
 # ;;;; run the simulation with a velocity curve ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intflux=30.,inclouds=inclouds,velprof=vel,velrad=x,posang=90.)
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90.)
 # ;;;;
 # ;;; Create the plot 
 
@@ -311,7 +311,7 @@ def KinMStest_inclouds_spiral():
 # ;;;;
 
 # ;;;; run the simulation ;;;;
-    cube=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intflux=30.,inclouds=inclouds,velprof=vel,velrad=x,posang=90)
+    cube=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90)
 # ;;;;
 
 # ;;;; Plot the results ;;;;
@@ -372,7 +372,7 @@ def KinMStest_infits():
 #
 # ;;;; run the simulation ;;;;
     
-    cube=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intflux=30.,inclouds=inclouds,vlos_clouds=vlos_clouds,flux_clouds=flux_clouds)
+    cube=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intFlux=30.,inClouds=inclouds,vLOS_clouds=vlos_clouds,flux_clouds=flux_clouds)
 # ;;;; Plot the results ;;;;
     plot=makeplots(cube,xsize,ysize,vsize,cellsize,dv,beamsize)
 # ;;;;
@@ -414,7 +414,7 @@ def KinMStest_veldisp():
 # ;;;;
 
 # ;;;; Simulate ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,gassigma=gassigma,posang=90)
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,gasSigma=gassigma,posAng=90)
 # ;;;;
 
 # ;;;; Plot
@@ -457,7 +457,7 @@ def KinMStest_diskthick():
 # ;;;;
 
 # ;;;; Simulate ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,diskthick=diskthick,posang=270)
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,diskThick=diskthick,posAng=270)
 # ;;;;
 
 # ;;;; Plot
@@ -496,7 +496,7 @@ def KinMStest_warp():
 # ;;;;
 
 # ;;;; Simulate ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=posang)
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=posang)
 # ;;;;
 
 # ;;;; Plot
@@ -532,7 +532,7 @@ def KinMStest_retclouds():
 # ;;;;
 
 # ;;;; Simulate disc 1 ;;;;
-    __,inclouds1,vlos1=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=90,gassigma=10.,returnclouds=True)
+    __,inclouds1,vlos1=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=90,gasSigma=10.,returnClouds=True)
 
 # ;;;; Set up exponential disk SB profile for disc two ;;;;
     inc=35.
@@ -543,7 +543,7 @@ def KinMStest_retclouds():
 # ;;;;
 
 # ;;;; Simulate disc 2 ;;;;
-    __,inclouds2,vlos2=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbprof=fx,sbrad=x,velrad=x,velprof=vel,nsamps=nsamps,intflux=30.,posang=270,gassigma=10.,returnclouds=True)
+    __,inclouds2,vlos2=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,returnClouds=True)
 
 # ;;;; Combine ;;;;
 
@@ -552,7 +552,7 @@ def KinMStest_retclouds():
 
 # ;;;; Simulate whole thing ;;;;
     
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,inclouds=inclouds,vlos_clouds=vlos,intflux=30.)
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,inClouds=inclouds,vLOS_clouds=vlos,intFlux=30.)
     
 
 # ;;;; Plot

@@ -20,7 +20,7 @@ from astropy.io import fits
 from astropy.convolution import convolve_fft
 from makebeam import makebeam
 
-def kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,seed,diskthick=0.0):
+def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
     """
 
     This function takes the input radial distribution and generates the positions of
@@ -29,19 +29,19 @@ def kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,seed,diskthick=0.0):
     
     Parameters
     ----------
-    sbrad : np.ndarray of double
+    sbRad : np.ndarray of double
             Radius vector (in units of pixels).
     
-    sbprof : np.ndarray of double
+    sbProf : np.ndarray of double
             Surface brightness profile (arbitrarily scaled).
     
-    nsamps : int
+    nSamps : int
             Number of samples to draw from the distribution.
     
     seed : list of int
             List of length 4 containing the seeds for random number generation.
     
-    diskthick : double or np.ndarray of double
+    diskThick : double or np.ndarray of double
          (Default value = 0.0)
             The disc scaleheight. If a single value then this is used at all radii.
             If a ndarray then it should have the same length as sbrad, and will be 
@@ -49,49 +49,49 @@ def kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,seed,diskthick=0.0):
 
     Returns
     -------
-    inclouds : np.ndarray of double
+    inClouds : np.ndarray of double
             Returns an ndarray of `nsamps` by 3 in size. Each row corresponds to
             the x, y, z position of a cloudlet. 
     """
     #Randomly generate the radii of clouds based on the distribution given by the brightness profile
-    px=np.zeros(len(sbprof))
-    sbprof=sbprof*(2*np.pi*abs(sbrad))  
-    px=np.cumsum(sbprof)
-    px/=max(px)           
+    px = np.zeros(len(sbProf))
+    sbProf = sbProf * (2 * np.pi * abs(sbRad))  
+    px = np.cumsum(sbProf)
+    px /= max(px)           
     np.random.seed(seed[0])               
-    pick=np.random.random(nsamps)  
-    interpfunc = interpolate.interp1d(px,sbrad, kind='linear')
-    r_flat=interpfunc(pick)
+    pick = np.random.random(nSamps)  
+    interpfunc = interpolate.interp1d(px,sbRad, kind='linear')
+    r_flat = interpfunc(pick)
     
     #Generates a random phase around the galaxy's axis for each cloud
     np.random.seed(seed[1])        
-    phi=np.random.random(nsamps)*2*np.pi     
+    phi = np.random.random(nSamps) * 2 * np.pi     
  
     # Find the thickness of the disk at the radius of each cloud
-    if isinstance(diskthick, (list, tuple, np.ndarray)):
-        interpfunc2 = interpolate.interp1d(sbrad,diskthick,kind='linear')
-        diskthick_here=interpfunc2(r_flat)
+    if isinstance(diskThick, (list, tuple, np.ndarray)):
+        interpfunc2 = interpolate.interp1d(sbRad,diskThick,kind='linear')
+        diskThick_here = interpfunc2(r_flat)
     else:
-        diskthick_here=diskthick    
+        diskThick_here = diskThick    
     
     #Generates a random (uniform) z-position satisfying |z|<disk_here 
     np.random.seed(seed[2])      
-    zpos=diskthick_here*np.random.uniform(-1,1,nsamps) 
+    zPos = diskThick_here * np.random.uniform(-1,1,nSamps) 
     
     #Calculate the x & y position of the clouds in the x-y plane of the disk
-    r_3d = np.sqrt((r_flat**2)+(zpos**2))                                                               
-    theta=np.arccos(zpos/r_3d)                                                              
-    xpos=((r_3d*np.cos(phi)*np.sin(theta)))                                                        
-    ypos=((r_3d*np.sin(phi)*np.sin(theta)))
+    r_3d = np.sqrt((r_flat**2) + (zPos**2))                                                               
+    theta = np.arccos(zPos / r_3d)                                                              
+    xPos = ((r_3d * np.cos(phi) * np.sin(theta)))                                                        
+    yPos = ((r_3d * np.sin(phi) * np.sin(theta)))
     
     #Generates the output array
-    inclouds=np.empty((nsamps,3))
-    inclouds[:,0]=xpos
-    inclouds[:,1]=ypos
-    inclouds[:,2]=zpos                                                          
-    return inclouds                                                               
+    inClouds = np.empty((nSamps,3))
+    inClouds[:,0] = xPos
+    inClouds[:,1] = yPos
+    inClouds[:,2] = zPos                                                          
+    return inClouds                                                               
 
-def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,seed,xpos,ypos,vphasecent=[0.0,0.0],vposang=False,vradial=0.0,posang_rad=0.0,inc_rad=0.0):
+def kinms_create_velField_oneSided(velRad,velProf,r_flat,inc,posAng,gasSigma,seed,xPos,yPos,vPhaseCent=[0.0,0.0],vPosAng=False,vRadial=0.0,posAng_rad=0.0,inc_rad=0.0):
     """
 
     This function takes the input circular velocity distribution
@@ -100,10 +100,10 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
     
     Parameters
     ----------
-    velrad : np.ndarray of double
+    velRad : np.ndarray of double
             Radius vector (in units of pixels).
     
-    velprof : np.ndarray of double
+    velProf : np.ndarray of double
             Velocity profile (in units of km/s).
     
     r_flat : np.ndarray of double
@@ -117,14 +117,14 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
             describe how the galaxy inclination changes as a function of `velrad`.
             Used to create inclination warps.
         
-    posang : double or np.ndarray of double
+    posAng : double or np.ndarray of double
             Position angle of the disc, using the usual astronomical convention.
             Can be either a double, or an array of doubles. If single valued
             then the disc major axis is straight. If an array is passed then it should
             describe how the position angle changes as a function of `velrad`.
             Used to create position angle warps.
         
-    gassigma : double or np.ndarray of double
+    gasSigma : double or np.ndarray of double
             Velocity dispersion of the gas. Units of km/s. 
             Can be either a double, or an array of doubles. If single valued
             then the velocity dispersion is constant throughout the disc.
@@ -134,18 +134,18 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
     seed : list of int
             List of length 4 containing the seeds for random number generation.
     
-    xpos : np.ndarray of double
+    xPos : np.ndarray of double
             X position of each cloudlet. Units of pixels. 
     
-    ypos : np.ndarray of double
+    yPos : np.ndarray of double
             Y position of each cloudlet. Units of pixels. 
     
-    vphasecent : list of double
+    vPhaseCent : list of double
          (Default value = [0, 0])
             Kinematic centre of the rotation in the x-y plane. Units of pixels.
             Used if the kinematic and morphological centres are not the same.
     
-    vposang : double or np.ndarray of double
+    vPosAng : double or np.ndarray of double
          (Default value = False)
             Kinematic position angle of the disc, using the usual astronomical convention.
             Can be either a double, or an array of doubles. If single valued
@@ -153,7 +153,7 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
             describe how the kinematic position angle changes as a function of `velrad`.
             Used if the kinematic and morphological position angles are not the same.
     
-    vradial : double or np.ndarray of double
+    vRadial : double or np.ndarray of double
          (Default value = 0)
             Magnitude of inflow/outflowing motions (km/s). Negative
             numbers here are inflow, positive numbers denote
@@ -163,7 +163,7 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
             motion as a function of the radius vector
             `velrad`. Default is no inflow/outflow.
     
-    posang_rad : double or np.ndarray of double
+    posAng_rad : double or np.ndarray of double
          (Default value = 0)
             Position angle of the disc at the position `r_flat` of each cloudlet.
     
@@ -177,68 +177,64 @@ def kinms_create_velfield_onesided(velrad,velprof,r_flat,inc,posang,gassigma,see
             Line of sight velocity of each cloudlet, in km/s.
     
     """
-    velinterfunc = interpolate.interp1d(velrad,velprof,kind='linear')
-    vrad=velinterfunc(r_flat)
-    los_vel=np.empty(len(vrad))
+    velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear')
+    vRad = velInterFunc(r_flat)
+    los_vel = np.empty(len(vRad))
     # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
     np.random.seed(seed[3])
-    veldisp=np.random.randn(len(xpos)) 
-    if isinstance(gassigma, (list, tuple, np.ndarray)):
-        gassigmainterfunc = interpolate.interp1d(velrad,gassigma,kind='linear')
-        veldisp*=gassigmainterfunc(r_flat)
+    velDisp = np.random.randn(len(xPos)) 
+    if isinstance(gasSigma, (list, tuple, np.ndarray)):
+        gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
+        velDisp *= gasSigmaInterFunc(r_flat)
     else:
-        veldisp*=gassigma
+        velDisp *= gasSigma
     
     # Find the rotation angle so the velocity field has the correct position angle (allows warps)
-    if not vposang:
+    if not vPosAng:
         ang2rot=0.0
     else:
-        if isinstance(vposang, (list, tuple, np.ndarray)):
-            vposanginterfunc = interpolate.interp1d(velrad,vposang,kind='linear')
-            vposang_rad=vposanginterfunc(r_flat)
+        if isinstance(vPosAng, (list, tuple, np.ndarray)):
+            vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear')
+            vPosAng_rad = vPosAngInterFunc(r_flat)
         else:
-            vposang_rad=np.full(len(r_flat),vposang,np.double)
-        ang2rot=((posang_rad-vposang_rad))
+            vPosAng_rad = np.full(len(r_flat),vPosAng,np.double)
+        ang2rot = ((posAng_rad-vPosAng_rad))
     #Calculate the los velocity for each cloudlet
-    los_vel=veldisp                                                                                                                    
-    los_vel+=(-1)*vrad*(np.cos(np.arctan2((ypos+vphasecent[1]),(xpos+vphasecent[0]))+(np.radians(ang2rot)))*np.sin(np.radians(inc_rad)))           
+    los_vel = velDisp                                                                                                                    
+    los_vel += (-1) * vRad * (np.cos(np.arctan2((yPos + vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))           
     
     #Add radial inflow/outflow
-    if vradial != 0:
-        if isinstance(vradial, (list, tuple, np.ndarray)):
-            vradialinterfunc = interpolate.interp1d(velrad,vradial,kind='linear')
-            vradial_rad=vradialinterfunc(r_flat)
+    if vRadial != 0:
+        if isinstance(vRadial, (list, tuple, np.ndarray)):
+            vRadialInterFunc = interpolate.interp1d(velRad,vRadial,kind='linear')
+            vRadial_rad = vRadialInterFunc(r_flat)
         else:
-            vradial_rad=np.full(len(r_flat),vradial,np.double)
-        los_vel+=vradial_rad*(np.sin(np.arctan2((ypos+vphasecent[1]),(xpos+vphasecent[0]))+(np.radians(ang2rot)))*np.sin(np.radians(inc_rad)))
+            vRadial_rad=np.full(len(r_flat),vRadial,np.double)
+        los_vel += vRadial_rad * (np.sin(np.arctan2((yPos+vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
     # Output the array of los velocities
     return los_vel
 
 
-def gasgravity_velocity(xpos,ypos,zpos,massdist,phasecen,velrad):
+def gasgravity_velocity(xPos,yPos,zPos,massDist,velRad):
     """
     This function takes the position of the input cloudlets, and calculates the
     potential, and thus the increase in the circular velocity due to the gas mass itself.
     
     Parameters
     ----------
-    xpos : np.ndarray of double
+    xPos : np.ndarray of double
             X position of each cloudlet. Units of arcseconds. 
     
-    ypos : np.ndarray of double
+    yPos : np.ndarray of double
             Y position of each cloudlet. Units of arcseconds.
     
-    zpos : np.ndarray of double
+    zPos : np.ndarray of double
             Z position of each cloudlet. Units of arcseconds
     
-    massdist : list of double
+    massDist : list of double
             List of [gasmass,distance] - gas mass in solar masses, distance in Mpc.
-   
-    phasecen : list of double
-         (Default value = [0, 0])
-            Morphological centre of the gas in the x-y plane. Units of arcseconds.
     
-    velrad : np.ndarray of double
+    velRad : np.ndarray of double
             Radius vector (in units of pixels).
   
     Returns
@@ -246,14 +242,16 @@ def gasgravity_velocity(xpos,ypos,zpos,massdist,phasecen,velrad):
     np.ndarray of double
             Addition to the circular velocity just due to the mass of the gas itself, in units of km/s.
     """
-    rad=np.sqrt(((xpos-(phasecen[0]))**2) + ((ypos-(phasecen[1]))**2)+zpos**2)						## 3D radius	
-    cummass=((np.arange(xpos.size+1))*(massdist[0]/np.float(xpos.size)))					    ## cumulative mass
-    cummas_interfunc = interpolate.interp1d(np.append(np.insert(sorted(rad),0,0),np.max(velrad).clip(min=np.max(rad), max=None)+1),np.append(cummass,np.max(cummass)),kind='linear')    
-    return 	np.append(0.0,np.sqrt((4.301e-3*cummas_interfunc(velrad[1:]))/(4.84*velrad[1:]*massdist[1])))					    ## return velocity
+    rad = np.sqrt((xPos**2) + (yPos**2) + (zPos**2))						## 3D radius	
+    cumMass = ((np.arange(xpos.size + 1)) * (massDist[0] / np.float(xpos.size)))					    ## cumulative mass
+    cumMass_interFunc = interpolate.interp1d(np.append(np.insert(sorted(rad),0,0),np.max(velRad).clip(min=np.max(rad), max=None)+1),np.append(cumMass,np.max(cumMass)),kind='linear')
+    if velRad[0] == 0.0:
+        return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))					    ## return velocity
+    else:
+        return 	np.sqrt((4.301e-3 * cumMass_interFunc(velrad))/(4.84 * velRad * massDist[1]))
 
 
-
-def KinMS(xs,ys,vs,cellsize,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad=[],velprof=[],filename=False,diskthick=0,cleanout=False,ra=0,dec=0,nsamps=100000,posang=0.0,intflux=0,inclouds=[],vlos_clouds=[],flux_clouds=0,vsys=0,restfreq=115.271e9,phasecen=np.array([0.,0.]),voffset=0,fixseed=False,vradial=0,vposang=0,vphasecen=np.array([0.,0.]),returnclouds=False,gasgrav=False):
+def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad=[],velProf=[],fileName=False,diskThick=0,cleanOut=False,ra=0,dec=0,nSamps=100000,posAng=0.0,intFlux=0,inClouds=[],vLOS_clouds=[],flux_clouds=0,vSys=0,restFreq=115.271e9,phaseCen=np.array([0.,0.]),vOffset=0,fixSeed=False,vRadial=0,vPosAng=0,vPhaseCen=np.array([0.,0.]),returnClouds=False,gasGrav=False):
     """
     
     The main KinMS function. Takes inputs specifing the observing parameters and type of model.
@@ -426,159 +424,159 @@ def KinMS(xs,ys,vs,cellsize,dv,beamsize,inc,gassigma=0,sbprof=[],sbrad=[],velrad
     """
     
     
-    nsamps=int(nsamps)
+    nSamps = int(nSamps)
     # Generate seeds for use in future calculations
-    if fixseed:
-        fixseed=[100,101,102,103]
+    if fixSeed:
+        fixSeed = [100,101,102,103]
     else:
-        fixseed=np.random.randint(0,100,4)
+        fixSeed = np.random.randint(0,100,4)
     
     # If beam profile not fully specified, generate it:
-    if not isinstance(beamsize, (list, tuple, np.ndarray)):
-        beamsize=np.array([beamsize,beamsize,0])
+    if not isinstance(beamSize, (list, tuple, np.ndarray)):
+        beamSize = np.array([beamSize,beamSize,0])
     
     # work out images sizes
-    xsize = float(round(xs/cellsize))
-    ysize = float(round(ys/cellsize))
-    vsize = float(round(vs/dv))
-    cent=[(xsize/2.)+(phasecen[0]/cellsize),(ysize/2.)+(phasecen[1]/cellsize),(vsize/2.)+(voffset/dv)]
-    vphasecent=(vphasecen-phasecen)/[cellsize,cellsize]
+    xSize = float(round(xs/cellSize))
+    ySize = float(round(ys/cellSize))
+    vSize = float(round(vs/dv))
+    cent = [(xSize/2.) + (phaseCen[0] / cellSize),(ySize / 2.) + (phaseCen[1] / cellSize),(vSize / 2.) + (vOffset / dv)]
+    vPhaseCent = (vPhaseCen-phaseCen) / [cellSize,cellSize]
 
     #If cloudlets not previously specified, generate them
-    if not len(inclouds):
-        inclouds=kinms_samplefromarbdist_onesided(sbrad,sbprof,nsamps,fixseed,diskthick=diskthick)
-    xpos=(inclouds[:,0]/cellsize)
-    ypos=(inclouds[:,1]/cellsize)
-    zpos=(inclouds[:,2]/cellsize)
-    r_flat=np.sqrt((xpos*xpos) + (ypos*ypos))
+    if not len(inClouds):
+        inClouds = kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,fixSeed,diskThick=diskThick)
+    xPos = (inClouds[:,0] / cellSize)
+    yPos = (inClouds[:,1] / cellSize)
+    zPos = (inClouds[:,2] / cellSize)
+    r_flat = np.sqrt((xPos * xPos) + (yPos * yPos))
     
     #Find the los velocity and cube position of the clouds
-    if len(vlos_clouds):
+    if len(vLOS_clouds):
         #As los velocity specified assume that the clouds have already been projected correctly.
-        los_vel=vlos_clouds
-        x2=xpos
-        y2=ypos
-        z2=zpos
+        los_vel = vLOS_clouds
+        x2 = xPos
+        y2 = yPos
+        z2 = zPos
     else:     
         # As los velocities not specified, calculate them
-        if np.any(gasgrav):
+        if np.any(gasGrav):
             # ;;; include the potential of the gas
-            gasgravvel=gasgravity_velocity(xpos*cellsize,ypos*cellsize,zpos*cellsize,gasgrav,phasecen,velrad)
-            velprof=np.sqrt(velprof**2 + gasgravvel**2)
+            gasGravVel = gasgravity_velocity(xPos * cellSize,yPos * cellSize,zPos * cellSize,gasGrav,velRad)
+            velProf = np.sqrt((velProf * velProf) + (gasGravVel * gasGravVel))
             
         
         
-        posang=90-posang
-        if isinstance(posang, (list, tuple, np.ndarray)):
-            posangradinterfunc = interpolate.interp1d(velrad,posang,kind='linear')
-            posang_rad=posangradinterfunc(r_flat)
+        posAng = 90 - posAng
+        if isinstance(posAng, (list, tuple, np.ndarray)):
+            posAngRadInterFunc = interpolate.interp1d(velRad,posAng,kind='linear')
+            posAng_rad = posAngRadInterFunc(r_flat)
         else:
-            posang_rad=np.full(len(r_flat),posang,np.double)
+            posAng_rad = np.full(len(r_flat),posAng,np.double)
         
         if isinstance(inc, (list, tuple, np.ndarray)):
-            incradinterfunc = interpolate.interp1d(velrad,inc,kind='linear')
-            inc_rad=incradinterfunc(r_flat)
+            incRadInterFunc = interpolate.interp1d(velRad,inc,kind='linear')
+            inc_rad = incRadInterFunc(r_flat)
         else:
-            inc_rad=np.full(len(r_flat),inc,np.double)
+            inc_rad = np.full(len(r_flat),inc,np.double)
         
         # Calculate the los velocity
-        los_vel=kinms_create_velfield_onesided(velrad/cellsize,velprof,r_flat,inc,posang,gassigma,fixseed,xpos,ypos,vphasecent=vphasecent,vposang=vposang,vradial=vradial,inc_rad=inc_rad,posang_rad=posang_rad)
+        los_vel = kinms_create_velField_oneSided(velRad / cellSize,velProf,r_flat,inc,posAng,gasSigma,fixSeed,xPos,yPos,vPhaseCent=vPhaseCent,vPosAng=vPosAng,vRadial=vRadial,inc_rad=inc_rad,posAng_rad=posAng_rad)
        
         # Project the clouds to take into account inclination
         c = np.cos(np.radians(inc_rad))
         s = np.sin(np.radians(inc_rad))
-        x2 =  xpos
-        y2 =  c*ypos + s*zpos
-        z2 = -s*ypos + c*zpos       
+        x2 =  xPos
+        y2 = (c * yPos) + (s * zPos)
+        z2 = (-s * yPos) + (c * zPos)       
         
         # Correct orientation by rotating by position angle
-        ang=posang_rad
+        ang = posAng_rad
         c = np.cos(np.radians(ang))
         s = np.sin(np.radians(ang))
-        x3 =  c*x2 + s*y2
-        y3 = -s*x2 + c*y2
-        x2=x3
-        y2=y3
+        x3 = (c * x2) + (s * y2)
+        y3 = (-s * x2) + (c * y2)
+        x2 = x3
+        y2 = y3
     # now add the flux into the cube
     # Centre the clouds in the cube on the centre of the object
-    los_vel_dv_cent2=np.round((los_vel/dv)+cent[2])
-    x2_cent0=np.round(x2+cent[0])
-    y2_cent1=np.round(y2+cent[1])
+    los_vel_dv_cent2 = np.round((los_vel / dv) + cent[2])
+    x2_cent0 = np.round(x2 + cent[0])
+    y2_cent1 = np.round(y2 + cent[1])
     
     #Find the reduced set of clouds that lie inside the cube
-    subs = np.where(((x2_cent0 >= 0) & (x2_cent0 < xsize) & (y2_cent1 >= 0) & (y2_cent1 < ysize) & (los_vel_dv_cent2 >= 0) & (los_vel_dv_cent2 < vsize)))
-    nsubs=subs[0].size
-    clouds2do=np.empty((nsubs,3))
-    clouds2do[:,0]=x2_cent0[subs]
-    clouds2do[:,1]=y2_cent1[subs]
-    clouds2do[:,2]=los_vel_dv_cent2[subs]
+    subs = np.where(((x2_cent0 >= 0) & (x2_cent0 < xSize) & (y2_cent1 >= 0) & (y2_cent1 < ySize) & (los_vel_dv_cent2 >= 0) & (los_vel_dv_cent2 < vSize)))
+    nsubs = subs[0].size
+    clouds2do = np.empty((nsubs,3))
+    clouds2do[:,0] = x2_cent0[subs]
+    clouds2do[:,1] = y2_cent1[subs]
+    clouds2do[:,2] = los_vel_dv_cent2[subs]
     
     # If there are clouds to use, and we know the flux of each cloud, add them to the cube. If not, bin each position to get
     # a relative flux
     if nsubs > 0:
         if not isinstance(flux_clouds, (list, tuple, np.ndarray)):
-            cube,edges=np.histogramdd(clouds2do,bins=(xsize,ysize,vsize),range=((0,xsize),(0,ysize),(0,vsize)))
+            cube,edges = np.histogramdd(clouds2do,bins=(xSize,ySize,vSize),range=((0,xSize),(0,ySize),(0,vSize)))
         else:
-            cube = np.zeros((xsize,ysize,vsize))
-            flux_clouds=flux_clouds[subs]
+            cube = np.zeros((xSize,ySize,vSize))
+            flux_clouds = flux_clouds[subs]
             for i in range(0, nsubs):
                 const = flux_clouds[i]
                 csub = (clouds2do[i,0],clouds2do[i,1],clouds2do[i,2])
                 cube[csub] = cube[csub] + const
     
     # Convolve with the beam point spread function to obtain a dirty cube
-    if not cleanout:
-       psf=makebeam(xsize,ysize,[beamsize[0]/cellsize,beamsize[1]/cellsize],rot=beamsize[2])
-       w2do=np.where(cube.sum(axis=0).sum(axis=0) >0)[0]
-       for i in range(0,w2do.size): cube[:,:,w2do[i]]=convolve_fft(cube[:,:,w2do[i]], psf)
+    if not cleanOut:
+       psf = makebeam(xSize,ySize,[beamSize[0]/cellSize,beamSize[1]/cellSize],rot=beamSize[2])
+       w2do = np.where(cube.sum(axis=0).sum(axis=0) >0)[0]
+       for i in range(0,w2do.size): cube[:,:,w2do[i]] = convolve_fft(cube[:,:,w2do[i]], psf)
     # Normalise by the known integrated flux
-    if intflux > 0:
-        if not cleanout:
-            cube *= ((intflux*psf.sum())/(cube.sum()*dv))
+    if intFlux > 0:
+        if not cleanOut:
+            cube *= ((intFlux * psf.sum()) / (cube.sum() * dv))
         else: 
-            cube *= ((intflux)/(cube.sum()*dv))
+            cube *= ((intflux) / (cube.sum() * dv))
     else:
         if isinstance(flux_clouds, (list, tuple, np.ndarray)):
-            cube*=(flux_clouds.sum()/cube.sum()) 
+            cube *= (flux_clouds.sum() / cube.sum()) 
         else:
-            cube/=cube.sum()
+            cube /= cube.sum()
     
     # If appropriate, generate the FITS file header and save to disc
-    if filename:
+    if fileName:
         hdu = fits.PrimaryHDU(cube.T)
-        hdu.header['CDELT1']=(cellsize)/(-3600.0)
-        hdu.header['CDELT2']=(cellsize)/3600.0
-        hdu.header['CDELT3']=(dv)*1000.0
-        hdu.header['CRPIX1']=(cent[0]-1)
-        hdu.header['CRPIX2']=(cent[1])
-        hdu.header['CRPIX3']=(cent[2])
-        hdu.header['CRVAL1']=(ra)
-        hdu.header['CRVAL2']=(dec)
-        hdu.header['CRVAL3']=(vsys*1000.0),"m/s"
-        hdu.header['CUNIT1']='deg'
-        hdu.header['CUNIT2']='deg'
-        hdu.header['CUNIT3']='m/s'
-        hdu.header['BSCALE']=1.0             
-        hdu.header['BZERO']=0.0                                                                                     
-        hdu.header['BMIN']=np.min(np.array(beamsize[0:1])/3600.0)
-        hdu.header['BMAJ']=np.max(np.array(beamsize[0:1])/3600.0)
-        hdu.header['BTYPE']='Intensity'  
-        hdu.header['BPA']=beamsize[2]
-        hdu.header['CTYPE1']='RA---SIN' 
-        hdu.header['CTYPE2']='DEC--SIN'
-        hdu.header['CTYPE3']='VRAD'  
-        hdu.header['EQUINOX']=2000.0
-        hdu.header['RADESYS']='FK5'
-        hdu.header['BUNIT']='Jy/beam'
-        hdu.header['SPECSYS']='BARYCENT'
-        hdu.writeto(filename+"_simcube.fits",clobber=True,output_verify='fix')
+        hdu.header['CDELT1'] = (cellSize)/(-3600.0)
+        hdu.header['CDELT2'] = (cellSize)/3600.0
+        hdu.header['CDELT3'] = (dv)*1000.0
+        hdu.header['CRPIX1'] = (cent[0]-1)
+        hdu.header['CRPIX2'] = (cent[1]-1)
+        hdu.header['CRPIX3'] = (cent[2])
+        hdu.header['CRVAL1'] = (ra)
+        hdu.header['CRVAL2'] = (dec)
+        hdu.header['CRVAL3'] = (vSys*1000.0),"m/s"
+        hdu.header['CUNIT1'] = 'deg'
+        hdu.header['CUNIT2'] = 'deg'
+        hdu.header['CUNIT3'] = 'm/s'
+        hdu.header['BSCALE'] = 1.0             
+        hdu.header['BZERO'] = 0.0                                                                                     
+        hdu.header['BMIN'] = np.min(np.array(beamSize[0:1])/3600.0)
+        hdu.header['BMAJ'] = np.max(np.array(beamSize[0:1])/3600.0)
+        hdu.header['BTYPE'] = 'Intensity'  
+        hdu.header['BPA'] = beamSize[2]
+        hdu.header['CTYPE1'] = 'RA---SIN' 
+        hdu.header['CTYPE2'] = 'DEC--SIN'
+        hdu.header['CTYPE3'] = 'VRAD'  
+        hdu.header['EQUINOX'] = 2000.0
+        hdu.header['RADESYS'] = 'FK5'
+        hdu.header['BUNIT'] = 'Jy/beam'
+        hdu.header['SPECSYS'] = 'BARYCENT'
+        hdu.writeto(fileName+"_simcube.fits",clobber=True,output_verify='fix')
         
     # Output the final cube
-    if returnclouds:
-        retclouds=np.empty((nsamps,3))
-        retclouds[:,0]=x2*cellsize
-        retclouds[:,1]=y2*cellsize
-        retclouds[:,2]=z2*cellsize
-        return cube, retclouds, los_vel
+    if returnClouds:
+        retClouds = np.empty((nSamps,3))
+        retClouds[:,0] = x2 * cellSize
+        retClouds[:,1] = y2 * cellSize
+        retClouds[:,2] = z2 * cellSize
+        return cube, retClouds, los_vel
     else:
         return cube
