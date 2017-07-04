@@ -469,13 +469,13 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
         posAng = 90 - posAng
         if isinstance(posAng, (list, tuple, np.ndarray)):
             posAngRadInterFunc = interpolate.interp1d(velRad,posAng,kind='linear')
-            posAng_rad = posAngRadInterFunc(r_flat)
+            posAng_rad = posAngRadInterFunc(r_flat*cellSize)
         else:
             posAng_rad = np.full(len(r_flat),posAng,np.double)
         
         if isinstance(inc, (list, tuple, np.ndarray)):
             incRadInterFunc = interpolate.interp1d(velRad,inc,kind='linear')
-            inc_rad = incRadInterFunc(r_flat)
+            inc_rad = incRadInterFunc(r_flat*cellSize)
         else:
             inc_rad = np.full(len(r_flat),inc,np.double)
         
