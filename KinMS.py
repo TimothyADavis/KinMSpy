@@ -534,7 +534,7 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
         if not cleanOut:
             cube *= ((intFlux * psf.sum()) / (cube.sum() * dv))
         else: 
-            cube *= ((intflux) / (cube.sum() * dv))
+            cube *= ((intFlux) / (cube.sum() * dv))
     else:
         if isinstance(flux_clouds, (list, tuple, np.ndarray)):
             cube *= (flux_clouds.sum() / cube.sum()) 
