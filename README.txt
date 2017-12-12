@@ -3,7 +3,6 @@ The KinMS (KINematic Molecular Simulation) package can be used to simulate obser
 If you find any bugs, or wish to be kept up to date when new versions of this software are released, please email me at DavisT -at- cardiff.ac.uk
 
 To run the test suite, which demonstrates some of the functionality of this code, please checkout/download the code, and navigate to the directory. Then:
-
 ```
 ipython
 from KinMS_testsuite import *
