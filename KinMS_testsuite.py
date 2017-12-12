@@ -280,8 +280,8 @@ def KinMStest_inclouds_spiral():
 # ;;;;;;;;;;;
 
 # ;;;; Setup cube parameters ;;;;
-    xsize=128*2
-    ysize=128*2
+    xsize=128
+    ysize=128
     vsize=1400
     cellsize=1
     dv=10
@@ -290,14 +290,14 @@ def KinMStest_inclouds_spiral():
 # ;;;;
 #
 # ;;;; define where clouds are in each dimension (x,y,z) using a logarithmic spiral ;;;;
-    t=np.arange(-20,20,0.01)
+    t=np.arange(-20,20,0.1)
     a=0.002*60
     b=0.5
     x1=a*np.exp(b*t)*np.cos(t)
     y1=a*np.exp(b*t)*np.sin(t)
     x2=a*(-1)*np.exp(b*t)*np.cos(t)
     y2=a*(-1)*np.exp(b*t)*np.sin(t)
-    inclouds=np.empty((8000,3))
+    inclouds=np.empty((len(t)*2,3))
     inclouds[:,0]=np.concatenate((x1,x2))/20
     inclouds[:,1]=np.concatenate((y1,y2))/20
     inclouds[:,2]=np.concatenate((x1*0.0,x2*0.0))

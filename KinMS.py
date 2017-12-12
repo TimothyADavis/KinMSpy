@@ -215,7 +215,7 @@ def kinms_create_velField_oneSided(velRad,velProf,r_flat,inc,posAng,gasSigma,see
     return los_vel
 
 
-def gasgravity_velocity(xPos,yPos,zPos,massDist,velRad):
+def gasGravity_velocity(xPos,yPos,zPos,massDist,velRad):
     """
     This function takes the position of the input cloudlets, and calculates the
     potential, and thus the increase in the circular velocity due to the gas mass itself.
@@ -242,8 +242,8 @@ def gasgravity_velocity(xPos,yPos,zPos,massDist,velRad):
     np.ndarray of double
             Addition to the circular velocity just due to the mass of the gas itself, in units of km/s.
     """
-    rad = np.sqrt((xPos**2) + (yPos**2) + (zPos**2))						## 3D radius	
-    cumMass = ((np.arange(xpos.size + 1)) * (massDist[0] / np.float(xpos.size)))					    ## cumulative mass
+    rad = np.sqrt((xPos**2) + (yPos**2) + (zPos**2))						                            ## 3D radius	
+    cumMass = ((np.arange(xPos.size + 1)) * (massDist[0] / np.float(xPos.size)))					    ## cumulative mass
     cumMass_interFunc = interpolate.interp1d(np.append(np.insert(sorted(rad),0,0),np.max(velRad).clip(min=np.max(rad), max=None)+1),np.append(cumMass,np.max(cumMass)),kind='linear')
     if velRad[0] == 0.0:
         return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))					    ## return velocity
@@ -461,7 +461,7 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
         # As los velocities not specified, calculate them
         if np.any(gasGrav):
             # ;;; include the potential of the gas
-            gasGravVel = gasgravity_velocity(xPos * cellSize,yPos * cellSize,zPos * cellSize,gasGrav,velRad)
+            gasGravVel = gasGravity_velocity(xPos * cellSize,yPos * cellSize,zPos * cellSize,gasGrav,velRad)
             velProf = np.sqrt((velProf * velProf) + (gasGravVel * gasGravVel))
             
         
@@ -517,11 +517,11 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
         if not isinstance(flux_clouds, (list, tuple, np.ndarray)):
             cube,edges = np.histogramdd(clouds2do,bins=(xSize,ySize,vSize),range=((0,xSize),(0,ySize),(0,vSize)))
         else:
-            cube = np.zeros((xSize,ySize,vSize))
+            cube = np.zeros((np.int(xSize),np.int(ySize),np.int(vSize)))
             flux_clouds = flux_clouds[subs]
             for i in range(0, nsubs):
                 const = flux_clouds[i]
-                csub = (clouds2do[i,0],clouds2do[i,1],clouds2do[i,2])
+                csub = (int(clouds2do[i,0]),int(clouds2do[i,1]),int(clouds2do[i,2]))
                 cube[csub] = cube[csub] + const
     
     # Convolve with the beam point spread function to obtain a dirty cube
@@ -569,7 +569,7 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
         hdu.header['RADESYS'] = 'FK5'
         hdu.header['BUNIT'] = 'Jy/beam'
         hdu.header['SPECSYS'] = 'BARYCENT'
-        hdu.writeto(fileName+"_simcube.fits",clobber=True,output_verify='fix')
+        hdu.writeto(fileName+"_simcube.fits",overwrite=True,output_verify='fix')
         
     # Output the final cube
     if returnClouds:
