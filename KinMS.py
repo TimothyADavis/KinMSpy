@@ -523,6 +523,7 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
                 const = flux_clouds[i]
                 csub = (int(clouds2do[i,0]),int(clouds2do[i,1]),int(clouds2do[i,2]))
                 cube[csub] = cube[csub] + const
+    else: cube = np.zeros((np.int(xSize),np.int(ySize),np.int(vSize)))
     
     # Convolve with the beam point spread function to obtain a dirty cube
     if not cleanOut:
