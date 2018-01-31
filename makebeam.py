@@ -1,3 +1,4 @@
+# coding: utf-8
 import numpy as np
 
 def makebeam(xpixels,ypixels,st_dev,rot=0,cent=0):

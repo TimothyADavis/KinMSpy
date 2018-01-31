@@ -1,3 +1,4 @@
+# coding: utf-8
 from KinMS import *
 import matplotlib.pyplot as plt
 import numpy as np

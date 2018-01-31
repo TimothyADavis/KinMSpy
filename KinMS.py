@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 Copyright (C) 2016, Timothy A. Davis
 E-mail: DavisT -at- cardiff.ac.uk
