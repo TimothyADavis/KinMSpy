@@ -59,14 +59,14 @@ def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
     sbProf = sbProf * (2 * np.pi * abs(sbRad))  
     px = np.cumsum(sbProf)
     px /= max(px)           
-    np.random.seed(seed[0])               
-    pick = np.random.random(nSamps)  
+    rng1 = np.random.RandomState(seed[0])            
+    pick = rng1.random_sample(nSamps)  
     interpfunc = interpolate.interp1d(px,sbRad, kind='linear')
     r_flat = interpfunc(pick)
     
     #Generates a random phase around the galaxy's axis for each cloud
-    np.random.seed(seed[1])        
-    phi = np.random.random(nSamps) * 2 * np.pi     
+    rng2 = np.random.RandomState(seed[1])        
+    phi = rng2.random_sample(nSamps) * 2 * np.pi    
  
     # Find the thickness of the disk at the radius of each cloud
     if isinstance(diskThick, (list, tuple, np.ndarray)):
@@ -76,8 +76,8 @@ def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
         diskThick_here = diskThick    
     
     #Generates a random (uniform) z-position satisfying |z|<disk_here 
-    np.random.seed(seed[2])      
-    zPos = diskThick_here * np.random.uniform(-1,1,nSamps) 
+    rng3 = np.random.RandomState(seed[3])       
+    zPos = diskThick_here * rng3.uniform(-1,1,nSamps)
     
     #Calculate the x & y position of the clouds in the x-y plane of the disk
     r_3d = np.sqrt((r_flat**2) + (zPos**2))                                                               
@@ -182,8 +182,8 @@ def kinms_create_velField_oneSided(velRad,velProf,r_flat,inc,posAng,gasSigma,see
     vRad = velInterFunc(r_flat)
     los_vel = np.empty(len(vRad))
     # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
-    np.random.seed(seed[3])
-    velDisp = np.random.randn(len(xPos)) 
+    rng4 = np.random.RandomState(seed[3]) 
+    velDisp = rng4.randn(len(xPos))
     if isinstance(gasSigma, (list, tuple, np.ndarray)):
         gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
         velDisp *= gasSigmaInterFunc(r_flat)
