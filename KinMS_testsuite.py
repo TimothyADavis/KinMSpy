@@ -31,9 +31,9 @@ def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,p
     pvdcube=ndimage.interpolation.rotate(f, 90-posang, axes=(1, 0), reshape=False)
     if np.any(overcube): pvdcubeover=ndimage.interpolation.rotate(overcube, 90-posang, axes=(1, 0), reshape=False)
         
-    pvd=pvdcube[:,np.int((ysize/2.)-pvdthick):np.int((ysize/2.)+pvdthick),:].sum(axis=1)
-    if np.any(overcube): pvdover=pvdcubeover[:,np.int((ysize/2.)-pvdthick):np.int((ysize/2.)+pvdthick),:].sum(axis=1)
-    
+    pvd=pvdcube[:,np.int((ysize/(cellsize*2.))-pvdthick):np.int((ysize/(cellsize*2.))+pvdthick),:].sum(axis=1)
+    if np.any(overcube): pvdover=pvdcubeover[:,np.int((ysize/(cellsize*2.))-pvdthick):np.int((ysize/(cellsize*2.))+pvdthick),:].sum(axis=1)
+        
     if not isinstance(beamsize, (list, tuple, np.ndarray)):
         beamsize=np.array([beamsize,beamsize,0])
     beamtot=(makebeam(xsize,ysize,[beamsize[0]/cellsize,beamsize[1]/cellsize],rot=beamsize[2])).sum()
