@@ -55,9 +55,7 @@ def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
             the x, y, z position of a cloudlet. 
     """
     #Randomly generate the radii of clouds based on the distribution given by the brightness profile
-    px = np.zeros(len(sbProf))
-    sbProf = sbProf * (2 * np.pi * abs(sbRad))  
-    px = np.cumsum(sbProf)
+    px=scipy.integrate.cumtrapz(sbProf*2.*np.pi*abs(sbRad),abs(sbRad),initial=0.)
     px /= max(px)           
     rng1 = np.random.RandomState(seed[0])            
     pick = rng1.random_sample(nSamps)  
