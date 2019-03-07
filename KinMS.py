@@ -439,8 +439,8 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
     ySize = float(round(ys/cellSize))
     vSize = float(round(vs/dv))
     cent = [(xSize/2.) + (phaseCen[0] / cellSize),(ySize / 2.) + (phaseCen[1] / cellSize),(vSize / 2.) + (vOffset / dv)]
-    vPhaseCent = (vPhaseCen-phaseCen) / [cellSize,cellSize]
-
+    vPhaseCent = (vPhaseCen) / [cellSize,cellSize]
+    
     #If cloudlets not previously specified, generate them
     if not len(inClouds):
         inClouds = kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,fixSeed,diskThick=diskThick)
