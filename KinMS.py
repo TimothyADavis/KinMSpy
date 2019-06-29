@@ -20,7 +20,98 @@ from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
 from makebeam import makebeam
-print('blub')
+
+class KinMS:
+
+    def __init__(self):
+
+        print("\n *** Hello and welcome to the grand KinMSpy :D *** \n ")
+
+        self.diskThick = 0
+
+    def print_variables(self, param_dict):
+
+        print('_'*37 + '\n \n' + 'Setting values to: \n ')
+
+        for k in param_dict:
+            print(k + ' = ' + str(param_dict[k]))
+
+        print('_'*37)
+
+        return
+
+    def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, nSamps, seed, diskThick=None):
+        """
+
+        This function takes the input radial distribution and generates the positions of
+        `nsamps` cloudlets from under it. It also accounts for disk thickness if requested.
+
+        Parameters
+        ----------
+        sbRad : np.ndarray of double
+                Radius vector (in units of pixels).
+
+        sbProf : np.ndarray of double
+                Surface brightness profile (arbitrarily scaled).
+
+        nSamps : int
+                Number of samples to draw from the distribution.
+
+        seed : list of int
+                List of length 4 containing the seeds for random number generation.
+
+        diskThick : double or np.ndarray of double
+             (Default value = 0.0)
+                The disc scaleheight. If a single value then this is used at all radii.
+                If a ndarray then it should have the same length as sbrad, and will be
+                the disc thickness as a function of sbrad.
+
+        Returns
+        -------
+        inClouds : np.ndarray of double
+                Returns an ndarray of `nsamps` by 3 in size. Each row corresponds to
+                the x, y, z position of a cloudlet.
+        """
+
+        if not diskThick:
+            diskThick = self.diskThick
+            self.print_variables({'diskThick':self.diskThick})
+
+        # Randomly generate the radii of clouds based on the distribution given by the brightness profile
+        px = scipy.integrate.cumtrapz(sbProf * 2 * np.pi * abs(sbRad), abs(sbRad), initial=0)
+        px /= max(px)
+        rng1 = np.random.RandomState(seed[0])
+        pick = rng1.random_sample(nSamps)
+        interpfunc = interpolate.interp1d(px, sbRad, kind='linear')
+        r_flat = interpfunc(pick)
+
+        # Generates a random phase around the galaxy's axis for each cloud
+        rng2 = np.random.RandomState(seed[1])
+        phi = rng2.random_sample(nSamps) * 2 * np.pi
+
+        # Find the thickness of the disk at the radius of each cloud
+        try:
+            len(diskThick) > 0
+            interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear')
+            diskThick_here = interpfunc2(r_flat)
+        except:
+            diskThick_here = diskThick
+
+        # Generates a random (uniform) z-position satisfying |z|<disk_here
+        rng3 = np.random.RandomState(seed[3])
+        zPos = diskThick_here * rng3.uniform(-1, 1, nSamps)
+
+        # Calculate the x & y position of the clouds in the x-y plane of the disk
+        r_3d = np.sqrt((r_flat ** 2) + (zPos ** 2))
+        theta = np.arccos(zPos / r_3d)
+        xPos = ((r_3d * np.cos(phi) * np.sin(theta)))
+        yPos = ((r_3d * np.sin(phi) * np.sin(theta)))
+
+        # Generates the output array
+        inClouds = np.vstack((xPos, yPos, zPos)).T
+
+        return inClouds
+
 def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
     """
 
@@ -249,8 +340,7 @@ def gasGravity_velocity(xPos,yPos,zPos,massDist,velRad):
     else:
         return 	np.sqrt((4.301e-3 * cumMass_interFunc(velrad))/(4.84 * velRad * massDist[1]))
 
-
-def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad=[],velProf=[],fileName=False,diskThick=0,cleanOut=False,ra=0,dec=0,nSamps=100000,posAng=0.0,intFlux=0,inClouds=[],vLOS_clouds=[],flux_clouds=0,vSys=0,restFreq=115.271e9,phaseCen=np.array([0.,0.]),vOffset=0,fixSeed=False,vRadial=0,vPosAng=0,vPhaseCen=np.array([0.,0.]),returnClouds=False,gasGrav=False):
+def model_cube(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad=[],velProf=[],fileName=False,diskThick=0,cleanOut=False,ra=0,dec=0,nSamps=100000,posAng=0.0,intFlux=0,inClouds=[],vLOS_clouds=[],flux_clouds=0,vSys=0,restFreq=115.271e9,phaseCen=np.array([0.,0.]),vOffset=0,fixSeed=False,vRadial=0,vPosAng=0,vPhaseCen=np.array([0.,0.]),returnClouds=False,gasGrav=False):
     """
     
     The main KinMS function. Takes inputs specifing the observing parameters and type of model.
@@ -580,3 +670,5 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
         return cube, retClouds, los_vel
     else:
         return cube
+
+KinMS().kinms_sampleFromArbDist_oneSided(np.array([1,2,3]), np.array([1,2,3,]), 2, [4,5,6,7])
