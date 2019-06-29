@@ -14,6 +14,9 @@ I would appreciate an acknowledgment to the use of the
 This software is provided as is without any warranty whatsoever.
 For details of permissions granted please see LICENCE.md
 """
+
+"test change on noodle_branch" 
+
 import numpy as np
 import scipy.integrate
 from scipy import interpolate
