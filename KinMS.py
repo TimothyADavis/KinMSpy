@@ -20,7 +20,7 @@ from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
 from makebeam import makebeam
-
+print('blub')
 def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
     """
 
