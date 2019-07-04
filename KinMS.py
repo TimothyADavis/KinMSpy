@@ -30,6 +30,10 @@ class KinMS:
         self.nSamps = int(5e5)
         self.fixedSeed = np.array([100, 101, 102, 103])
         self.randomSeed = np.random.randint(0, 100, 4)
+        self.vRadial = 0
+        self.vPhaseCent = [0.0,0.0]
+        self.posAng_rad = 0
+        self.inc_rad = 0
 
         if self.verbose:
             print("\n *** Hello and welcome to the grand KinMSpy :D *** \n ")
@@ -37,12 +41,9 @@ class KinMS:
     def print_variables(self, param_dict):
 
         print('_' * 37 + '\n \n' + 'Setting values to: \n ')
-
         for k in param_dict:
             print(k + ' = ' + str(param_dict[k]))
-
         print('_' * 37)
-
         return
 
     def makebeam(self, xpixels, ypixels, beamSize, cellSize=1, cent=None):
@@ -190,6 +191,159 @@ class KinMS:
         inClouds = np.vstack((xPos, yPos, zPos)).T
 
         return inClouds
+    
+    def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, seed, xPos, 
+                                       yPos, vPhaseCent, vRadial, posAng_rad, inc_rad, vPosAng):
+            
+
+        """
+        
+        This function takes the input circular velocity distribution
+        and the position of point sources and creates the velocity field
+        taking into account warps, inflow/outflow etc as required.
+        
+        Parameters
+        ----------
+        velRad : np.ndarray of double
+                Radius vector (in units of pixels).
+        
+        velProf : np.ndarray of double
+                Velocity profile (in units of km/s).
+        
+        r_flat : np.ndarray of double
+                Radius of each cloudlet from the kinematic centre
+                in the plane of the disc. Units of pixels.
+        
+        inc : double or np.ndarray of double
+                Inclination of the disc, using the usual astronomical convention.
+                Can be either a double, or an array of doubles. If single valued
+                then the disc is flat. If an array is passed then it should
+                describe how the galaxy inclination changes as a function of `velrad`.
+                Used to create inclination warps.
+        
+        posAng : double or np.ndarray of double
+                Position angle of the disc, using the usual astronomical convention.
+                Can be either a double, or an array of doubles. If single valued
+                then the disc major axis is straight. If an array is passed then it should
+                describe how the position angle changes as a function of `velrad`.
+                Used to create position angle warps.
+        
+        gasSigma : double or np.ndarray of double
+                Velocity dispersion of the gas. Units of km/s.
+                Can be either a double, or an array of doubles. If single valued
+                then the velocity dispersion is constant throughout the disc.
+                If an array is passed then it should describe how the velocity
+                dispersion changes as a function of `velrad`.
+        
+        seed : list of int
+                List of length 4 containing the seeds for random number generation.
+        
+        xPos : np.ndarray of double
+                X position of each cloudlet. Units of pixels.
+                
+        Pos : np.ndarray of double
+                Y position of each cloudlet. Units of pixels.
+        
+        vPhaseCent : list of double
+             (Default value = [0, 0])
+                Kinematic centre of the rotation in the x-y plane. Units of pixels.
+                Used if the kinematic and morphological centres are not the same.
+        
+        vPosAng : double or np.ndarray of double
+             (Default value = False)
+                Kinematic position angle of the disc, using the usual astronomical convention.
+                Can be either a double, or an array of doubles. If single valued
+                then the disc kinematic major axis is straight. If an array is passed then it should
+                describe how the kinematic position angle changes as a function of `velrad`.
+                Used if the kinematic and morphological position angles are not the same.
+        
+        vRadial : double or np.ndarray of double
+             (Default value = 0)
+                Magnitude of inflow/outflowing motions (km/s). Negative
+                numbers here are inflow, positive numbers denote
+                outflow. These are included in the velocity field using
+                formalism of KINEMETRY (Krajnović et al. 2006 MNRAS, 366, 787).
+                Can input a constant or a vector, giving the radial
+                motion as a function of the radius vector
+                `velrad`. Default is no inflow/outflow.
+        
+        posAng_rad : double or np.ndarray of double
+             (Default value = 0)
+                Position angle of the disc at the position `r_flat` of each cloudlet.
+        
+        inc_rad : double or np.ndarray of double
+             (Default value = 0)
+                Inclination angle of the disc at the position `r_flat` of each cloudlet.
+        
+        Returns
+        -------
+        los_vel : np.ndarray of double
+                Line of sight velocity of each cloudlet, in km/s.
+        
+        """
+                    
+        if vPhaseCent:
+                vPhaseCent = vPhaseCent
+        else:
+                vPhaseCent = self.VPhaseCent
+                
+        if vRadial:
+                vRadial = vRadial
+        else:
+                vRadial = self.vRadial
+                    
+        if posAng_rad:
+                posAng_rad = posAng_rad
+        else:
+                posAng_rad = self.posAng_rad
+                    
+        if inc_rad:
+                inc_rad = inc_rad
+        else:
+                inc_rad = self.inc_rad
+                    
+        parameter_dictionary = {}
+        parameter_dictionary['vRadial'] = vRadial
+        parameter_dictionary['vPhaseCent'] = [0.0,0.0]
+        parameter_dictionary['posAng_rad'] = 0
+        parameter_dictionary['inc_rad'] = 0  
+        self.print_variables(parameter_dictionary)
+                  
+        velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear')
+        vRad = velInterFunc(r_flat)
+        # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
+        rng4 = np.random.RandomState(seed[3]) 
+        velDisp = rng4.randn(len(xPos))
+        try:
+                len(gasSigma)>1
+                velDisp *= gasSigma   
+        except:
+                gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
+                velDisp *= gasSigmaInterFunc(r_flat)
+        # Find the rotation angle so the velocity field has the correct position angle (allows warps)
+        if not vPosAng:
+            ang2rot=0
+        else:
+            try:
+                len(vPosAng)>1
+                vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear')
+                vPosAng_rad = vPosAngInterFunc(r_flat)
+            except:
+                vPosAng_rad = np.full(len(r_flat),vPosAng,np.double)
+                ang2rot = ((posAng_rad-vPosAng_rad))
+        #Calculate the los velocity for each cloudlet
+        los_vel = velDisp                                                                                                                    
+        los_vel += (-1) * vRad * (np.cos(np.arctan2((yPos + vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
+        #Add radial inflow/outflow
+        try:
+            len(vRadial)>1
+            vRadialInterFunc = interpolate.interp1d(velRad,vRadial,kind='linear')
+            vRadial_rad = vRadialInterFunc(r_flat)
+        except:
+            vRadial_rad=np.full(len(r_flat),vRadial,np.double)
+        los_vel += vRadial_rad * (np.sin(np.arctan2((yPos+vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
+        # Output the array of los velocities
+        return los_vel
 
     def save_fits(self, fileName, cube, cellSize, dv, cent, ra, dec, vSys, beamSize):
 
@@ -458,9 +612,9 @@ class KinMS:
                 inc_rad = np.full(len(r_flat), inc, np.double)
 
             # Calculate the los velocity
-            los_vel = kinms_create_velField_oneSided(velRad / cellSize, velProf, r_flat, inc, posAng, gasSigma, fixSeed,
-                                                     xPos, yPos, vPhaseCent=vPhaseCent, vPosAng=vPosAng,
-                                                     vRadial=vRadial, inc_rad=inc_rad, posAng_rad=posAng_rad)
+            los_vel =self. kinms_create_velField_oneSided(velRad / cellSize, velProf, r_flat, inc, posAng, gasSigma, fixSeed,
+                                                          xPos, yPos, vPhaseCent=vPhaseCent, vPosAng=vPosAng,
+                                                          vRadial=vRadial, inc_rad=inc_rad, posAng_rad=posAng_rad)
 
             # Project the clouds to take into account inclination
             c = np.cos(np.radians(inc_rad))
@@ -541,130 +695,6 @@ class KinMS:
             return cube
 
 KinMS().kinms_sampleFromArbDist_oneSided([1,2,3,4], [1,2,3,4], fixSeed=False, nSamps=1000)
-
-def kinms_create_velField_oneSided(velRad,velProf,r_flat,inc,posAng,gasSigma,seed,xPos,yPos,vPhaseCent=[0.0,0.0],vPosAng=False,vRadial=0.0,posAng_rad=0.0,inc_rad=0.0):
-    """
-
-    This function takes the input circular velocity distribution
-    and the position of point sources and creates the velocity field
-    taking into account warps, inflow/outflow etc as required.
-
-    Parameters
-    ----------
-    velRad : np.ndarray of double
-            Radius vector (in units of pixels).
-
-    velProf : np.ndarray of double
-            Velocity profile (in units of km/s).
-
-    r_flat : np.ndarray of double
-            Radius of each cloudlet from the kinematic centre
-            in the plane of the disc. Units of pixels.
-
-    inc : double or np.ndarray of double
-            Inclination of the disc, using the usual astronomical convention.
-            Can be either a double, or an array of doubles. If single valued
-            then the disc is flat. If an array is passed then it should
-            describe how the galaxy inclination changes as a function of `velrad`.
-            Used to create inclination warps.
-
-    posAng : double or np.ndarray of double
-            Position angle of the disc, using the usual astronomical convention.
-            Can be either a double, or an array of doubles. If single valued
-            then the disc major axis is straight. If an array is passed then it should
-            describe how the position angle changes as a function of `velrad`.
-            Used to create position angle warps.
-
-    gasSigma : double or np.ndarray of double
-            Velocity dispersion of the gas. Units of km/s.
-            Can be either a double, or an array of doubles. If single valued
-            then the velocity dispersion is constant throughout the disc.
-            If an array is passed then it should describe how the velocity
-            dispersion changes as a function of `velrad`.
-
-    seed : list of int
-            List of length 4 containing the seeds for random number generation.
-
-    xPos : np.ndarray of double
-            X position of each cloudlet. Units of pixels.
-
-    yPos : np.ndarray of double
-            Y position of each cloudlet. Units of pixels.
-
-    vPhaseCent : list of double
-         (Default value = [0, 0])
-            Kinematic centre of the rotation in the x-y plane. Units of pixels.
-            Used if the kinematic and morphological centres are not the same.
-
-    vPosAng : double or np.ndarray of double
-         (Default value = False)
-            Kinematic position angle of the disc, using the usual astronomical convention.
-            Can be either a double, or an array of doubles. If single valued
-            then the disc kinematic major axis is straight. If an array is passed then it should
-            describe how the kinematic position angle changes as a function of `velrad`.
-            Used if the kinematic and morphological position angles are not the same.
-
-    vRadial : double or np.ndarray of double
-         (Default value = 0)
-            Magnitude of inflow/outflowing motions (km/s). Negative
-            numbers here are inflow, positive numbers denote
-            outflow. These are included in the velocity field using
-            formalism of KINEMETRY (Krajnović et al. 2006 MNRAS, 366, 787).
-            Can input a constant or a vector, giving the radial
-            motion as a function of the radius vector
-            `velrad`. Default is no inflow/outflow.
-
-    posAng_rad : double or np.ndarray of double
-         (Default value = 0)
-            Position angle of the disc at the position `r_flat` of each cloudlet.
-
-    inc_rad : double or np.ndarray of double
-         (Default value = 0)
-            Inclination angle of the disc at the position `r_flat` of each cloudlet.
-
-    Returns
-    -------
-    los_vel : np.ndarray of double
-            Line of sight velocity of each cloudlet, in km/s.
-
-    """
-    velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear')
-    vRad = velInterFunc(r_flat)
-    los_vel = np.empty(len(vRad))
-    # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
-    rng4 = np.random.RandomState(seed[3])
-    velDisp = rng4.randn(len(xPos))
-    if isinstance(gasSigma, (list, tuple, np.ndarray)):
-        gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
-        velDisp *= gasSigmaInterFunc(r_flat)
-    else:
-        velDisp *= gasSigma
-
-    # Find the rotation angle so the velocity field has the correct position angle (allows warps)
-    if not vPosAng:
-        ang2rot=0.0
-    else:
-        if isinstance(vPosAng, (list, tuple, np.ndarray)):
-            vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear')
-            vPosAng_rad = vPosAngInterFunc(r_flat)
-        else:
-            vPosAng_rad = np.full(len(r_flat),vPosAng,np.double)
-        ang2rot = ((posAng_rad-vPosAng_rad))
-    #Calculate the los velocity for each cloudlet
-    los_vel = velDisp
-    los_vel += (-1) * vRad * (np.cos(np.arctan2((yPos + vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
-
-    #Add radial inflow/outflow
-    if vRadial != 0:
-        if isinstance(vRadial, (list, tuple, np.ndarray)):
-            vRadialInterFunc = interpolate.interp1d(velRad,vRadial,kind='linear')
-            vRadial_rad = vRadialInterFunc(r_flat)
-        else:
-            vRadial_rad=np.full(len(r_flat),vRadial,np.double)
-        los_vel += vRadial_rad * (np.sin(np.arctan2((yPos+vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
-    # Output the array of los velocities
-    return los_vel
-
 
 def gasGravity_velocity(xPos,yPos,zPos,massDist,velRad):
     """
