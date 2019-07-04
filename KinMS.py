@@ -281,6 +281,11 @@ class KinMS:
                 Line of sight velocity of each cloudlet, in km/s.
         
         """
+        
+        if seed:
+            seed = self.fixedSeed
+        else:
+            seed = self.randomSeed
                     
         if vPhaseCent:
                 vPhaseCent = vPhaseCent
