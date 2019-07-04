@@ -3,7 +3,6 @@ from KinMS import *
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate,ndimage
-from makebeam import makebeam
 from sauron_colormap import sauron
 from astropy.io import fits
 import time
@@ -36,7 +35,7 @@ def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,p
         
     if not isinstance(beamsize, (list, tuple, np.ndarray)):
         beamsize=np.array([beamsize,beamsize,0])
-    beamtot=(makebeam(xsize,ysize,[beamsize[0]/cellsize,beamsize[1]/cellsize],rot=beamsize[2])).sum()
+    beamtot=(makebeam(xsize,ysize,beamsize)).sum()
     spec=f.sum(axis=0).sum(axis=0)/beamtot
     if np.any(overcube): specover=overcube.sum(axis=0).sum(axis=0)/beamtot
      
