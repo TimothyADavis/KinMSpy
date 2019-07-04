@@ -306,6 +306,10 @@ class KinMS:
                 inc_rad = inc_rad
         else:
                 inc_rad = self.inc_rad
+                
+        ### THIS PRINTING OF VARIABLES FROM A COLLECTION DICTIONARY STILL EXISTS
+        ### BUT UNSURE IF WE'RE GOING TO KEEP THIS OR JUST PRINT AN AGGREGATED
+        ### VERSION FROM THE INNIT FILE? 
                     
         parameter_dictionary = {}
         parameter_dictionary['vRadial'] = vRadial
