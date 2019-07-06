@@ -31,10 +31,9 @@ class KinMS:
         self.fixedSeed = np.array([100, 101, 102, 103])
         self.randomSeed = np.random.randint(0, 100, 4)
         self.vRadial = 0
-        self.vPhaseCent = [0,0]
+        self.vPhaseCent = [0, 0]
         self.posAng_rad = 0
         self.inc_rad = 0
-        self.vPhaseCent = [0,0]
 
         if self.verbose:
             print("\n *** Hello and welcome to the grand KinMSpy :D *** \n ")
@@ -705,7 +704,7 @@ class KinMS:
         else:
             return cube
 
-KinMS().kinms_sampleFromArbDist_oneSided([1,2,3,4], [1,2,3,4], fixSeed=False, nSamps=1000)
+
 KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
       inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
