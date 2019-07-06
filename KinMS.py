@@ -31,7 +31,7 @@ class KinMS:
         self.fixedSeed = np.array([100, 101, 102, 103])
         self.randomSeed = np.random.randint(0, 100, 4)
         self.vRadial = 0
-        self.vPhaseCent = [0.0,0.0]
+        self.vPhaseCent = [0,0]
         self.posAng_rad = 0
         self.inc_rad = 0
         self.vPhaseCent = [0,0]
@@ -193,7 +193,7 @@ class KinMS:
 
         return inClouds
     
-    def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, xPos, yPos, seed=None, 
+    def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, xPos, yPos, fixSeed=None, 
                                        vPhaseCent=None, vRadial=None, posAng_rad=None, inc_rad=None, vPosAng=False):
             
 
@@ -236,7 +236,7 @@ class KinMS:
                 If an array is passed then it should describe how the velocity
                 dispersion changes as a function of `velrad`.
         
-        seed : list of int
+        fixSeed : list of int
                 List of length 4 containing the seeds for random number generation.
         
         xPos : np.ndarray of double
@@ -283,7 +283,7 @@ class KinMS:
         
         """
         
-        if seed:
+        if fixSeed:
             seed = self.fixedSeed
         else:
             seed = self.randomSeed
@@ -314,9 +314,9 @@ class KinMS:
                     
         parameter_dictionary = {}
         parameter_dictionary['vRadial'] = vRadial
-        parameter_dictionary['vPhaseCent'] = [0.0,0.0]
-        parameter_dictionary['posAng_rad'] = 0
-        parameter_dictionary['inc_rad'] = 0  
+        parameter_dictionary['vPhaseCent'] = vPhaseCent
+        parameter_dictionary['posAng_rad'] = posAng_rad
+        parameter_dictionary['inc_rad'] = inc_rad  
         self.print_variables(parameter_dictionary)
                   
         velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear')
@@ -326,10 +326,11 @@ class KinMS:
         velDisp = rng4.randn(len(xPos))
         try:
                 len(gasSigma)>1
-                velDisp *= gasSigma   
-        except:
                 gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
                 velDisp *= gasSigmaInterFunc(r_flat)
+        except:
+                velDisp *= gasSigma
+                
         # Find the rotation angle so the velocity field has the correct position angle (allows warps)
         if not vPosAng:
             ang2rot=0
