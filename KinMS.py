@@ -704,8 +704,9 @@ class KinMS:
         else:
             return cube
 
-#KinMS().kinms_sampleFromArbDist_oneSided([1,2,3,4], [1,2,3,4], fixSeed=False, nSamps=1000)
-KinMS().kinms_create_velField_oneSided(velRad=[0,1,2],velProf=[1,1,1],r_flat=[0,1,2],inc=90,posAng=45,gasSigma=[1,1,1],xPos=[0,1,2],yPos=[0,1,2])
+KinMS().kinms_sampleFromArbDist_oneSided([1,2,3,4], [1,2,3,4], fixSeed=False, nSamps=1000)
+KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
+      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
 
 
