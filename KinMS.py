@@ -34,6 +34,7 @@ class KinMS:
         self.vPhaseCent = [0.0,0.0]
         self.posAng_rad = 0
         self.inc_rad = 0
+        self.vPhaseCent = [0,0]
 
         if self.verbose:
             print("\n *** Hello and welcome to the grand KinMSpy :D *** \n ")
@@ -192,8 +193,8 @@ class KinMS:
 
         return inClouds
     
-    def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, seed, xPos, 
-                                       yPos, vPhaseCent, vRadial, posAng_rad, inc_rad, vPosAng):
+    def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, xPos, yPos, seed=None, 
+                                       vPhaseCent=None, vRadial=None, posAng_rad=None, inc_rad=None, vPosAng=False):
             
 
         """
@@ -290,7 +291,7 @@ class KinMS:
         if vPhaseCent:
                 vPhaseCent = vPhaseCent
         else:
-                vPhaseCent = self.VPhaseCent
+                vPhaseCent = self.vPhaseCent
                 
         if vRadial:
                 vRadial = vRadial
@@ -703,7 +704,10 @@ class KinMS:
         else:
             return cube
 
-KinMS().kinms_sampleFromArbDist_oneSided([1,2,3,4], [1,2,3,4], fixSeed=False, nSamps=1000)
+#KinMS().kinms_sampleFromArbDist_oneSided([1,2,3,4], [1,2,3,4], fixSeed=False, nSamps=1000)
+KinMS().kinms_create_velField_oneSided(velRad=[0,1,2],velProf=[1,1,1],r_flat=[0,1,2],inc=90,posAng=45,gasSigma=[1,1,1],xPos=[0,1,2],yPos=[0,1,2])
+
+
 
 def gasGravity_velocity(xPos,yPos,zPos,massDist,velRad):
     """
