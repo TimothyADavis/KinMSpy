@@ -21,6 +21,8 @@ from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
 
+import datetime # FOR TESTING, REMOVE LATER
+
 class KinMS:
 
     def __init__(self):
@@ -233,8 +235,8 @@ class KinMS:
 
         return inClouds
     
-    def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, xPos, yPos, fixSeed=None, 
-                                       vPhaseCent=None, vRadial=None, posAng_rad=None, inc_rad=None, vPosAng=False):
+    def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, xPos, yPos, fixSeed,
+                                       vPhaseCent, vRadial, posAng_rad, inc_rad, vPosAng):
             
 
         """
@@ -335,7 +337,7 @@ class KinMS:
         parameter_dictionary['vPhaseCent'] = vPhaseCent
         parameter_dictionary['posAng_rad'] = posAng_rad
         parameter_dictionary['inc_rad'] = inc_rad  
-        self.print_variables(parameter_dictionary)
+        #self.print_variables(parameter_dictionary)
                   
         velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear')
         vRad = velInterFunc(r_flat)
@@ -473,7 +475,7 @@ class KinMS:
         else:
             return 	np.sqrt((4.301e-3 * cumMass_interFunc(velRad))/(4.84 * velRad * massDist[1]))
           
-     def model_cube(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
+    def model_cube(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
            nSamps=None, posAng=None, intFlux=None, flux_clouds=None, vSys=None, phaseCent=None, vOffset=None, \
            vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
            velProf=None, inClouds=None, vLOS_clouds=None, fileName=False, fixSeed=False, cleanOut=False,
@@ -676,6 +678,10 @@ class KinMS:
             self.verbose = True
             self.print_variables(print_dict)
 
+        # Set variables to numpy arrays if necessary
+        self.velProf = np.array(self.velProf)
+        self.velRad = np.array(self.velRad)
+
         # Work out images sizes
         xSize = np.round(xs / cellSize)
         ySize = np.round(ys / cellSize)
@@ -695,9 +701,9 @@ class KinMS:
                 self.inClouds = self.kinms_sampleFromArbDist_oneSided(self.sbRad, self.sbProf, fixSeed,
                                                                       self.nSamps, self.diskThick)
 
-        xPos = (inClouds[:, 0] / cellSize)
-        yPos = (inClouds[:, 1] / cellSize)
-        zPos = (inClouds[:, 2] / cellSize)
+        xPos = (self.inClouds[:, 0] / cellSize)
+        yPos = (self.inClouds[:, 1] / cellSize)
+        zPos = (self.inClouds[:, 2] / cellSize)
         r_flat = np.sqrt((xPos * xPos) + (yPos * yPos))
 
         # Find the los velocity and cube position of the clouds
@@ -710,43 +716,51 @@ class KinMS:
 
         # If los velocities not specified, calculate them.
         # Include the potential of the gas.
+        elif not velRad or not velProf:
+            print('\nPlease define either \"vLOS_clouds\" or \"velRad\" and \"velProf\". Returning.')
+            return
+
         else:
             if not gasGrav:
                 # --> This function is a mess so check this line after it is fixed! <--
-                gasGravVel = self.gasGravity_velocity(xPos * cellSize, yPos * cellSize, zPos * cellSize, gasGrav, velRad)
-                velProf = np.sqrt((velProf **2) + (gasGravVel ** 2))
+                #gasGravVel = self.gasGravity_velocity(xPos * cellSize, yPos * cellSize, zPos * cellSize, gasGrav, velRad)
+                gasGravVel = 1  # Dummy
+                velProf = np.sqrt((self.velProf ** 2) + (gasGravVel ** 2))
 
             self.posAng = 90 - self.posAng
 
             try:
                 if len(self.posAng) > 0:
-                    posAngRadInterFunc = interpolate.interp1d(velRad, posAng, kind='linear')
-            if isinstance(posAng, (list, tuple, np.ndarray)):
-                posAngRadInterFunc = interpolate.interp1d(velRad, posAng, kind='linear')
-                posAng_rad = posAngRadInterFunc(r_flat * cellSize)
-            else:
-                posAng_rad = np.full(len(r_flat), posAng, np.double)
+                    posAngRadInterFunc = interpolate.interp1d(self.velRad, self.posAng, kind='linear')
+                    posAng_rad = posAngRadInterFunc(r_flat * cellSize)
+                else:
+                    posAng_rad = np.full(len(r_flat), self.posAng, float)
+            except:
+                posAng_rad = np.full(len(r_flat), self.posAng, float)
 
-            if isinstance(inc, (list, tuple, np.ndarray)):
-                incRadInterFunc = interpolate.interp1d(velRad, inc, kind='linear')
-                inc_rad = incRadInterFunc(r_flat * cellSize)
-            else:
-                inc_rad = np.full(len(r_flat), inc, np.double)
+            try:
+                if len(inc) > 0:
+                    incRadInterFunc = interpolate.interp1d(self.velRad, inc, kind='linear')
+                    inc_rad = incRadInterFunc(r_flat * cellSize)
+                else:
+                    inc_rad = np.full(len(r_flat), inc, float)
+            except:
+                inc_rad = np.full(len(r_flat), inc, float)
 
-            # Calculate the los velocity
-            los_vel =self. kinms_create_velField_oneSided(velRad / cellSize, velProf, r_flat, inc, posAng, gasSigma, fixSeed,
-                                                          xPos, yPos, vPhaseCent=vPhaseCent, vPosAng=vPosAng,
-                                                          vRadial=vRadial, inc_rad=inc_rad, posAng_rad=posAng_rad)
+            # Calculate the LOS velocity.
+            los_vel = self.kinms_create_velField_oneSided((self.velRad / cellSize), self.velProf, r_flat, inc, \
+                      self.posAng, self.gasSigma, xPos, yPos, fixSeed=fixSeed, vPhaseCent=self.vPhaseCent, \
+                      vRadial = self.vRadial, posAng_rad=self.posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng)
 
-            # Project the clouds to take into account inclination
+            # Project the clouds to take into account inclination.
             c = np.cos(np.radians(inc_rad))
             s = np.sin(np.radians(inc_rad))
             x2 = xPos
             y2 = (c * yPos) + (s * zPos)
             z2 = (-s * yPos) + (c * zPos)
 
-            # Correct orientation by rotating by position angle
-            ang = posAng_rad
+            # Correct orientation by rotating by position angle.
+            ang = self.posAng_rad
             c = np.cos(np.radians(ang))
             s = np.sin(np.radians(ang))
             x3 = (c * x2) + (s * y2)
@@ -754,38 +768,39 @@ class KinMS:
             x2 = x3
             y2 = y3
 
-        return
-
-        # now add the flux into the cube
-        # Centre the clouds in the cube on the centre of the object
+        # Now add the flux into the cube.
+        # Centre the clouds in the cube on the centre of the object.
         los_vel_dv_cent2 = np.round((los_vel / dv) + cent[2])
         x2_cent0 = np.round(x2 + cent[0])
         y2_cent1 = np.round(y2 + cent[1])
 
-        # Find the reduced set of clouds that lie inside the cube
-        subs = np.where(((x2_cent0 >= 0) & (x2_cent0 < xSize) & (y2_cent1 >= 0) & (y2_cent1 < ySize) & (
-        los_vel_dv_cent2 >= 0) & (los_vel_dv_cent2 < vSize)))
-        nsubs = subs[0].size
-        clouds2do = np.empty((nsubs, 3))
-        clouds2do[:, 0] = x2_cent0[subs]
-        clouds2do[:, 1] = y2_cent1[subs]
-        clouds2do[:, 2] = los_vel_dv_cent2[subs]
+        # Find the reduced set of clouds that lie inside the cube.
+        subs = np.where(((x2_cent0 >= 0) & (x2_cent0 < xSize) & (y2_cent1 >= 0) & (y2_cent1 < ySize) & \
+                         (los_vel_dv_cent2 >= 0) & (los_vel_dv_cent2 < vSize)))[0]
 
-        # If there are clouds to use, and we know the flux of each cloud, add them to the cube. If not, bin each position to get
-        # a relative flux
-        if nsubs > 0:
-            if not isinstance(flux_clouds, (list, tuple, np.ndarray)):
+        clouds2do = np.vstack((x2_cent0[subs], y2_cent1[subs], los_vel_dv_cent2[subs])).T
+
+
+        ### START HERE ###
+
+
+        # If there are clouds to use, and we know the flux of each cloud, add them to the cube.
+        # If not, bin each position to get a relative flux.
+        if len(subs) > 0:
+            if not isinstance(self.flux_clouds, (list, tuple, np.ndarray)):
                 cube, edges = np.histogramdd(clouds2do, bins=(xSize, ySize, vSize),
                                              range=((0, xSize), (0, ySize), (0, vSize)))
             else:
                 cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
-                flux_clouds = flux_clouds[subs]
-                for i in range(0, nsubs):
+                flux_clouds = self.flux_clouds[subs]
+                for i in range(0, len(subs)):
                     const = flux_clouds[i]
                     csub = (int(clouds2do[i, 0]), int(clouds2do[i, 1]), int(clouds2do[i, 2]))
                     cube[csub] = cube[csub] + const
         else:
             cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
+
+        return
 
         # Convolve with the beam point spread function to obtain a dirty cube
         if not cleanOut:
@@ -821,7 +836,8 @@ class KinMS:
           
 #### TESTY TEST ####
           
-KinMS().model_cube(30, 30, 30, 2, 10, 3, 76, nSamps=100, verbose=True, sbProf=[1,2,3], sbRad = [1,2,3], diskThick=10)
+KinMS().model_cube(30, 30, 30, 2, 10, 3, 76, nSamps=100, verbose=False, sbProf=[1,2,3], sbRad = [1,2,3], diskThick=10,
+                   velRad=[1,2,3], velProf=[1,2,3])
 
 #KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
 #      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
