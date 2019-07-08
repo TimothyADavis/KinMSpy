@@ -25,25 +25,68 @@ class KinMS:
 
     def __init__(self):
 
-        self.verbose = True # SET TO FALSE WHEN FINISHED
         self.diskThick = 0
-        self.nSamps = int(5e5)
+        self.nSamps = 5e5
         self.fixedSeed = np.array([100, 101, 102, 103])
         self.randomSeed = np.random.randint(0, 100, 4)
         self.vRadial = 0
-        self.vPhaseCent = [0, 0]
+        self.vPhaseCent = np.zeros(2)
         self.posAng_rad = 0
         self.inc_rad = 0
-
-        if self.verbose:
-            print("\n *** Hello and welcome to the grand KinMSpy :D *** \n ")
+        self.gasSigma = 0
+        self.ra = 0
+        self.dec = 0
+        self.posAng = 0
+        self.intFlux = 0
+        self.flux_clouds = 0
+        self.vSys = 0
+        self.phaseCent = np.zeros(2)
+        self.vOffset = 0
+        self.restFreq = 115.271e9
+        self.vPosAng = 0
+        self.sbProf = []
+        self.sbRad = []
+        self.velRad = []
+        self.velProf = []
+        self.inClouds = []
+        self.vLOS_clouds = []
 
     def print_variables(self, param_dict):
 
-        print('_' * 37 + '\n \n' + 'Setting values to: \n ')
-        for k in param_dict:
-            print(k + ' = ' + str(param_dict[k]))
+        # Make sure variables are printed in the right order and split up into user defined, default, and bools.
+        keys = list(param_dict.keys())[::-1]
+        values = list(param_dict.values())[::-1]
+        default_keys = []
+        default_values = []
+        bool_keys = []
+        bool_values = []
+
+        print("\n\n*** Hello and welcome to the grand KinMSpy :D ***")
+
+        print('_' * 37 + '\n \n' + 'Setting user defined variables to: \n')
+
+        for i in range(len(keys)):
+            if values[i][1] == 0:
+                print(keys[i] + ' = ' + str(values[i][0]))
+            elif values[i][1] == 1:
+                default_keys.append(keys[i])
+                default_values.append(values[i])
+            else:
+                bool_keys.append(keys[i])
+                bool_values.append(values[i])
+
+        print('\nSetting default values to: \n')
+
+        for i in range(len(default_keys)):
+            print(default_keys[i] + ' = ' + str(default_values[i][0]))
+
+        print('\nSetting options to: \n')
+
+        for i in range(len(bool_keys)):
+            print(bool_keys[i] + ' = ' + str(bool_values[i][0]))
+
         print('_' * 37)
+
         return
 
     def makebeam(self, xpixels, ypixels, beamSize, cellSize=1, cent=None):
@@ -98,7 +141,7 @@ class KinMS:
 
         return psf
 
-    def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, fixSeed, nSamps, diskThick=None):
+    def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, fixSeed, nSamps, diskThick):
         """
 
         This function takes the input radial distribution and generates the positions of
@@ -112,7 +155,7 @@ class KinMS:
         sbProf : np.ndarray or list of floats
                 Surface brightness profile (arbitrarily scaled).
 
-        nSamps : int
+        nSamps : int or float
                 Number of samples to draw from the distribution (default is 5e5).
 
         fixSeed : bool
@@ -138,17 +181,11 @@ class KinMS:
         else:
             seed = self.randomSeed
 
-        if nSamps:
-            nSamps = int(nSamps)
-        else:
-            nSamps = self.nSamps
-
-        if not diskThick:
-            diskThick = self.diskThick
-
         # Set everything to numpy arrays to accept list input
         sbRad = np.array(sbRad)
         sbProf = np.array(sbProf)
+
+        nSamps = int(nSamps)
 
         # Randomly generate the radii of clouds based on the distribution given by the brightness profile.
         px = scipy.integrate.cumtrapz(sbProf * 2 * np.pi * abs(sbRad), abs(sbRad), initial=0)
@@ -168,10 +205,14 @@ class KinMS:
                 print('\n \n ... Please make sure the length of diskThick is the same as that of sbRad! Returning.')
                 return
 
-            if self.verbose: print('using the scale height profile provided.')
-            diskThick = np.array(diskThick)
-            interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear')
-            diskThick_here = interpfunc2(r_flat)
+            elif len(diskThick) > 0:
+                diskThick = np.array(diskThick)
+                interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear')
+                diskThick_here = interpfunc2(r_flat)
+                if self.verbose: print('using the scale height profile provided.')
+            else:
+                diskThick_here = diskThick
+                if self.verbose: print('using a constant scale height of ' + str(diskThick) + '.')
 
         except:
             diskThick_here = diskThick
@@ -288,27 +329,7 @@ class KinMS:
             seed = self.fixedSeed
         else:
             seed = self.randomSeed
-                    
-        if vPhaseCent:
-                vPhaseCent = vPhaseCent
-        else:
-                vPhaseCent = self.vPhaseCent
-                
-        if vRadial:
-                vRadial = vRadial
-        else:
-                vRadial = self.vRadial
-                    
-        if posAng_rad:
-                posAng_rad = posAng_rad
-        else:
-                posAng_rad = self.posAng_rad
-                    
-        if inc_rad:
-                inc_rad = inc_rad
-        else:
-                inc_rad = self.inc_rad
-                                   
+
         parameter_dictionary = {}
         parameter_dictionary['vRadial'] = vRadial
         parameter_dictionary['vPhaseCent'] = vPhaseCent
@@ -322,9 +343,11 @@ class KinMS:
         rng4 = np.random.RandomState(seed[3]) 
         velDisp = rng4.randn(len(xPos))
         try:
-                len(gasSigma)>1
-                gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
-                velDisp *= gasSigmaInterFunc(r_flat)
+                if len(gasSigma) > 0:
+                    gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
+                    velDisp *= gasSigmaInterFunc(r_flat)
+                else:
+                    velDisp *= gasSigma
         except:
                 velDisp *= gasSigma
                 
@@ -333,9 +356,12 @@ class KinMS:
             ang2rot=0
         else:
             try:
-                len(vPosAng)>1
-                vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear')
-                vPosAng_rad = vPosAngInterFunc(r_flat)
+                if len(vPosAng) > 0:
+                    vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear')
+                    vPosAng_rad = vPosAngInterFunc(r_flat)
+                else:
+                    vPosAng_rad = np.full(len(r_flat), vPosAng, np.double)
+                    ang2rot = ((posAng_rad - vPosAng_rad))
             except:
                 vPosAng_rad = np.full(len(r_flat),vPosAng,np.double)
                 ang2rot = ((posAng_rad-vPosAng_rad))
@@ -344,9 +370,11 @@ class KinMS:
         los_vel += (-1) * vRad * (np.cos(np.arctan2((yPos + vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
         #Add radial inflow/outflow
         try:
-            len(vRadial)>1
-            vRadialInterFunc = interpolate.interp1d(velRad,vRadial,kind='linear')
-            vRadial_rad = vRadialInterFunc(r_flat)
+            if len(vRadial) > 0:
+                vRadialInterFunc = interpolate.interp1d(velRad,vRadial,kind='linear')
+                vRadial_rad = vRadialInterFunc(r_flat)
+            else:
+                vRadial_rad = np.full(len(r_flat), vRadial, np.double)
         except:
             vRadial_rad=np.full(len(r_flat),vRadial,np.double)
         los_vel += vRadial_rad * (np.sin(np.arctan2((yPos+vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
@@ -386,7 +414,7 @@ class KinMS:
         hdu.writeto(fileName + '_simcube.fits', overwrite=True, output_verify='fix')
 
         return
-
+      
     def gasGravity_velocity(self, xPos, yPos, zPos, massDist, velRad):
         """
         This function takes the position of the input cloudlets, and calculates the
@@ -444,12 +472,13 @@ class KinMS:
             return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))    ## return velocity
         else:
             return 	np.sqrt((4.301e-3 * cumMass_interFunc(velRad))/(4.84 * velRad * massDist[1]))
-
-    def model_cube(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=0, sbProf=[], sbRad=[], velRad=[], velProf=[],
-                   diskThick=0, ra=0, dec=0, nSamps=None, posAng=0.0, intFlux=0,
-                   inClouds=[], vLOS_clouds=[], flux_clouds=0, vSys=0, restFreq=115.271e9, phaseCen=np.array([0., 0.]),
-                   vOffset=0, vRadial=0, vPosAng=0, vPhaseCen=np.array([0., 0.]), fileName=False, fixSeed=False,
-                   cleanOut=False, returnClouds=False, gasGrav=False, verbose=False):
+          
+     def model_cube(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
+           nSamps=None, posAng=None, intFlux=None, flux_clouds=None, vSys=None, phaseCent=None, vOffset=None, \
+           vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
+           velProf=None, inClouds=None, vLOS_clouds=None, fileName=False, fixSeed=False, cleanOut=False,
+           returnClouds=False, gasGrav=False, verbose=False):
+          
         """
 
         The main KinMS function. Takes inputs specifing the observing parameters and type of model.
@@ -621,50 +650,77 @@ class KinMS:
 
         """
 
-        #nSamps = int(nSamps)
+        # Set all values that were not defined by user to default values and make sure the right values get printed
+        local_vars = locals()
+        global_vars = vars(self)
+        print_dict = {} # 0 = user defined, 1 = default, 2 = bool
 
-        # Generate seeds for use in future calculations
-        #if fixSeed:
-        #    fixSeed = [100, 101, 102, 103]
-        #else:
-        #    fixSeed = np.random.randint(0, 100, 4)
+        for k, v in local_vars.items():
+            try:
+                if not v == None:
+                    global_vars[k] = local_vars[k]
+                    if k != 'self':
+                        if type(v) != type(True):
+                            print_dict[k] = (global_vars[k], 0)
+                        else:
+                            print_dict[k] = (global_vars[k], 2)
+                else:
+                    print_dict[k] = (global_vars[k], 1)
+            except:
+                global_vars[k] = local_vars[k]
+                print_dict[k] = ('User defined array of length ' + str(len(global_vars[k])), 0)
 
-        if verbose: self.verbose = True
+        self.__dict__.update(global_vars)
+
+        if verbose:
+            self.verbose = True
+            self.print_variables(print_dict)
 
         # Work out images sizes
         xSize = np.round(xs / cellSize)
         ySize = np.round(ys / cellSize)
         vSize = np.round(vs / dv)
 
-        cent = [(xSize / 2) + (phaseCen[0] / cellSize), (ySize / 2) + (phaseCen[1] / cellSize),
-                (vSize / 2) + (vOffset / dv)]
+        cent = [(xSize / 2) + (self.phaseCent[0] / cellSize), (ySize / 2) + (self.phaseCent[1] / cellSize),
+                (vSize / 2) + (self.vOffset / dv)]
 
-        vPhaseCent = vPhaseCen / [cellSize, cellSize]
+        vPhaseCent = self.vPhaseCent / [cellSize, cellSize]
 
         # If cloudlets not previously specified, generate them
-        if not len(inClouds):
-            inClouds = self.kinms_sampleFromArbDist_oneSided(sbRad, sbProf, nSamps, fixSeed, diskThick=diskThick)
+        if not len(self.inClouds):
+            if not len(self.sbRad) or not len(self.sbProf):
+                print('\nPlease define either \"inClouds\" or \"sbRad\" and \"sbProf\". Returning.')
+                return
+            else:
+                self.inClouds = self.kinms_sampleFromArbDist_oneSided(self.sbRad, self.sbProf, fixSeed,
+                                                                      self.nSamps, self.diskThick)
 
-        xPos = (inClouds[:, 0] / cellSize); yPos = (inClouds[:, 1] / cellSize); zPos = (inClouds[:, 2] / cellSize)
-
+        xPos = (inClouds[:, 0] / cellSize)
+        yPos = (inClouds[:, 1] / cellSize)
+        zPos = (inClouds[:, 2] / cellSize)
         r_flat = np.sqrt((xPos * xPos) + (yPos * yPos))
 
         # Find the los velocity and cube position of the clouds
-        if len(vLOS_clouds):
-            # As los velocity specified assume that the clouds have already been projected correctly.
-            los_vel = vLOS_clouds
+        # If los velocity specified, assume that the clouds have already been projected correctly.
+        if len(self.vLOS_clouds):
+            los_vel = self.vLOS_clouds
             x2 = xPos
             y2 = yPos
             z2 = zPos
 
+        # If los velocities not specified, calculate them.
+        # Include the potential of the gas.
         else:
-            # As los velocities not specified, calculate them
-            if np.any(gasGrav):
-                # ;;; include the potential of the gas
+            if not gasGrav:
+                # --> This function is a mess so check this line after it is fixed! <--
                 gasGravVel = self.gasGravity_velocity(xPos * cellSize, yPos * cellSize, zPos * cellSize, gasGrav, velRad)
-                velProf = np.sqrt((velProf * velProf) + (gasGravVel * gasGravVel))
+                velProf = np.sqrt((velProf **2) + (gasGravVel ** 2))
 
-            posAng = 90 - posAng
+            self.posAng = 90 - self.posAng
+
+            try:
+                if len(self.posAng) > 0:
+                    posAngRadInterFunc = interpolate.interp1d(velRad, posAng, kind='linear')
             if isinstance(posAng, (list, tuple, np.ndarray)):
                 posAngRadInterFunc = interpolate.interp1d(velRad, posAng, kind='linear')
                 posAng_rad = posAngRadInterFunc(r_flat * cellSize)
@@ -697,6 +753,8 @@ class KinMS:
             y3 = (-s * x2) + (c * y2)
             x2 = x3
             y2 = y3
+
+        return
 
         # now add the flux into the cube
         # Centre the clouds in the cube on the centre of the object
@@ -760,10 +818,15 @@ class KinMS:
         else:
             return cube
 
+          
+#### TESTY TEST ####
+          
+KinMS().model_cube(30, 30, 30, 2, 10, 3, 76, nSamps=100, verbose=True, sbProf=[1,2,3], sbRad = [1,2,3], diskThick=10)
 
 #KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
 #      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
-KinMS().gasGravity_velocity([1,2,3], [1,2,3], [1,2,3], [1,2,3], [1,2,3])
+#KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
+#      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
-
+#KinMS().gasGravity_velocity([1,2,3], [1,2,3], [1,2,3], [1,2,3], [1,2,3])
