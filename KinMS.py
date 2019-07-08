@@ -323,15 +323,13 @@ class KinMS:
         
         """
         
+        ### MAKE EVERYTHING AN ARRAY IN HERE RATHER THAN A LIST OR DOUBLE ###
+        
         if fixSeed:
             seed = self.fixedSeed
         else:
             seed = self.randomSeed
-                
-        ### THIS PRINTING OF VARIABLES FROM A COLLECTION DICTIONARY STILL EXISTS
-        ### BUT UNSURE IF WE'RE GOING TO KEEP THIS OR JUST PRINT AN AGGREGATED
-        ### VERSION FROM THE INNIT FILE? 
-                    
+
         parameter_dictionary = {}
         parameter_dictionary['vRadial'] = vRadial
         parameter_dictionary['vPhaseCent'] = vPhaseCent
@@ -416,12 +414,71 @@ class KinMS:
         hdu.writeto(fileName + '_simcube.fits', overwrite=True, output_verify='fix')
 
         return
+      
+    def gasGravity_velocity(self, xPos, yPos, zPos, massDist, velRad):
+        """
+        This function takes the position of the input cloudlets, and calculates the
+        potential, and thus the increase in the circular velocity due to the gas mass itself.
+        
+        Parameters
+        ----------
+        xPos : np.ndarray of double
+                X position of each cloudlet. Units of arcseconds.
+ 
+        yPos : np.ndarray of double
+                Y position of each cloudlet. Units of arcseconds.
+        
+        zPos : np.ndarray of double
+                Z position of each cloudlet. Units of arcseconds
+        
+        massDist : list of double
+                List of [gasmass,distance] - gas mass in solar masses, distance in Mpc.
+        
+        velRad : np.ndarray of double
+                Radius vector (in units of pixels).
+        
+        Returns
+        -------
+        np.ndarray of double
+                Addition to the circular velocity just due to the mass of the gas itself, in units of km/s.
+        """
+        
+        xPos = np.array(xPos); yPos = np.array(yPos); zPos = np.array(zPos);
+        massDist = np.array(massDist); velRad = np.array(velRad)
+        
+        rad = np.sqrt( (xPos**2) + (yPos**2) + (zPos**2) )						                ## 3D radius
+        cumMass = ((np.arange(xPos.size + 1)) * (massDist[0] / xPos.size))					    ## cumulative mass
 
-    def model_cube(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
-                   nSamps=None, posAng=None, intFlux=None, flux_clouds=None, vSys=None, phaseCent=None, vOffset=None, \
-                   vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
-                   velProf=None, inClouds=None, vLOS_clouds=None, fileName=False, fixSeed=False, cleanOut=False,
-                   returnClouds=False, gasGrav=False, verbose=False):
+        
+        #max_rad = np.argmax(rad)
+        #max_velRad =  velRad[max_rad]+1
+        #print(max_velRad)
+        
+        #print(np.max(velRad).clip(1,max=None))
+        #print(np.max(rad))
+        
+        max_velRad = np.max(velRad).clip(min=np.max(rad), max=None)+1
+        #print(max_velRad)
+        
+        print(rad)
+        new_rad = np.insert(sorted(rad),0,0)
+        print(new_rad)
+        
+        ptcl_rad = np.append(new_rad, max_velRad)
+        cumMass_max_end = np.append(cumMass,np.max(cumMass))
+
+        cumMass_interFunc = interpolate.interp1d(ptcl_rad,cumMass_max_end,kind='linear')
+        if velRad[0] == 0.0:
+            return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))    ## return velocity
+        else:
+            return 	np.sqrt((4.301e-3 * cumMass_interFunc(velRad))/(4.84 * velRad * massDist[1]))
+          
+     def model_cube(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
+           nSamps=None, posAng=None, intFlux=None, flux_clouds=None, vSys=None, phaseCent=None, vOffset=None, \
+           vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
+           velProf=None, inClouds=None, vLOS_clouds=None, fileName=False, fixSeed=False, cleanOut=False,
+           returnClouds=False, gasGrav=False, verbose=False):
+          
         """
 
         The main KinMS function. Takes inputs specifing the observing parameters and type of model.
@@ -664,7 +721,6 @@ class KinMS:
             try:
                 if len(self.posAng) > 0:
                     posAngRadInterFunc = interpolate.interp1d(velRad, posAng, kind='linear')
-
             if isinstance(posAng, (list, tuple, np.ndarray)):
                 posAngRadInterFunc = interpolate.interp1d(velRad, posAng, kind='linear')
                 posAng_rad = posAngRadInterFunc(r_flat * cellSize)
@@ -762,44 +818,15 @@ class KinMS:
         else:
             return cube
 
+          
+#### TESTY TEST ####
+          
 KinMS().model_cube(30, 30, 30, 2, 10, 3, 76, nSamps=100, verbose=True, sbProf=[1,2,3], sbRad = [1,2,3], diskThick=10)
 
-        #KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
+#KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
 #      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
+#KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
+#      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
-
-def gasGravity_velocity(xPos,yPos,zPos,massDist,velRad):
-    """
-    This function takes the position of the input cloudlets, and calculates the
-    potential, and thus the increase in the circular velocity due to the gas mass itself.
-
-    Parameters
-    ----------
-    xPos : np.ndarray of double
-            X position of each cloudlet. Units of arcseconds.
-
-    yPos : np.ndarray of double
-            Y position of each cloudlet. Units of arcseconds.
-
-    zPos : np.ndarray of double
-            Z position of each cloudlet. Units of arcseconds
-
-    massDist : list of double
-            List of [gasmass,distance] - gas mass in solar masses, distance in Mpc.
-
-    velRad : np.ndarray of double
-            Radius vector (in units of pixels).
-
-    Returns
-    -------
-    np.ndarray of double
-            Addition to the circular velocity just due to the mass of the gas itself, in units of km/s.
-    """
-    rad = np.sqrt((xPos**2) + (yPos**2) + (zPos**2))						                            ## 3D radius
-    cumMass = ((np.arange(xPos.size + 1)) * (massDist[0] / np.float(xPos.size)))					    ## cumulative mass
-    cumMass_interFunc = interpolate.interp1d(np.append(np.insert(sorted(rad),0,0),np.max(velRad).clip(min=np.max(rad), max=None)+1),np.append(cumMass,np.max(cumMass)),kind='linear')
-    if velRad[0] == 0.0:
-        return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))					    ## return velocity
-    else:
-        return 	np.sqrt((4.301e-3 * cumMass_interFunc(velrad))/(4.84 * velRad * massDist[1]))
+#KinMS().gasGravity_velocity([1,2,3], [1,2,3], [1,2,3], [1,2,3], [1,2,3])
