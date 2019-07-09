@@ -207,7 +207,7 @@ class KinMS:
                 print('\n \n ... Please make sure the length of diskThick is the same as that of sbRad! Returning.')
                 return
 
-            elif len(diskThick) > 0:
+            elif len(diskThick) > 1:
                 diskThick = np.array(diskThick)
                 interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear')
                 diskThick_here = interpfunc2(r_flat)
@@ -348,7 +348,7 @@ class KinMS:
         rng4 = np.random.RandomState(seed[3]) 
         velDisp = rng4.randn(len(xPos))
         try:
-                if len(gasSigma) > 0:
+                if len(gasSigma) > 1:
                     gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
                     velDisp *= gasSigmaInterFunc(r_flat)
                 else:
@@ -361,7 +361,7 @@ class KinMS:
             ang2rot=0
         else:
             try:
-                if len(vPosAng) > 0:
+                if len(vPosAng) > 1:
                     vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear')
                     vPosAng_rad = vPosAngInterFunc(r_flat)
                 else:
@@ -375,7 +375,7 @@ class KinMS:
         los_vel += (-1) * vRad * (np.cos(np.arctan2((yPos + vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
         #Add radial inflow/outflow
         try:
-            if len(vRadial) > 0:
+            if len(vRadial) > 1:
                 vRadialInterFunc = interpolate.interp1d(velRad,vRadial,kind='linear')
                 vRadial_rad = vRadialInterFunc(r_flat)
             else:
@@ -696,11 +696,13 @@ class KinMS:
         vPhaseCent = self.vPhaseCent / [cellSize, cellSize]
 
         # If cloudlets not previously specified, generate them
+        inClouds_given = True
         if not len(self.inClouds):
             if not len(self.sbRad) or not len(self.sbProf):
                 print('\nPlease define either \"inClouds\" or \"sbRad\" and \"sbProf\". Returning.')
                 return
             else:
+                inClouds_given = False
                 self.inClouds = self.kinms_sampleFromArbDist_oneSided(self.sbRad, self.sbProf, fixSeed,
                                                                       self.nSamps, self.diskThick)
 
@@ -719,7 +721,7 @@ class KinMS:
 
         # If los velocities not specified, calculate them.
         # Include the potential of the gas.
-        elif not velRad or not velProf:
+        elif not len(velRad) or not len(velProf):
             print('\nPlease define either \"vLOS_clouds\" or \"velRad\" and \"velProf\". Returning.')
             return
 
@@ -735,7 +737,7 @@ class KinMS:
             self.posAng = 90 - self.posAng
 
             try:
-                if len(self.posAng) > 0:
+                if len(self.posAng) > 1:
                     posAngRadInterFunc = interpolate.interp1d(self.velRad, self.posAng, kind='linear')
                     posAng_rad = posAngRadInterFunc(r_flat * cellSize)
                 else:
@@ -744,7 +746,7 @@ class KinMS:
                 posAng_rad = np.full(len(r_flat), self.posAng, float)
 
             try:
-                if len(inc) > 0:
+                if len(inc) > 1:
                     incRadInterFunc = interpolate.interp1d(self.velRad, inc, kind='linear')
                     inc_rad = incRadInterFunc(r_flat * cellSize)
                 else:
@@ -790,26 +792,45 @@ class KinMS:
         clouds2do[:,1] = y2_cent1[subs]
         clouds2do[:,2] = los_vel_dv_cent2[subs]
 
-        ### START HERE ###
-
         # If there are clouds to use, and we know the flux of each cloud, add them to the cube.
         # If not, bin each position to get a relative flux.
+
         if nsubs > 0:
-            if not isinstance(self.flux_clouds, (list, tuple, np.ndarray)):
+
+            try:
+                if len(self.flux_clouds) > 1:
+
+                    self.flux_clouds = np.array(self.flux_clouds)
+
+                    if not inClouds_given:
+                        print('\n\"flux_clouds\" can only be used in combination with \"inClouds\". '
+                              'Please specify \"inClouds\" if you would like to define \"flux_clouds\". Returning.')
+                        return
+
+                    if not (len(self.flux_clouds.shape) == 1 and len(self.flux_clouds) == max(self.inClouds.shape)):
+                        print('\nPlease make sure \"flux_clouds\" is a 1D array matching the length of \"inClouds\". '
+                              'Returning.')
+                        return
+
+                    cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
+                    self.flux_clouds = self.flux_clouds[subs]
+
+                    x = clouds2do[:, 0].astype('int')
+                    y = clouds2do[:, 1].astype('int')
+                    z = clouds2do[:, 2].astype('int')
+
+                    cube[(x,y,z)] = self.flux_clouds
+
+                else:
+                    print('\nPlease use \"intFlux\" to define the total flux in the cube. Returning.')
+                    return
+
+            except:
                 cube, edges = np.histogramdd(clouds2do, bins=(xSize, ySize, vSize),
                                              range=((0, xSize), (0, ySize), (0, vSize)))
-            else:
-                cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
-                self.flux_clouds = self.flux_clouds[subs]
-                for i in range(0, nsubs):
-                    const = self.flux_clouds[i]
-                    csub = (int(clouds2do[i, 0]), int(clouds2do[i, 1]), int(clouds2do[i, 2]))
-                    cube[csub] = cube[csub] + const
+
         else:
             cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
-
-        ### END HERE ###
-
 
         # Convolve with the beam point spread function to obtain a dirty cube
         if not cleanOut:
@@ -838,8 +859,6 @@ class KinMS:
         if fileName:
             self.save_fits(fileName, cube, cellSize, dv, cent, ra, dec, vSys, beamSize)
 
-        returnClouds = True
-
         # Output the final cube
         if returnClouds:
             retClouds = np.empty((nSamps, 3))
@@ -854,9 +873,6 @@ class KinMS:
 
           
 #### TESTY TEST ####
-          
-KinMS().model_cube(5, 5, 30, 2, 10, 3, 76, nSamps=100, verbose=False, sbProf=[1,2,3], sbRad = [1,2,3], diskThick=10,
-                   velRad=[1,2,3], velProf=[1,2,3])
 
 #KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
 #      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
