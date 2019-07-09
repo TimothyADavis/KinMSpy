@@ -231,7 +231,10 @@ class KinMS:
         yPos = ((r_3d * np.sin(phi) * np.sin(theta)))
 
         # Generates the output array
-        inClouds = np.vstack((xPos, yPos, zPos)).T
+        inClouds = np.empty((nSamps, 3))
+        inClouds[:,0] = xPos
+        inClouds[:,1] = yPos
+        inClouds[:,2] = zPos
 
         return inClouds
     
@@ -722,7 +725,9 @@ class KinMS:
 
         else:
             if not gasGrav:
+
                 # --> This function is a mess so check this line after it is fixed! <--
+
                 #gasGravVel = self.gasGravity_velocity(xPos * cellSize, yPos * cellSize, zPos * cellSize, gasGrav, velRad)
                 gasGravVel = 1  # Dummy
                 velProf = np.sqrt((self.velProf ** 2) + (gasGravVel ** 2))
@@ -778,50 +783,62 @@ class KinMS:
         subs = np.where(((x2_cent0 >= 0) & (x2_cent0 < xSize) & (y2_cent1 >= 0) & (y2_cent1 < ySize) & \
                          (los_vel_dv_cent2 >= 0) & (los_vel_dv_cent2 < vSize)))[0]
 
-        clouds2do = np.vstack((x2_cent0[subs], y2_cent1[subs], los_vel_dv_cent2[subs])).T
+        nsubs = len(subs)
 
+        clouds2do = np.empty((nsubs, 3))
+        clouds2do[:,0] = x2_cent0[subs]
+        clouds2do[:,1] = y2_cent1[subs]
+        clouds2do[:,2] = los_vel_dv_cent2[subs]
 
         ### START HERE ###
 
-
         # If there are clouds to use, and we know the flux of each cloud, add them to the cube.
         # If not, bin each position to get a relative flux.
-        if len(subs) > 0:
+        if nsubs > 0:
             if not isinstance(self.flux_clouds, (list, tuple, np.ndarray)):
                 cube, edges = np.histogramdd(clouds2do, bins=(xSize, ySize, vSize),
                                              range=((0, xSize), (0, ySize), (0, vSize)))
             else:
                 cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
-                flux_clouds = self.flux_clouds[subs]
-                for i in range(0, len(subs)):
-                    const = flux_clouds[i]
+                self.flux_clouds = self.flux_clouds[subs]
+                for i in range(0, nsubs):
+                    const = self.flux_clouds[i]
                     csub = (int(clouds2do[i, 0]), int(clouds2do[i, 1]), int(clouds2do[i, 2]))
                     cube[csub] = cube[csub] + const
         else:
             cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
 
-        return
+        ### END HERE ###
+
 
         # Convolve with the beam point spread function to obtain a dirty cube
         if not cleanOut:
+
             psf = self.makebeam(xSize, ySize, beamSize)
-            w2do = np.where(cube.sum(axis=0).sum(axis=0) > 0)[0]
-            for i in range(0, w2do.size): cube[:, :, w2do[i]] = convolve_fft(cube[:, :, w2do[i]], psf)
-        # Normalise by the known integrated flux
-        if intFlux > 0:
+
+            for i in range(cube.shape[2]):
+                if np.sum(cube[:, :, i]) > 0:
+                    cube[:, :, i] = convolve_fft(cube[:, :, i], psf)
+
+        # Normalise by the known integrated flux.
+        if self.intFlux > 0:
             if not cleanOut:
-                cube *= ((intFlux * psf.sum()) / (cube.sum() * dv))
+                cube *= ((self.intFlux * psf.sum()) / (cube.sum() * dv))
             else:
-                cube *= ((intFlux) / (cube.sum() * dv))
+                cube *= ((self.intFlux) / (cube.sum() * dv))
+
         else:
-            if isinstance(flux_clouds, (list, tuple, np.ndarray)):
-                cube *= (flux_clouds.sum() / cube.sum())
-            else:
+            try:
+                len(self.flux_clouds) > 0
+                cube *= (self.flux_clouds.sum() / cube.sum())
+            except:
                 cube /= cube.sum()
 
-        # If appropriate, generate the FITS file header and save to disc
+        # If appropriate, generate the FITS file header and save to disc.
         if fileName:
             self.save_fits(fileName, cube, cellSize, dv, cent, ra, dec, vSys, beamSize)
+
+        returnClouds = True
 
         # Output the final cube
         if returnClouds:
@@ -829,14 +846,16 @@ class KinMS:
             retClouds[:, 0] = x2 * cellSize
             retClouds[:, 1] = y2 * cellSize
             retClouds[:, 2] = z2 * cellSize
+
             return cube, retClouds, los_vel
+
         else:
             return cube
 
           
 #### TESTY TEST ####
           
-KinMS().model_cube(30, 30, 30, 2, 10, 3, 76, nSamps=100, verbose=False, sbProf=[1,2,3], sbRad = [1,2,3], diskThick=10,
+KinMS().model_cube(5, 5, 30, 2, 10, 3, 76, nSamps=100, verbose=False, sbProf=[1,2,3], sbRad = [1,2,3], diskThick=10,
                    velRad=[1,2,3], velProf=[1,2,3])
 
 #KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
