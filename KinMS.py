@@ -449,7 +449,10 @@ class KinMS:
 
         # If cloudlets not previously specified, generate them
         
-        #///   CREATING CLOUDLETS  ///////////////////////////////////////////#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~   CREATING CLOUDLETS  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        
         inClouds_given = True
         if not len(self.inClouds):
             if not len(self.sbRad) or not len(self.sbProf):
@@ -459,7 +462,6 @@ class KinMS:
                 inClouds_given = False
                 self.inClouds = self.kinms_sampleFromArbDist_oneSided(self.sbRad, self.sbProf, self.nSamps,
                                                                       self.diskThick, fixSeed) ### FIXSEED IS FALSE HERE, DO WE WANT THAT AS A DEFAULT? ###
-        #/////////////////////////////////////////////////////////////////////#
 
         xPos = (self.inClouds[:, 0] / cellSize)
         yPos = (self.inClouds[:, 1] / cellSize)
@@ -480,9 +482,9 @@ class KinMS:
             print('\nPlease define either \"vLOS_clouds\" or \"velRad\" and \"velProf\". Returning.')
             return
     
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   CHANGE VELOCITY PROFILE BASED ON POTENTIAL OF INNER GAS ///////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
+        #~~~   CHANGE VELOCITY PROFILE BASED ON POTENTIAL OF INNER GAS ~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
         else:
             if not gasGrav:
@@ -493,9 +495,9 @@ class KinMS:
                 gasGravVel = 1  # Dummy
                 velProf = np.sqrt((self.velProf ** 2) + (gasGravVel ** 2))
                 
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   CREATION OF POSITION ANGLE WARPS IN THE DISK //////////////////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
+        #~~~   CREATION OF POSITION ANGLE WARPS IN THE DISK ~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
             self.posAng = 90 - self.posAng
 
@@ -511,9 +513,9 @@ class KinMS:
                 # No warp
                 posAng_rad = np.full(len(r_flat), self.posAng, float)
                 
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   CREATION OF INCLINATION  WARPS IN THE DISK ////////////////////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#      
+        #~~~   CREATION OF INCLINATION  WARPS IN THE DISK ~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
             try:
                 if len(inc) > 1:
@@ -529,17 +531,17 @@ class KinMS:
                 
             # Calculate the LOS velocity.
             
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   CREATION OF LOS VELOCITIES IF NOT PROVIDED  ///////////////////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
+        #~~~   CREATION OF LOS VELOCITIES IF NOT PROVIDED  ~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
         
             los_vel = self.kinms_create_velField_oneSided((self.velRad / cellSize), self.velProf, r_flat, inc, \
                       self.posAng, self.gasSigma, xPos, yPos, fixSeed=fixSeed, vPhaseCent=self.vPhaseCent, \
                       vRadial = self.vRadial, posAng_rad=posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng) #changed self.posAng_rad to posAng_rad from  493-503
             
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   PROJECT CLOUDS IN POSITION ANGLE AND INCLINATION   ////////////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#             
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#      
+        #~~~   PROJECT CLOUDS IN POSITION ANGLE AND INCLINATION   ~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#            
             
             # Project the clouds to take into account inclination.
             c = np.cos(np.radians(inc_rad))
@@ -557,9 +559,9 @@ class KinMS:
             x2 = x3
             y2 = y3
             
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   POPULATE THE CUBE AND FIND NON-ZERO ELEMENTS   ////////////////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
+        #~~~   POPULATE THE CUBE AND FIND NON-ZERO ELEMENTS   ~~~#~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
         # Now add the flux into the cube.
         # Centre the clouds in the cube on the centre of the object.
@@ -581,9 +583,9 @@ class KinMS:
         # If there are clouds to use, and we know the flux of each cloud, add them to the cube.
         # If not, bin each position to get a relative flux.
         
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   ADD IN FLUX VALUES TO THE CUBE OR BIN FOR RELATIVE FLUX   /////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
+        #~~~   ADD IN FLUX VALUES TO THE CUBE OR BIN FOR RELATIVE FLUX   ~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
         if nsubs > 0:
                 
@@ -625,9 +627,9 @@ class KinMS:
             cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
             
             
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   CONVOLVE CUBE WITH THE BEAM   /////////////////////////////////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
+        #~~~   CONVOLVE CUBE WITH THE BEAM   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
             
         # Convolve with the beam point spread function to obtain a dirty cube
         if not cleanOut:
@@ -640,9 +642,9 @@ class KinMS:
 
         # Normalise by the known integrated flux.
         
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   NORMALISE BY SOME KNOWN INTEGRATED FLUX   /////////////////////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
+        #~~~   NORMALISE BY SOME KNOWN INTEGRATED FLUX   ~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
         
         if self.intFlux > 0:
             if not cleanOut:
@@ -657,9 +659,9 @@ class KinMS:
             except:
                 cube /= cube.sum()
                 
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
-        #///   OUTPUT CUBE TO FITS FILE   ////////////////////////////////////#
-        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
+        #~~~   OUTPUT CUBE TO FITS FILE   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
                 
         # If appropriate, generate the FITS file header and save to disc.
         if fileName:
