@@ -15,6 +15,10 @@ This software is provided as is without any warranty whatsoever.
 For details of permissions granted please see LICENCE.md
 """
 
+#=============================================================================#
+#/// IMPORT PACKAGES /////////////////////////////////////////////////////////#
+#=============================================================================#
+
 import numpy as np
 import scipy.integrate
 from scipy import interpolate
@@ -24,7 +28,15 @@ from astropy.convolution import convolve_fft
 import time
 import matplotlib.pyplot as plt
 
+#=============================================================================#
+#/// START OF CLASS //////////////////////////////////////////////////////////#
+#=============================================================================#
+
 class KinMS:
+        
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
 
     def __init__(self):
 
@@ -53,6 +65,10 @@ class KinMS:
         self.velProf = []
         self.inClouds = []
         self.vLOS_clouds = []
+        
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
 
     def print_variables(self, param_dict):
 
@@ -92,18 +108,11 @@ class KinMS:
 
         return
 
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
+
     def makebeam(self, xpixels, ypixels, beamSize, cellSize=1, cent=None):
-        """
-        :param xpixels: Number of pixels in the x-axis
-        :param ypixels: Number of pixels in the y-axis
-        :param beamSize: Beam information. This can be a list/numpy array of length 2 or 3: the first two elements
-                         contain the sizes of the major and minor axes (the order does not matter) in arcseconds (RIGHT??),
-                         the third element is the position angle. If no third element is given, the angle is assumed to
-                         be zero. If an integer/float is given, a circular beam of that size is assumed.
-        :param cellSize:
-        :param cent:
-        :return:
-        """
 
         if not cent: cent = [xpixels / 2, ypixels / 2]
 
@@ -144,37 +153,12 @@ class KinMS:
 
         return psf
 
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
+
     def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, nSamps, diskThick, fixSeed=None):
-        """
 
-        This function takes the input radial distribution and generates the positions of
-        "nSamps" cloudlets from under it. It also accounts for disk thickness if requested.
-
-        Parameters
-        ----------
-        sbRad : np.ndarray or list of floats
-                Radius vector (in units of pixels).
-
-        sbProf : np.ndarray or list of floats
-                Surface brightness profile (arbitrarily scaled).
-
-        nSamps : int or float
-                Number of samples to draw from the distribution (default is 5e5).
-
-        fixSeed : bool
-                Whether to use a fixed (or random) seed (list of four integers).
-
-        diskThick : float or np.ndarray/list of floats
-             (Default value = 0.0)
-             The disc scaleheight. If a single value then this is used at all radii.
-             If a list/ndarray then it should have the same length as sbRad, and will be
-             the disc thickness as a function of sbRad.
-
-        Returns
-        -------
-        inClouds : np.ndarray of floats
-                Returns an ndarray of "nSamps" by 3 in size. Each row corresponds to the x, y, z position of a cloudlet.
-        """
         start = time.time()
 
         if self.verbose: print('Generating cloudlets,', end=' ')
@@ -192,11 +176,11 @@ class KinMS:
         nSamps = int(nSamps)
         
         # Randomly generate the radii of clouds based on the distribution given by the brightness profile.
-        px = scipy.integrate.cumtrapz(sbProf * 2 * np.pi * abs(sbRad), abs(sbRad), initial=0)
-        px /= max(px)
+        px = scipy.integrate.cumtrapz(sbProf * 2 * np.pi * abs(sbRad), abs(sbRad), initial=0) #  Integrates the surface brightness profile
+        px /= max(px) # Normalised integral of the surface brightness profile
         rng1 = np.random.RandomState(seed[0])
-        pick = rng1.random_sample(nSamps)
-        interpfunc = interpolate.interp1d(px, sbRad, kind='linear')
+        pick = rng1.random_sample(nSamps) # Draws random float samples in the range [0,1]
+        interpfunc = interpolate.interp1d(px,sbRad, kind='linear') # Interplolate (x,y) -returns interpolated radii based on SBprof
         r_flat = interpfunc(pick)
         
         # Generates a random phase around the galaxy's axis for each cloud.
@@ -240,101 +224,18 @@ class KinMS:
                
         end = time.time()
         duration = end-start
-        print('kinms_sampleFromArbDist_oneSided: ', duration)
+        print('kinms_sampleFromArbDist_oneSided duration: ', duration)
 
         return inClouds
+
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
     
     def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, xPos, yPos, fixSeed=None,
                                        vPhaseCent=None, vRadial=None, posAng_rad=None, inc_rad=None, vPosAng=None):
             
         start = time.time()
-            
-
-        """
-        
-        This function takes the input circular velocity distribution
-        and the position of point sources and creates the velocity field
-        taking into account warps, inflow/outflow etc as required.
-        
-        Parameters
-        ----------
-        velRad : np.ndarray of double
-                Radius vector (in units of pixels).
-        
-        velProf : np.ndarray of double
-                Velocity profile (in units of km/s).
-        
-        r_flat : np.ndarray of double
-                Radius of each cloudlet from the kinematic centre
-                in the plane of the disc. Units of pixels.
-        
-        inc : double or np.ndarray of double
-                Inclination of the disc, using the usual astronomical convention.
-                Can be either a double, or an array of doubles. If single valued
-                then the disc is flat. If an array is passed then it should
-                describe how the galaxy inclination changes as a function of `velrad`.
-                Used to create inclination warps.
-        
-        posAng : double or np.ndarray of double
-                Position angle of the disc, using the usual astronomical convention.
-                Can be either a double, or an array of doubles. If single valued
-                then the disc major axis is straight. If an array is passed then it should
-                describe how the position angle changes as a function of `velrad`.
-                Used to create position angle warps.
-        
-        gasSigma : double or np.ndarray of double
-                Velocity dispersion of the gas. Units of km/s.
-                Can be either a double, or an array of doubles. If single valued
-                then the velocity dispersion is constant throughout the disc.
-                If an array is passed then it should describe how the velocity
-                dispersion changes as a function of `velrad`.
-        
-        fixSeed : list of int
-                List of length 4 containing the seeds for random number generation.
-        
-        xPos : np.ndarray of double
-                X position of each cloudlet. Units of pixels.
-                
-        Pos : np.ndarray of double
-                Y position of each cloudlet. Units of pixels.
-        
-        vPhaseCent : list of double
-             (Default value = [0, 0])
-                Kinematic centre of the rotation in the x-y plane. Units of pixels.
-                Used if the kinematic and morphological centres are not the same.
-        
-        vPosAng : double or np.ndarray of double
-             (Default value = False)
-                Kinematic position angle of the disc, using the usual astronomical convention.
-                Can be either a double, or an array of doubles. If single valued
-                then the disc kinematic major axis is straight. If an array is passed then it should
-                describe how the kinematic position angle changes as a function of `velrad`.
-                Used if the kinematic and morphological position angles are not the same.
-        
-        vRadial : double or np.ndarray of double
-             (Default value = 0)
-                Magnitude of inflow/outflowing motions (km/s). Negative
-                numbers here are inflow, positive numbers denote
-                outflow. These are included in the velocity field using
-                formalism of KINEMETRY (Krajnović et al. 2006 MNRAS, 366, 787).
-                Can input a constant or a vector, giving the radial
-                motion as a function of the radius vector
-                `velrad`. Default is no inflow/outflow.
-        
-        posAng_rad : double or np.ndarray of double
-             (Default value = 0)
-                Position angle of the disc at the position `r_flat` of each cloudlet.
-        
-        inc_rad : double or np.ndarray of double
-             (Default value = 0)
-                Inclination angle of the disc at the position `r_flat` of each cloudlet.
-        
-        Returns
-        -------
-        los_vel : np.ndarray of double
-                Line of sight velocity of each cloudlet, in km/s.
-        
-        """
         
         ### MAKE EVERYTHING AN ARRAY IN HERE RATHER THAN A LIST OR DOUBLE ###
         
@@ -347,7 +248,7 @@ class KinMS:
         if not vRadial:
             vRadial = self.vRadial
             
-        if not posAng_rad:
+        if not list(posAng_rad):
             posAng_rad = self.posAng_rad
            
         if not list(inc_rad):
@@ -356,9 +257,9 @@ class KinMS:
         if not vPosAng:
             vPosAng = self.vPosAng
                               
-        velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear')
+        velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear') # Interpolate the velocity profile as a function of radius
         
-        vRad = velInterFunc(r_flat)
+        vRad = velInterFunc(r_flat) # Evaluate the velocity profile at the sampled radii
                 
         # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
         rng4 = np.random.RandomState(seed[3]) 
@@ -373,13 +274,18 @@ class KinMS:
                 velDisp *= gasSigma
                 
         # Find the rotation angle so the velocity field has the correct position angle (allows warps)
+        
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   REMOVAL OF POSITION ANGLE OFFSET BETWEEN SBPROF AND VELPROF  //#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        
         if not vPosAng:
             ang2rot=0
         else:
             try:
                 if len(vPosAng) > 1:
-                    vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear')
-                    vPosAng_rad = vPosAngInterFunc(r_flat)
+                    vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear') #posiiton angle as a function of radius
+                    vPosAng_rad = vPosAngInterFunc(r_flat) ### DO WE NEED TO CALCULATE ANG2ROT FOR THIS IF AS WELL AS THOSE BELOW? !!! ###
                 else:
                     vPosAng_rad = np.full(len(r_flat), vPosAng, np.double)
                     ang2rot = ((posAng_rad - vPosAng_rad))
@@ -390,6 +296,10 @@ class KinMS:
         los_vel = velDisp                                                                                                                    
         los_vel += (-1) * vRad * (np.cos(np.arctan2((yPos + vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
         #Add radial inflow/outflow
+        
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   OPTIONAL INFLOW/OUTFLOW TO THE DISK   /////////////////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
         
         try:
             if len(vRadial) > 1:
@@ -407,6 +317,10 @@ class KinMS:
         print('kinms_create_velField_oneSided: ', duration)
         
         return los_vel
+
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
 
     def save_fits(self, fileName, cube, cellSize, dv, cent, ra, dec, vSys, beamSize):
 
@@ -441,34 +355,12 @@ class KinMS:
         hdu.writeto(fileName + '_simcube.fits', overwrite=True, output_verify='fix')
 
         return
+
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
       
     def gasGravity_velocity(self, xPos, yPos, zPos, massDist, velRad):
-        """
-        This function takes the position of the input cloudlets, and calculates the
-        potential, and thus the increase in the circular velocity due to the gas mass itself.
-        
-        Parameters
-        ----------
-        xPos : np.ndarray of double
-                X position of each cloudlet. Units of arcseconds.
- 
-        yPos : np.ndarray of double
-                Y position of each cloudlet. Units of arcseconds.
-        
-        zPos : np.ndarray of double
-                Z position of each cloudlet. Units of arcseconds
-        
-        massDist : list of double
-                List of [gasmass,distance] - gas mass in solar masses, distance in Mpc.
-        
-        velRad : np.ndarray of double
-                Radius vector (in units of pixels).
-        
-        Returns
-        -------
-        np.ndarray of double
-                Addition to the circular velocity just due to the mass of the gas itself, in units of km/s.
-        """
         
         xPos = np.array(xPos); yPos = np.array(yPos); zPos = np.array(zPos);
         massDist = np.array(massDist); velRad = np.array(velRad)
@@ -497,183 +389,17 @@ class KinMS:
             return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))    ## return velocity
         else:
             return 	np.sqrt((4.301e-3 * cumMass_interFunc(velRad))/(4.84 * velRad * massDist[1]))
+    
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
           
     def model_cube(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
            nSamps=None, posAng=None, intFlux=None, flux_clouds=None, vSys=None, phaseCent=None, vOffset=None, \
            vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
            velProf=None, inClouds=None, vLOS_clouds=None, fileName=False, fixSeed=False, cleanOut=False,
            returnClouds=False, gasGrav=False, verbose=False):
-                                  
-        """
-
-        The main KinMS function. Takes inputs specifing the observing parameters and type of model.
-        Returns the created model cube.
-
-        Parameters
-        ----------
-        xs : float
-            X-axis size for resultant cube (in arcseconds)
-
-        ys : float
-            Y-axis size for resultant cube (in arcseconds)
-
-        vs : float
-            Velocity axis size for resultant cube (in km/s)
-
-        cellsize : float
-            Pixel size required (arcsec/pixel)
-
-        dv : float
-            Channel size in velocity direction (km/s/channel)
-
-        beamsize : float or list of float
-            Scalar or three element list for size of convolving
-            beam (in arcseconds).  If a scalar then beam is assumed
-            to be circular. If a vector then denotes beam major
-            axis size in element zero, and the beam minor axis in
-            element one. The beam position angle should be given in
-            element two. I.e. [bmaj,bmin,bpa].
-
-        inc :   double or np.ndarray of double
-            Inclination angle of the gas disc on the sky
-            (degrees). Can input a constant or a vector,
-            giving the inclination as a function of the
-            radius vector `velrad` (in order to model warps etc)
-
-        gassigma : double or np.ndarray of double, optional
-             (Default value = 0)
-            Velocity dispersion of the gas. Units of km/s.
-            Can be either a double, or an array of doubles. If single valued
-            then the velocity dispersion is constant throughout the disc.
-            If an array is passed then it should describe how the velocity
-            dispersion changes as a function of `velrad`.
-
-        sbprof : np.ndarray of double, optional
-             (Default value = [])
-            Surface brightness profile (arbitrarily scaled) as a function of `sbrad`.
-
-        sbrad : np.ndarray of double, optional
-             (Default value = [])
-            Radius vector for surface brightness profile (units of arcseconds).
-
-        velrad : np.ndarray of double, optional
-             (Default value = [])
-            Radius vector for velocity profile (units of arcseconds).
-
-        velprof : np.ndarray of double, optional
-             (Default value = [])
-            Circular velocity profile (in km/s) as a function of `velrad`.
-
-        diskthick : double or np.ndarray of double, optional
-             (Default value = 0)
-            The disc scaleheight in arcseconds. If a single value then this is used at all radii.
-            If a ndarray then it should have the same length as `sbrad`, and will be
-            the disc thickness as a function of `sbrad`.
-
-        cleanout : bool, optional
-             (Default value = False)
-            If set then do not convolve with the beam, and output the
-            "clean components". Useful to create input for other
-            simulation tools (e.g sim_observe in CASA).
-
-        nsamps : int, optional
-             (Default value = 100000)
-            Number of cloudlets to use to create the model. Large numbers
-            will reduce numerical noise (especially in large cubes),
-            at the cost of increasing runtime.
-
-        posang : double or np.ndarray of double, optional
-             (Default value = 0.0)
-            Position angle of the disc, using the usual astronomical convention.
-            Can be either a double, or an array of doubles. If single valued
-            then the disc major axis is straight. If an array is passed then it should
-            describe how the position angle changes as a function of `velrad`.
-            Used to create position angle warps.
-
-        intflux : double, optional
-             (Default value = 0)
-            Total integrated flux you want the output gas to
-            have. (In Jy/km/s).
-
-        inclouds : np.ndarray of double, optional
-             (Default value = [])
-            If your required gas distribution is not symmetric you
-            may input vectors containing the position of the
-            clouds you wish to simulate. This 3-vector should
-            contain the X, Y and Z positions, in units of arcseconds
-            from the phase centre. If this variable is used, then
-            `diskthick`, `sbrad` and `sbprof` are ignored.
-            Example: INCLOUDS=[[0,0,0],[10,-10,2],...,[xpos,ypos,zpos]]
-
-        vlos_clouds : np.ndarray of double, optional
-             (Default value = [])
-            This vector should contain the LOS velocity for
-            each point defined in INCLOUDS, in units of km/s. If
-            not supplied then INCLOUDS is assumed to be the -face
-            on- distribution and that VELPROF/VELRAD should be
-            used, and the distribution projected. If this
-            variable is used then GASSIGMA/INC are ignored.
-
-        flux_clouds : np.ndarray of double, optional
-             (Default value = 0)
-            This vector can be used to supply the flux of each
-            point in INCLOUDS. If used alone then total flux in the model is equal
-            to total(FLUX_INCLOUDS). If INTFLUX used then this vector denotes
-            the relative brightness of the points in
-            INCLOUDS.
-
-        phasecen : np.ndarray of double, optional
-             (Default value = np.array([0., 0.])
-            This two dimensional array specifies the morphological centre of the
-            disc structure you create with respect to the central pixel of the
-            generated cube.
-
-        returnclouds: bool, optional
-            (Default value= False)
-            If set True then KinMS returns the created `inclouds` and `vlos_clouds`
-            in addition to the cube.
-
-        Other Parameters
-        ----------------
-
-        filename : string or bool, optional
-             (Default value = False)
-            If you wish to save the resulting model to a fits file, set this variable.
-            The output filename will be `filename`_simcube.fits
-
-        ra : float, optional
-             (Default value = 0)
-            RA to use in the header of the output cube (in degrees).
-
-        dec : float, optional
-             (Default value = 0)
-            DEC to use in the header of the output cube (in degrees).
-
-        restfreq : double, optional
-             (Default value = 115.271e9)
-            Rest-frequency of spectral line of choice (in Hz). Only
-            matters if you are outputting a FITS file  Default: 12CO(1-0)
-
-        vsys : double, optional
-             (Default value = 0)
-            Systemic velocity (km/s).
-
-        Returns
-        -------
-
-        cube : np.ndarray of double
-            Returns the created cube as a 3 dimensional array
-
-        inclouds: np.ndarray of double
-            If `returnclouds` is set then this is returned, containing
-            the cloudlets generated by KinMS
-
-        vlos_clouds: np.ndarray of double
-            If `returnclouds` is set then this is returned, containing
-            the LOS velocities of cloudlets generated by KinMS
-
-        """
-
+                                 
         # Set all values that were not defined by user to default values and make sure the right values get printed
         local_vars = locals()
         global_vars = vars(self)
@@ -722,6 +448,8 @@ class KinMS:
         vPhaseCent = self.vPhaseCent / [cellSize, cellSize]
 
         # If cloudlets not previously specified, generate them
+        
+        #///   CREATING CLOUDLETS  ///////////////////////////////////////////#
         inClouds_given = True
         if not len(self.inClouds):
             if not len(self.sbRad) or not len(self.sbProf):
@@ -731,6 +459,7 @@ class KinMS:
                 inClouds_given = False
                 self.inClouds = self.kinms_sampleFromArbDist_oneSided(self.sbRad, self.sbProf, self.nSamps,
                                                                       self.diskThick, fixSeed) ### FIXSEED IS FALSE HERE, DO WE WANT THAT AS A DEFAULT? ###
+        #/////////////////////////////////////////////////////////////////////#
 
         xPos = (self.inClouds[:, 0] / cellSize)
         yPos = (self.inClouds[:, 1] / cellSize)
@@ -750,6 +479,10 @@ class KinMS:
         elif not len(velRad) or not len(velProf):
             print('\nPlease define either \"vLOS_clouds\" or \"velRad\" and \"velProf\". Returning.')
             return
+    
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   CHANGE VELOCITY PROFILE BASED ON POTENTIAL OF INNER GAS ///////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
 
         else:
             if not gasGrav:
@@ -759,31 +492,54 @@ class KinMS:
                 #gasGravVel = self.gasGravity_velocity(xPos * cellSize, yPos * cellSize, zPos * cellSize, gasGrav, velRad)
                 gasGravVel = 1  # Dummy
                 velProf = np.sqrt((self.velProf ** 2) + (gasGravVel ** 2))
+                
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   CREATION OF POSITION ANGLE WARPS IN THE DISK //////////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
 
             self.posAng = 90 - self.posAng
 
             try:
                 if len(self.posAng) > 1:
-                    posAngRadInterFunc = interpolate.interp1d(self.velRad, self.posAng, kind='linear')
+                    # Creating a warp
+                    posAngRadInterFunc = interpolate.interp1d(self.velRad, self.posAng, kind='linear') # Interpolation of position angles wrt cloudlet radii
                     posAng_rad = posAngRadInterFunc(r_flat * cellSize)
                 else:
+                    # No warp 
                     posAng_rad = np.full(len(r_flat), self.posAng, float)
             except:
+                # No warp
                 posAng_rad = np.full(len(r_flat), self.posAng, float)
+                
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   CREATION OF INCLINATION  WARPS IN THE DISK ////////////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
 
             try:
                 if len(inc) > 1:
+                    # Creating a warp in inclination
                     incRadInterFunc = interpolate.interp1d(self.velRad, inc, kind='linear')
                     inc_rad = incRadInterFunc(r_flat * cellSize)
                 else:
+                    # No inclination warp
                     inc_rad = np.full(len(r_flat), inc, float)
             except:
+                # No inclination warp
                 inc_rad = np.full(len(r_flat), inc, float)
                 
             # Calculate the LOS velocity.
+            
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   CREATION OF LOS VELOCITIES IF NOT PROVIDED  ///////////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        
             los_vel = self.kinms_create_velField_oneSided((self.velRad / cellSize), self.velProf, r_flat, inc, \
                       self.posAng, self.gasSigma, xPos, yPos, fixSeed=fixSeed, vPhaseCent=self.vPhaseCent, \
-                      vRadial = self.vRadial, posAng_rad=self.posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng)
+                      vRadial = self.vRadial, posAng_rad=posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng) #changed self.posAng_rad to posAng_rad from  493-503
+            
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   PROJECT CLOUDS IN POSITION ANGLE AND INCLINATION   ////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#             
             
             # Project the clouds to take into account inclination.
             c = np.cos(np.radians(inc_rad))
@@ -800,6 +556,10 @@ class KinMS:
             y3 = (-s * x2) + (c * y2)
             x2 = x3
             y2 = y3
+            
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   POPULATE THE CUBE AND FIND NON-ZERO ELEMENTS   ////////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
 
         # Now add the flux into the cube.
         # Centre the clouds in the cube on the centre of the object.
@@ -820,6 +580,10 @@ class KinMS:
         
         # If there are clouds to use, and we know the flux of each cloud, add them to the cube.
         # If not, bin each position to get a relative flux.
+        
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   ADD IN FLUX VALUES TO THE CUBE OR BIN FOR RELATIVE FLUX   /////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
 
         if nsubs > 0:
                 
@@ -855,10 +619,15 @@ class KinMS:
                                              range=((0,xSize), (0, ySize), (0, vSize)))
 
                 ### THIS IS WHERE THE CUBE IS COMING OUT BLANK!!! ###
-                ### ADD IN PRINT STATEMENT (DON'T USE THIS WITHOUT WHAT? ###
+                ### ADD IN PRINT STATEMENT (DON'T USE THIS WITHOUT WHAT?) ###
 
         else:
             cube = np.zeros((np.int(xSize), np.int(ySize), np.int(vSize)))
+            
+            
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   CONVOLVE CUBE WITH THE BEAM   /////////////////////////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
             
         # Convolve with the beam point spread function to obtain a dirty cube
         if not cleanOut:
@@ -870,6 +639,11 @@ class KinMS:
                     cube[:, :, i] = convolve_fft(cube[:, :, i], psf)
 
         # Normalise by the known integrated flux.
+        
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   NORMALISE BY SOME KNOWN INTEGRATED FLUX   /////////////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
+        
         if self.intFlux > 0:
             if not cleanOut:
                 cube *= ((self.intFlux * psf.sum()) / (cube.sum() * dv))
@@ -882,6 +656,10 @@ class KinMS:
                 cube *= (self.flux_clouds.sum() / cube.sum())
             except:
                 cube /= cube.sum()
+                
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\#       
+        #///   OUTPUT CUBE TO FITS FILE   ////////////////////////////////////#
+        #\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\# 
                 
         # If appropriate, generate the FITS file header and save to disc.
         if fileName:
@@ -896,19 +674,41 @@ class KinMS:
             
             end = time.time()
             duration = end-start
-            print('model_cube: ', duration)     
+            print('model_cube duration: ', duration)     
 
             return cube, retClouds, los_vel
 
         else:
             end = time.time()
             duration = end-start
-            print('model_cube: ', duration) 
+            print('model_cube duration: ', duration) 
             return cube
 
-          
-#### TESTY TEST ####
-
+    #=========================================================================#
+    #/////////////////////////////////////////////////////////////////////////#
+    #=========================================================================#
+    
+#=============================================================================#
+#/// END OF CLASS ////////////////////////////////////////////////////////////#
+#=============================================================================#
+    
+    
+    
+    
+    
+    
+    
+    
+    
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#    
+    
+#if __name__ == '__main__':
+#    KinMS().model_cube()    
+        
+#=============================================================================#
+#/// TESTY TEST //////////////////////////////////////////////////////////////#
+#=============================================================================#
+    
 #KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
 #      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
@@ -927,7 +727,11 @@ x=np.arange(0.,100,0.1)
 velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
 vel=velfunc(x)
 
-f=KinMS().model_cube(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90.,verbose=True)
+f=KinMS().model_cube(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90.,verbose=False)
+
+#cube = f.sum(axis=2)
+#plt.figure()
+#plt.imshow(cube)
 
 """
 RUN EVERY TEST IN THE TEST SUITE AND COMPARE TIME TO TIM'S CODE
@@ -938,3 +742,10 @@ KEEP THE VARIABLE INSTANTIATION PRINT  STATEMENT
 """
 
 #KinMS().gasGravity_velocity([1,2,3], [1,2,3], [1,2,3], [1,2,3], [1,2,3])
+
+#=============================================================================#
+#/// END OF SCRIPT ///////////////////////////////////////////////////////////#
+#=============================================================================#
+       
+
+
