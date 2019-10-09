@@ -224,7 +224,7 @@ class KinMS:
                
         end = time.time()
         duration = end-start
-        print('kinms_sampleFromArbDist_oneSided duration: ', duration)
+        #print('kinms_sampleFromArbDist_oneSided duration: ', duration)
 
         return inClouds
 
@@ -247,9 +247,9 @@ class KinMS:
             
         if not vRadial:
             vRadial = self.vRadial
-            
+                       
         if not list(posAng_rad):
-            posAng_rad = self.posAng_rad
+            posAng_rad = self.posAng_rad ### CURRENTLY BROKEN AS DOESN'T TAKE IN ARRAYS FOR POSANG WARP!! ###
            
         if not list(inc_rad):
             inc_rad = self.inc_rad
@@ -314,7 +314,7 @@ class KinMS:
         
         end = time.time()
         duration = end-start
-        print('kinms_create_velField_oneSided: ', duration)
+        #print('kinms_create_velField_oneSided: ', duration)
         
         return los_vel
 
@@ -399,7 +399,7 @@ class KinMS:
            vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
            velProf=None, inClouds=None, vLOS_clouds=None, fileName=False, fixSeed=False, cleanOut=False,
            returnClouds=False, gasGrav=False, verbose=False):
-                                 
+                                                       
         # Set all values that were not defined by user to default values and make sure the right values get printed
         local_vars = locals()
         global_vars = vars(self)
@@ -511,7 +511,7 @@ class KinMS:
                     posAng_rad = np.full(len(r_flat), self.posAng, float)
             except:
                 # No warp
-                posAng_rad = np.full(len(r_flat), self.posAng, float)
+                self.posAng_rad = np.full(len(r_flat), self.posAng, float)
                 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#      
         #~~~   CREATION OF INCLINATION  WARPS IN THE DISK ~~~~~~~~~~~~~~~~~~~~#
@@ -537,7 +537,7 @@ class KinMS:
         
             los_vel = self.kinms_create_velField_oneSided((self.velRad / cellSize), self.velProf, r_flat, inc, \
                       self.posAng, self.gasSigma, xPos, yPos, fixSeed=fixSeed, vPhaseCent=self.vPhaseCent, \
-                      vRadial = self.vRadial, posAng_rad=posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng) #changed self.posAng_rad to posAng_rad from  493-503
+                      vRadial = self.vRadial, posAng_rad=self.posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng) 
             
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#      
         #~~~   PROJECT CLOUDS IN POSITION ANGLE AND INCLINATION   ~~~~~~~~~~~~#
@@ -676,14 +676,14 @@ class KinMS:
             
             end = time.time()
             duration = end-start
-            print('model_cube duration: ', duration)     
+            #print('model_cube duration: ', duration)     
 
             return cube, retClouds, los_vel
 
         else:
             end = time.time()
             duration = end-start
-            print('model_cube duration: ', duration) 
+            #print('model_cube duration: ', duration) 
             return cube
 
     #=========================================================================#
@@ -717,23 +717,42 @@ class KinMS:
 #v = KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
 #          inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
-inclouds=np.array([[ 40.0000, 0.00000, 0.00000],[ 39.5075, 6.25738, 0.00000],[ 38.0423, 12.3607, 0.00000],[ 35.6403, 18.1596, 0.00000],[ 32.3607, 23.5114, 0.00000],[ 28.2843, 28.2843, 0.00000],[ 23.5114, 32.3607, 0.00000],[ 18.1596, 35.6403, 0.00000],[ 12.3607, 38.0423, 0.00000],[ 6.25737, 39.5075, 0.00000],[ 0.00000, 40.0000, 0.00000],[-6.25738, 39.5075, 0.00000],[-12.3607, 38.0423, 0.00000],[-18.1596, 35.6403, 0.00000],[-23.5114, 32.3607, 0.00000],[-28.2843, 28.2843, 0.00000],[-32.3607, 23.5114, 0.00000],[-35.6403, 18.1596, 0.00000],[-38.0423, 12.3607, 0.00000],[-39.5075, 6.25738, 0.00000],[-40.0000, 0.00000, 0.00000],[-39.5075,-6.25738, 0.00000],[-38.0423,-12.3607, 0.00000],[-35.6403,-18.1596, 0.00000],[-32.3607,-23.5114, 0.00000],[-28.2843,-28.2843, 0.00000],[-23.5114,-32.3607, 0.00000],[-18.1596,-35.6403, 0.00000],[-12.3607,-38.0423, 0.00000],[-6.25738,-39.5075, 0.00000],[ 0.00000,-40.0000, 0.00000],[ 6.25738,-39.5075, 0.00000],[ 12.3607,-38.0423, 0.00000],[ 18.1596,-35.6403, 0.00000],[ 23.5114,-32.3607, 0.00000],[ 28.2843,-28.2843, 0.00000],[ 32.3607,-23.5114, 0.00000],[ 35.6403,-18.1596, 0.00000],[ 38.0423,-12.3607, 0.00000],[ 39.5075,-6.25737, 0.00000],[ 15.0000, 15.0000, 0.00000],[-15.0000, 15.0000, 0.00000],[-19.8504,-2.44189, 0.00000],[-18.0194,-8.67768, 0.00000],[-14.2856,-13.9972, 0.00000],[-9.04344,-17.8386, 0.00000],[-2.84630,-19.7964, 0.00000],[ 3.65139,-19.6639, 0.00000],[ 9.76353,-17.4549, 0.00000],[ 14.8447,-13.4028, 0.00000],[ 18.3583,-7.93546, 0.00000],[ 19.9335,-1.63019, 0.00000]])
+#inclouds=np.array([[ 40.0000, 0.00000, 0.00000],[ 39.5075, 6.25738, 0.00000],[ 38.0423, 12.3607, 0.00000],[ 35.6403, 18.1596, 0.00000],[ 32.3607, 23.5114, 0.00000],[ 28.2843, 28.2843, 0.00000],[ 23.5114, 32.3607, 0.00000],[ 18.1596, 35.6403, 0.00000],[ 12.3607, 38.0423, 0.00000],[ 6.25737, 39.5075, 0.00000],[ 0.00000, 40.0000, 0.00000],[-6.25738, 39.5075, 0.00000],[-12.3607, 38.0423, 0.00000],[-18.1596, 35.6403, 0.00000],[-23.5114, 32.3607, 0.00000],[-28.2843, 28.2843, 0.00000],[-32.3607, 23.5114, 0.00000],[-35.6403, 18.1596, 0.00000],[-38.0423, 12.3607, 0.00000],[-39.5075, 6.25738, 0.00000],[-40.0000, 0.00000, 0.00000],[-39.5075,-6.25738, 0.00000],[-38.0423,-12.3607, 0.00000],[-35.6403,-18.1596, 0.00000],[-32.3607,-23.5114, 0.00000],[-28.2843,-28.2843, 0.00000],[-23.5114,-32.3607, 0.00000],[-18.1596,-35.6403, 0.00000],[-12.3607,-38.0423, 0.00000],[-6.25738,-39.5075, 0.00000],[ 0.00000,-40.0000, 0.00000],[ 6.25738,-39.5075, 0.00000],[ 12.3607,-38.0423, 0.00000],[ 18.1596,-35.6403, 0.00000],[ 23.5114,-32.3607, 0.00000],[ 28.2843,-28.2843, 0.00000],[ 32.3607,-23.5114, 0.00000],[ 35.6403,-18.1596, 0.00000],[ 38.0423,-12.3607, 0.00000],[ 39.5075,-6.25737, 0.00000],[ 15.0000, 15.0000, 0.00000],[-15.0000, 15.0000, 0.00000],[-19.8504,-2.44189, 0.00000],[-18.0194,-8.67768, 0.00000],[-14.2856,-13.9972, 0.00000],[-9.04344,-17.8386, 0.00000],[-2.84630,-19.7964, 0.00000],[ 3.65139,-19.6639, 0.00000],[ 9.76353,-17.4549, 0.00000],[ 14.8447,-13.4028, 0.00000],[ 18.3583,-7.93546, 0.00000],[ 19.9335,-1.63019, 0.00000]])
+#xsize=128
+#ysize=128
+#vsize=1400
+#cellsize=1.0
+#dv=10
+#beamsize=[4.,4.,0]
+#inc=35.
+#x=np.arange(0.,100,0.1)
+#velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
+#vel=velfunc(x)
+#
+#f=KinMS().model_cube(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90.,verbose=False)
+
+'''
+extent = 64
+scale_length = extent/4
+
+x = np.arange(0,extent,0.01)
+fx = np.exp(-x/scale_length)
 xsize=128
 ysize=128
-vsize=1400
+vsize=640
 cellsize=1.0
 dv=10
-beamsize=[4.,4.,0]
-inc=35.
-x=np.arange(0.,100,0.1)
-velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-vel=velfunc(x)
+beamsize=[4.,4.,0.]
+velrad = fx
+vel = np.sqrt(fx)
+pos = 5
+inc= 75
 
-f=KinMS().model_cube(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90.,verbose=False)
-
-#cube = f.sum(axis=2)
+f=KinMS().model_cube(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,sbProf=fx,sbRad=x,velProf=vel,velRad=x,posAng=pos,verbose=False)
+'''
+#mom0 = f.sum(axis=2)
 #plt.figure()
-#plt.imshow(cube)
+#plt.imshow(mom0,cmap='inferno')
 
 """
 RUN EVERY TEST IN THE TEST SUITE AND COMPARE TIME TO TIM'S CODE
@@ -741,6 +760,7 @@ OPTIMISE GAS_GRAV
 MAKE MODEL_CUBE THE MAIN
 HAVE THE INPUTS TO MODEL_CUBE AS MAIN INNIT VARIABLES
 KEEP THE VARIABLE INSTANTIATION PRINT  STATEMENT
+CHECK FOR MEMORY LEAKS...KINMS IS CREATING VARIABLES THAT NEED TO THEN BE REMOVED AND ARE TAKING UP RAM SPACE
 """
 
 #KinMS().gasGravity_velocity([1,2,3], [1,2,3], [1,2,3], [1,2,3], [1,2,3])
@@ -748,6 +768,5 @@ KEEP THE VARIABLE INSTANTIATION PRINT  STATEMENT
 #=============================================================================#
 #/// END OF SCRIPT ///////////////////////////////////////////////////////////#
 #=============================================================================#
-       
 
 
