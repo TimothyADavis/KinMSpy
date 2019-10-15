@@ -159,7 +159,7 @@ class KinMS:
 
     def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, nSamps, diskThick, fixSeed=None):
 
-        start = time.time()
+        #start = time.time()
 
         if self.verbose: print('Generating cloudlets,', end=' ')
 
@@ -222,8 +222,8 @@ class KinMS:
         inClouds[:,1] = yPos
         inClouds[:,2] = zPos
                
-        end = time.time()
-        duration = end-start
+        #end = time.time()
+        #duration = end-start
         #print('kinms_sampleFromArbDist_oneSided duration: ', duration)
 
         return inClouds
@@ -235,7 +235,7 @@ class KinMS:
     def kinms_create_velField_oneSided(self, velRad, velProf, r_flat, inc, posAng, gasSigma, xPos, yPos, fixSeed=None,
                                        vPhaseCent=None, vRadial=None, posAng_rad=None, inc_rad=None, vPosAng=None):
             
-        start = time.time()
+        #start = time.time()
         
         ### MAKE EVERYTHING AN ARRAY IN HERE RATHER THAN A LIST OR DOUBLE ###
         
@@ -312,8 +312,8 @@ class KinMS:
         los_vel += vRadial_rad * (np.sin(np.arctan2((yPos+vPhaseCent[1]),(xPos + vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
         # Output the array of los velocities
         
-        end = time.time()
-        duration = end-start
+        #end = time.time()
+        #duration = end-start
         #print('kinms_create_velField_oneSided: ', duration)
         
         return los_vel
@@ -394,7 +394,7 @@ class KinMS:
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
           
-    def model_cube(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
+    def __call__(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
            nSamps=None, posAng=None, intFlux=None, flux_clouds=None, vSys=None, phaseCent=None, vOffset=None, \
            vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
            velProf=None, inClouds=None, vLOS_clouds=None, fileName=False, fixSeed=False, cleanOut=False,
@@ -405,7 +405,7 @@ class KinMS:
         global_vars = vars(self)
         print_dict = {} # 0 = user defined, 1 = default, 2 = bool
         
-        start =  time.time()
+        #start =  time.time()
 
         for k, v in local_vars.items():
             try:
@@ -674,17 +674,19 @@ class KinMS:
             retClouds[:, 1] = y2 * cellSize
             retClouds[:, 2] = z2 * cellSize
             
-            end = time.time()
-            duration = end-start
+            #end = time.time()
+            #duration = end-start
             #print('model_cube duration: ', duration)     
 
             return cube, retClouds, los_vel
 
         else:
-            end = time.time()
-            duration = end-start
+            #end = time.time()
+            #duration = end-start
             #print('model_cube duration: ', duration) 
             return cube
+        
+    model_cube = __call__
 
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
@@ -698,40 +700,13 @@ class KinMS:
     
     
     
-    
-    
-    
-    
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#    
-    
-#if __name__ == '__main__':
-#    KinMS().model_cube()    
+ 
         
 #=============================================================================#
 #/// TESTY TEST //////////////////////////////////////////////////////////////#
 #=============================================================================#
     
-#KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
-#      inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
 
-#v = KinMS().kinms_create_velField_oneSided(velRad=np.array([0,1,2]),velProf=np.array([1,1,1]),r_flat=np.array([0,1,2]),
-#          inc=90,posAng=45,gasSigma=np.array([1,1,1]),xPos=np.array([0,1,2]),yPos=np.array([0,1,2]))
-
-#inclouds=np.array([[ 40.0000, 0.00000, 0.00000],[ 39.5075, 6.25738, 0.00000],[ 38.0423, 12.3607, 0.00000],[ 35.6403, 18.1596, 0.00000],[ 32.3607, 23.5114, 0.00000],[ 28.2843, 28.2843, 0.00000],[ 23.5114, 32.3607, 0.00000],[ 18.1596, 35.6403, 0.00000],[ 12.3607, 38.0423, 0.00000],[ 6.25737, 39.5075, 0.00000],[ 0.00000, 40.0000, 0.00000],[-6.25738, 39.5075, 0.00000],[-12.3607, 38.0423, 0.00000],[-18.1596, 35.6403, 0.00000],[-23.5114, 32.3607, 0.00000],[-28.2843, 28.2843, 0.00000],[-32.3607, 23.5114, 0.00000],[-35.6403, 18.1596, 0.00000],[-38.0423, 12.3607, 0.00000],[-39.5075, 6.25738, 0.00000],[-40.0000, 0.00000, 0.00000],[-39.5075,-6.25738, 0.00000],[-38.0423,-12.3607, 0.00000],[-35.6403,-18.1596, 0.00000],[-32.3607,-23.5114, 0.00000],[-28.2843,-28.2843, 0.00000],[-23.5114,-32.3607, 0.00000],[-18.1596,-35.6403, 0.00000],[-12.3607,-38.0423, 0.00000],[-6.25738,-39.5075, 0.00000],[ 0.00000,-40.0000, 0.00000],[ 6.25738,-39.5075, 0.00000],[ 12.3607,-38.0423, 0.00000],[ 18.1596,-35.6403, 0.00000],[ 23.5114,-32.3607, 0.00000],[ 28.2843,-28.2843, 0.00000],[ 32.3607,-23.5114, 0.00000],[ 35.6403,-18.1596, 0.00000],[ 38.0423,-12.3607, 0.00000],[ 39.5075,-6.25737, 0.00000],[ 15.0000, 15.0000, 0.00000],[-15.0000, 15.0000, 0.00000],[-19.8504,-2.44189, 0.00000],[-18.0194,-8.67768, 0.00000],[-14.2856,-13.9972, 0.00000],[-9.04344,-17.8386, 0.00000],[-2.84630,-19.7964, 0.00000],[ 3.65139,-19.6639, 0.00000],[ 9.76353,-17.4549, 0.00000],[ 14.8447,-13.4028, 0.00000],[ 18.3583,-7.93546, 0.00000],[ 19.9335,-1.63019, 0.00000]])
-#xsize=128
-#ysize=128
-#vsize=1400
-#cellsize=1.0
-#dv=10
-#beamsize=[4.,4.,0]
-#inc=35.
-#x=np.arange(0.,100,0.1)
-#velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-#vel=velfunc(x)
-#
-#f=KinMS().model_cube(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90.,verbose=False)
-
-'''
 extent = 64
 scale_length = extent/4
 
@@ -748,19 +723,17 @@ vel = np.sqrt(fx)
 pos = 5
 inc= 75
 
-f=KinMS().model_cube(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,sbProf=fx,sbRad=x,velProf=vel,velRad=x,posAng=pos,verbose=False)
-'''
-#mom0 = f.sum(axis=2)
+f = KinMS()
+cube = f(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,sbProf=fx,sbRad=x,velProf=vel,velRad=x,posAng=pos,verbose=False)
+   
+#flattened = f.sum(axis=2)
 #plt.figure()
-#plt.imshow(mom0,cmap='inferno')
+#plt.imshow(flattened,cmap='inferno')
 
 """
 RUN EVERY TEST IN THE TEST SUITE AND COMPARE TIME TO TIM'S CODE
 OPTIMISE GAS_GRAV
 MAKE MODEL_CUBE THE MAIN
-HAVE THE INPUTS TO MODEL_CUBE AS MAIN INNIT VARIABLES
-KEEP THE VARIABLE INSTANTIATION PRINT  STATEMENT
-CHECK FOR MEMORY LEAKS...KINMS IS CREATING VARIABLES THAT NEED TO THEN BE REMOVED AND ARE TAKING UP RAM SPACE
 """
 
 #KinMS().gasGravity_velocity([1,2,3], [1,2,3], [1,2,3], [1,2,3], [1,2,3])
