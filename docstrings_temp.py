@@ -165,7 +165,7 @@ zPos : np.ndarray of double
         Z position of each cloudlet. Units of arcseconds
 
 massDist : list of double
-        List of [gasmass,distance] - gas mass in solar masses, distance in Mpc.
+        List of [gasmass,distance] - total gas mass in solar masses, total distance in Mpc.
 
 velRad : np.ndarray of double
         Radius vector (in units of pixels).

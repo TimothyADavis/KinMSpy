@@ -363,12 +363,11 @@ class KinMS:
     def gasGravity_velocity(self, xPos, yPos, zPos, massDist, velRad):
         
         xPos = np.array(xPos); yPos = np.array(yPos); zPos = np.array(zPos);
-        massDist = np.array(massDist); velRad = np.array(velRad)
+        massDist = np.array(massDist); velRad = np.array(velRad);
         
-        rad = np.sqrt( (xPos**2) + (yPos**2) + (zPos**2) )						                ## 3D radius
+        rad = np.sqrt((xPos**2) + (yPos**2) + (zPos**2))						                ## 3D radius
         cumMass = ((np.arange(xPos.size + 1)) * (massDist[0] / xPos.size))					    ## cumulative mass
 
-        
         #max_rad = np.argmax(rad)
         #max_velRad =  velRad[max_rad]+1
         #print(max_velRad)
@@ -376,19 +375,28 @@ class KinMS:
         #print(np.max(velRad).clip(1,max=None))
         #print(np.max(rad))
         
-        max_velRad = np.max(velRad).clip(min=np.max(rad), max=None)+1
+        max_velRad = np.max(velRad).clip(min=np.max(rad), max=None)+1 # returns the max vel_Rad clipped to above the minimum rad
         #print(max_velRad)
         
-        new_rad = np.insert(sorted(rad),0,0)
+        new_rad = np.insert(sorted(rad),0,0) #puts two 0 values at the start of rad
         
-        ptcl_rad = np.append(new_rad, max_velRad)
-        cumMass_max_end = np.append(cumMass,np.max(cumMass))
+        ptcl_rad = np.append(new_rad, max_velRad) # appends the maximum velRad to the end of the radii values
+        cumMass_max_end = np.append(cumMass,np.max(cumMass)) # places an extra max_cumMass at the end of cumMass presumably for vector length equivalency
 
-        cumMass_interFunc = interpolate.interp1d(ptcl_rad,cumMass_max_end,kind='linear')
+        cumMass_interFunc = interpolate.interp1d(ptcl_rad,cumMass_max_end,kind='linear') # interpolates the cumulative mass as a function of radii
+        
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+        ### ZONE OF CONFUSION... ###############################################################################################################
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+        
         if velRad[0] == 0.0:
             return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))    ## return velocity
         else:
             return 	np.sqrt((4.301e-3 * cumMass_interFunc(velRad))/(4.84 * velRad * massDist[1]))
+        
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+        ########################################################################################################################################
+        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
     
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
@@ -723,12 +731,12 @@ vel = np.sqrt(fx)
 pos = 5
 inc= 75
 
-f = KinMS()
-cube = f(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,sbProf=fx,sbRad=x,velProf=vel,velRad=x,posAng=pos,verbose=False)
+kinms = KinMS()
+cube = kinms(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,sbProf=fx,sbRad=x,velProf=vel,velRad=x,posAng=pos,verbose=False)
    
-#flattened = f.sum(axis=2)
-#plt.figure()
-#plt.imshow(flattened,cmap='inferno')
+flattened = cube.sum(axis=2)
+plt.figure()
+plt.imshow(flattened,cmap='inferno')
 
 """
 RUN EVERY TEST IN THE TEST SUITE AND COMPARE TIME TO TIM'S CODE
