@@ -704,44 +704,11 @@ class KinMS:
 #/// END OF CLASS ////////////////////////////////////////////////////////////#
 #=============================================================================#
     
-    
-    
-    
-    
- 
-        
-#=============================================================================#
-#/// TESTY TEST //////////////////////////////////////////////////////////////#
-#=============================================================================#
-    
 
-extent = 64
-scale_length = extent/4
-
-x = np.arange(0,extent,0.01)
-fx = np.exp(-x/scale_length)
-xsize=128
-ysize=128
-vsize=640
-cellsize=1.0
-dv=10
-beamsize=[4.,4.,0.]
-velrad = fx
-vel = np.sqrt(fx)
-pos = 5
-inc= 75
-
-kinms = KinMS()
-cube = kinms(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,sbProf=fx,sbRad=x,velProf=vel,velRad=x,posAng=pos,verbose=False)
-   
-flattened = cube.sum(axis=2)
-plt.figure()
-plt.imshow(flattened,cmap='inferno')
 
 """
 RUN EVERY TEST IN THE TEST SUITE AND COMPARE TIME TO TIM'S CODE
 OPTIMISE GAS_GRAV
-MAKE MODEL_CUBE THE MAIN
 """
 
 #KinMS().gasGravity_velocity([1,2,3], [1,2,3], [1,2,3], [1,2,3], [1,2,3])
