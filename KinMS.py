@@ -365,6 +365,7 @@ class KinMS:
 
     def gasGravity_velocity(self, xPos, yPos, zPos, massDist, velRad):
 
+        print(massDist)
         if not len(massDist) == 2:
             print('\n Please provide "massDist" as a list of [gasmass, distance] - total gas mass in solar masses, total distance in Mpc. Returning.')
             return
@@ -493,7 +494,7 @@ class KinMS:
                 print('\n"velRad" not specified, setting it to "sbRad".')
                 self.velRad = self.sbRad
 
-            if not gasGrav:
+            if gasGrav:
                 gasGravVel = self.gasGravity_velocity(xPos * cellSize, yPos * cellSize, zPos * cellSize, gasGrav, velRad)
                 velProf = np.sqrt((self.velProf ** 2) + (gasGravVel ** 2))
                 
