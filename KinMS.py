@@ -24,9 +24,12 @@ import scipy.integrate
 from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
+import warnings; warnings.filterwarnings("ignore")
 
 import time
 import matplotlib.pyplot as plt
+
+
 
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#
@@ -257,7 +260,7 @@ class KinMS:
         if not vPosAng:
             vPosAng = self.vPosAng
                               
-        velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear') # Interpolate the velocity profile as a function of radius
+        velInterFunc = interpolate.interp1d(velRad, velProf, kind='linear') # Interpolate the velocity profile as a function of radius
         
         vRad = velInterFunc(r_flat) # Evaluate the velocity profile at the sampled radii
                 
@@ -359,45 +362,32 @@ class KinMS:
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
-      
+
     def gasGravity_velocity(self, xPos, yPos, zPos, massDist, velRad):
-        
-        xPos = np.array(xPos); yPos = np.array(yPos); zPos = np.array(zPos);
-        massDist = np.array(massDist); velRad = np.array(velRad);
-        
-        rad = np.sqrt((xPos**2) + (yPos**2) + (zPos**2))						                ## 3D radius
-        cumMass = ((np.arange(xPos.size + 1)) * (massDist[0] / xPos.size))					    ## cumulative mass
 
-        #max_rad = np.argmax(rad)
-        #max_velRad =  velRad[max_rad]+1
-        #print(max_velRad)
-        
-        #print(np.max(velRad).clip(1,max=None))
-        #print(np.max(rad))
-        
-        max_velRad = np.max(velRad).clip(min=np.max(rad), max=None)+1 # returns the max vel_Rad clipped to above the minimum rad
-        #print(max_velRad)
-        
-        new_rad = np.insert(sorted(rad),0,0) #puts two 0 values at the start of rad
-        
-        ptcl_rad = np.append(new_rad, max_velRad) # appends the maximum velRad to the end of the radii values
-        cumMass_max_end = np.append(cumMass,np.max(cumMass)) # places an extra max_cumMass at the end of cumMass presumably for vector length equivalency
+        if not len(massDist) == 2:
+            print('\n Please provide "massDist" as a list of [gasmass, distance] - total gas mass in solar masses, total distance in Mpc. Returning.')
+            return
 
-        cumMass_interFunc = interpolate.interp1d(ptcl_rad,cumMass_max_end,kind='linear') # interpolates the cumulative mass as a function of radii
+        grav_const = 4.301e-3  # g in solar masses, pc, and km/s
+        arcsec_to_pc = 4.84  # Angular distance in arcsec to physical distance in pc, when seen at distance D in Mpc
         
-        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
-        ### ZONE OF CONFUSION... ###############################################################################################################
-        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
+        xPos = np.array(xPos); yPos = np.array(yPos); zPos = np.array(zPos)
+        massDist = np.array(massDist); velRad = np.array(velRad)
         
-        if velRad[0] == 0.0:
-            return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))    ## return velocity
-        else:
-            return 	np.sqrt((4.301e-3 * cumMass_interFunc(velRad))/(4.84 * velRad * massDist[1]))
-        
-        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
-        ########################################################################################################################################
-        #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
-    
+        rad = np.sqrt((xPos**2) + (yPos**2) + (zPos**2))  # 3D radius
+        cumMass = ((np.arange(xPos.size + 1)) * (massDist[0] / xPos.size))  # Cumulative mass
+
+        max_velRad = np.max(velRad).clip(min=np.max(rad), max=None) + 1  # The max vel_Rad clipped to above the minimum rad
+        new_rad = np.insert(sorted(rad), 0, 0)  # sorts rad and puts a 0 value at the start of it
+
+        cumMass_interFunc = interpolate.interp1d(new_rad, cumMass, kind='linear', fill_value='extrapolate')  # Interpolates the cumulative mass as a function of radii
+
+        add_to_circ_vel = np.sqrt(grav_const * cumMass_interFunc(velRad)) / (arcsec_to_pc * velRad * massDist[1])
+        add_to_circ_vel[~np.isfinite(add_to_circ_vel)] = 0
+
+        return add_to_circ_vel
+
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
@@ -442,6 +432,8 @@ class KinMS:
             self.print_variables(print_dict)
 
         # Set variables to numpy arrays if necessary
+        self.sbRad = np.array(self.sbRad)
+        self.sbProf = np.array(self.sbProf)
         self.velProf = np.array(self.velProf)
         self.velRad = np.array(self.velRad)
         
@@ -486,7 +478,7 @@ class KinMS:
 
         # If los velocities not specified, calculate them.
         # Include the potential of the gas.
-        elif not len(velRad) or not len(velProf):
+        elif not len(velProf):
             print('\nPlease define either \"vLOS_clouds\" or \"velRad\" and \"velProf\". Returning.')
             return
     
@@ -495,12 +487,14 @@ class KinMS:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
         else:
+
+            # If velRad is not defined but sbRad is, set velRad to sbRad
+            if not len(self.velRad) and len(self.sbRad):
+                print('\n"velRad" not specified, setting it to "sbRad".')
+                self.velRad = self.sbRad
+
             if not gasGrav:
-
-                # --> This function is a mess so check this line after it is fixed! <--
-
-                #gasGravVel = self.gasGravity_velocity(xPos * cellSize, yPos * cellSize, zPos * cellSize, gasGrav, velRad)
-                gasGravVel = 1  # Dummy
+                gasGravVel = self.gasGravity_velocity(xPos * cellSize, yPos * cellSize, zPos * cellSize, gasGrav, velRad)
                 velProf = np.sqrt((self.velProf ** 2) + (gasGravVel ** 2))
                 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
@@ -541,8 +535,8 @@ class KinMS:
             
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
         #~~~   CREATION OF LOS VELOCITIES IF NOT PROVIDED  ~~~~~~~~~~~~~~~~~~~#
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
-        
+        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
             los_vel = self.kinms_create_velField_oneSided((self.velRad / cellSize), self.velProf, r_flat, inc, \
                       self.posAng, self.gasSigma, xPos, yPos, fixSeed=fixSeed, vPhaseCent=self.vPhaseCent, \
                       vRadial = self.vRadial, posAng_rad=self.posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng) 
@@ -708,10 +702,11 @@ class KinMS:
 
 """
 RUN EVERY TEST IN THE TEST SUITE AND COMPARE TIME TO TIM'S CODE
-OPTIMISE GAS_GRAV
 """
 
-#KinMS().gasGravity_velocity([1,2,3], [1,2,3], [1,2,3], [1,2,3], [1,2,3])
+#KinMS().gasGravity_velocity([3,2,1], [3,2,1], [3,2,1], [10, 10], [10,5,40])
+
+#KinMS().model_cube(20, 20, 40, 2, 10, 2, 30, sbRad=[30,40,50], sbProf=[1,2,3], velProf=[5,10,15])
 
 #=============================================================================#
 #/// END OF SCRIPT ///////////////////////////////////////////////////////////#
