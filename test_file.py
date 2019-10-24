@@ -39,14 +39,12 @@ vsize=640
 cellsize=1.0
 dv=10
 beamsize=[4.,4.,0.]
-velrad = fx
-vel = np.sqrt(fx)
+vel = np.sqrt(x)
 pos = 5
 inc= 75
 
 kinms = KinMS()
 cube = kinms(xsize,ysize,vsize,cellsize,dv,beamSize=beamsize,inc=inc,sbProf=fx,sbRad=x,velProf=vel,velRad=x,posAng=pos,verbose=False)
-   
 flattened = cube.sum(axis=2)
 plt.figure()
 plt.imshow(flattened,cmap='inferno')
