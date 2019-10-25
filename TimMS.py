@@ -29,8 +29,6 @@ import warnings; warnings.filterwarnings("ignore")
 import time
 import matplotlib.pyplot as plt
 
-
-
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#
 #=============================================================================#
@@ -241,7 +239,7 @@ class KinMS:
         #start = time.time()
         
         ### MAKE EVERYTHING AN ARRAY IN HERE RATHER THAN A LIST OR DOUBLE ###
-        
+                
         if not fixSeed:
             seed = self.fixedSeed
                                    
@@ -253,7 +251,7 @@ class KinMS:
                        
         if not list(posAng_rad):
             posAng_rad = self.posAng_rad ### CURRENTLY BROKEN AS DOESN'T TAKE IN ARRAYS FOR POSANG WARP!! ###
-           
+                       
         if not list(inc_rad):
             inc_rad = self.inc_rad
             
@@ -365,7 +363,6 @@ class KinMS:
 
     def gasGravity_velocity(self, xPos, yPos, zPos, massDist, velRad):
 
-        print(massDist)
         if not len(massDist) == 2:
             print('\n Please provide "massDist" as a list of [gasmass, distance] - total gas mass in solar masses, total distance in Mpc. Returning.')
             return
@@ -396,8 +393,8 @@ class KinMS:
     def __call__(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
            nSamps=None, posAng=None, intFlux=None, flux_clouds=None, vSys=None, phaseCent=None, vOffset=None, \
            vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
-           velProf=None, inClouds=None, vLOS_clouds=None, fileName=False, fixSeed=False, cleanOut=False,
-           returnClouds=False, gasGrav=False, verbose=False):
+           velProf=None, inClouds=None, vLOS_clouds=None, gasGrav=False, fileName=False, fixSeed=False, cleanOut=False,
+           returnClouds=False, verbose=False):
                                                        
         # Set all values that were not defined by user to default values and make sure the right values get printed
         local_vars = locals()
@@ -501,17 +498,18 @@ class KinMS:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
         #~~~   CREATION OF POSITION ANGLE WARPS IN THE DISK ~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
-
-            self.posAng = 90 - self.posAng
+        
+            if isinstance(posAng,(int,np.ndarray)): # Needed for differentiating int and array input
+                    self.posAng = 0-posAng 
 
             try:
                 if len(self.posAng) > 1:
                     # Creating a warp
                     posAngRadInterFunc = interpolate.interp1d(self.velRad, self.posAng, kind='linear') # Interpolation of position angles wrt cloudlet radii
-                    posAng_rad = posAngRadInterFunc(r_flat * cellSize)
+                    self.posAng_rad = posAngRadInterFunc(r_flat * cellSize)
                 else:
                     # No warp 
-                    posAng_rad = np.full(len(r_flat), self.posAng, float)
+                    self.posAng_rad = np.full(len(r_flat), self.posAng, float)
             except:
                 # No warp
                 self.posAng_rad = np.full(len(r_flat), self.posAng, float)
@@ -531,7 +529,7 @@ class KinMS:
             except:
                 # No inclination warp
                 inc_rad = np.full(len(r_flat), inc, float)
-                
+                            
             # Calculate the LOS velocity.
             
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
