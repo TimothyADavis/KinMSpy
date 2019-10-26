@@ -39,47 +39,51 @@ class KinMS:
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
 
-    def __init__(self, xs, ys, vs, cellSize, dv, beamSize, inc, posAng, gasSigma=0, diskThick=0, flux_clouds=0, 
-                 sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], ra=None, 
-                 dec=None, nSamps=None, fixedSeed=None, intFlux=None, vSys=None, phaseCent=None, vOffset=None, 
-                 vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, fileName=False, fixSeed=False, 
-                 cleanOut=False, returnClouds=False, verbose=False):
-                        
+    def __init__(self, xs, ys, vs, cellSize, dv, beamSize, inc, gasSigma=None, diskThick=None, ra=None, dec=None,
+           nSamps=None, posAng=None, intFlux=None, flux_clouds=None, vSys=None, phaseCent=None, vOffset=None, \
+           vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, sbProf=None, sbRad=None, velRad=None,
+           velProf=None, inClouds=None, vLOS_clouds=None, gasGrav=False, fileName=False, fixSeed=False, cleanOut=False,
+           returnClouds=False, verbose=False):
+            
         self.xs = xs
         self.ys = ys
         self.vs = vs
         self.cellSize = cellSize
         self.dv = dv
         self.beamSize = beamSize
-        self.inc = np.array(inc)
-        self.posAng = np.array(posAng)
-        self.gasSigma = np.array(gasSigma)        
-        self.diskThick = np.array(diskThick)
-        self.flux_clouds = np.array(flux_clouds)
-        self.sbProf = np.array(sbProf)
-        self.sbRad = np.array(sbRad)                 
-        self.velRad = np.array(velRad) 
-        self.velProf = np.array(velProf) 
-        self.inClouds = np.array(inClouds)
-        self.vLOS_clouds = np.array(vLOS_clouds) 
-        self.massDist = np.array(massDist)
-        self.ra = ra 
-        self.dec = dec 
-        self.nSamps = nSamps or 5e5
-        self.fixedSeed = fixedSeed or np.array([100, 101, 102, 103])
-        self.intFlux = intFlux or 0
-        self.vSys = vSys
-        self.phaseCent = phaseCent or np.zeros(2)
-        self.vOffset = vOffset or 0        
-        self.vRadial = vRadial or 0
-        self.vPosAng = vPosAng or 0
-        self.vPhaseCent = vPhaseCent or np.zeros(2)
-        self.restFreq = restFreq or 115.271e9
-        self.fileName = fileName
-        self.fixSeed = fixSeed
-        self.cleanOut = cleanOut
-        self.returnClouds = returnClouds
-        self.verbose = verbose
+        self.inc = inc
+        self.gasSigma = gasSigma      
+        self.diskThick = 0
+        self.nSamps = 5e5
+        self.fixedSeed = np.array([100, 101, 102, 103])
+        self.randomSeed = np.random.randint(0, 100, 4)
+        self.vRadial = 0
+        self.vPhaseCent = np.zeros(2)
+        self.posAng_rad = 0
+        self.inc_rad = 0
+        self.gasSigma = 0
+        self.ra = 0
+        self.dec = 0
+        self.posAng = 0
+        self.intFlux = 0
+        self.flux_clouds = 0
+        self.vSys = 0
+        self.phaseCent = np.zeros(2)
+        self.vOffset = 0
+        self.restFreq = 115.271e9
+        self.vPosAng = 0
+        self.sbProf = sbProf
+        self.sbRad = sbRad
+        self.velRad = velRad
+        self.velProf = velProf
+        self.inClouds = inClouds
+        self.vLOS_clouds = vLOS_clouds
+        self.gasGrav = False
+        self.fileName = False
+        self.fixSeed = False
+        self.cleanOut = False
+        self.returnClouds = False
+        self.verbose = False
         
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
@@ -179,10 +183,10 @@ class KinMS:
         if self.verbose: print('Generating cloudlets,', end=' ')
 
         # If variables are not entered by user, adopt default (global) values.
-        if not fixSeed:
-            seed = np.random.uniform(0,100,4)
-        else:
+        if fixSeed:
             seed = self.fixedSeed
+        else:
+            seed = self.randomSeed
 
         # Set everything to numpy arrays to accept list input
         sbRad = np.array(sbRad)
@@ -251,12 +255,27 @@ class KinMS:
                                        vPhaseCent=None, vRadial=None, posAng_rad=None, inc_rad=None, vPosAng=None):
             
         #start = time.time()
-                        
+        
+        ### MAKE EVERYTHING AN ARRAY IN HERE RATHER THAN A LIST OR DOUBLE ###
+                
         if not fixSeed:
-            seed = np.random.uniform(0,100,4)
-        else:
             seed = self.fixedSeed
-                                                                
+                                   
+        if not list(vPhaseCent):        ### THIS HAD TO BE MADE A LIST TO NOT RETURN AN ERROR!! ###
+            vPhaseCent = self.vPhaseCent
+            
+        if not vRadial:
+            vRadial = self.vRadial
+                       
+        if not list(posAng_rad):
+            posAng_rad = self.posAng_rad ### CURRENTLY BROKEN AS DOESN'T TAKE IN ARRAYS FOR POSANG WARP!! ###
+                       
+        if not list(inc_rad):
+            inc_rad = self.inc_rad
+            
+        if not vPosAng:
+            vPosAng = self.vPosAng
+                              
         velInterFunc = interpolate.interp1d(velRad, velProf, kind='linear') # Interpolate the velocity profile as a function of radius
         
         vRad = velInterFunc(r_flat) # Evaluate the velocity profile at the sampled radii
@@ -322,28 +341,28 @@ class KinMS:
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
 
-    def save_fits(self, cube, cent):
+    def save_fits(self, fileName, cube, cellSize, dv, cent, ra, dec, vSys, beamSize):
 
         hdu = fits.PrimaryHDU(cube.T)
 
-        hdu.header['CDELT1'] = self.cellSize / -3600
-        hdu.header['CDELT2'] = self.cellSize / 3600
-        hdu.header['CDELT3'] = self.dv * 1000
+        hdu.header['CDELT1'] = cellSize / -3600
+        hdu.header['CDELT2'] = cellSize / 3600
+        hdu.header['CDELT3'] = dv * 1000
         hdu.header['CRPIX1'] = cent[0] - 1
         hdu.header['CRPIX2'] = cent[1] - 1
         hdu.header['CRPIX3'] = cent[2]
-        hdu.header['CRVAL1'] = self.ra or "None given" 
-        hdu.header['CRVAL2'] = self.dec or "None given"
-        hdu.header['CRVAL3'] = (self.vSys * 1000.) or "None given", 'm/s'
+        hdu.header['CRVAL1'] = ra
+        hdu.header['CRVAL2'] = dec
+        hdu.header['CRVAL3'] = (vSys * 1000.), 'm/s'
         hdu.header['CUNIT1'] = 'deg'
         hdu.header['CUNIT2'] = 'deg'
         hdu.header['CUNIT3'] = 'm/s'
         hdu.header['BSCALE'] = 1
         hdu.header['BZERO'] = 0
-        hdu.header['BMIN'] = self.beamSize[0] / 3600
-        hdu.header['BMAJ'] = self.beamSize[1] / 3600
+        hdu.header['BMIN'] = np.min(np.array(beamSize[0:2]) / 3600)
+        hdu.header['BMAJ'] = np.max(np.array(beamSize[0:2]) / 3600)
         hdu.header['BTYPE'] = 'Intensity'
-        hdu.header['BPA'] = self.beamSize[2]
+        hdu.header['BPA'] = beamSize[2]
         hdu.header['CTYPE1'] = 'RA---SIN'
         hdu.header['CTYPE2'] = 'DEC--SIN'
         hdu.header['CTYPE3'] = 'VRAD'
@@ -352,7 +371,7 @@ class KinMS:
         hdu.header['BUNIT'] = 'Jy/beam'
         hdu.header['SPECSYS'] = 'BARYCENT'
 
-        hdu.writeto(self.fileName + '_simcube.fits', overwrite=True, output_verify='fix')
+        hdu.writeto(fileName + '_simcube.fits', overwrite=True, output_verify='fix')
 
         return
 
@@ -390,9 +409,6 @@ class KinMS:
     #=========================================================================#
           
     def model_cube(self):
-                        
-        if len(self.fixedSeed):
-                self.fixSeed = True
             
         """
                                                        
@@ -457,7 +473,7 @@ class KinMS:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
         
         inClouds_given = True
-        if not len(self.inClouds):
+        if not self.inClouds:
             if not len(self.sbRad) or not len(self.sbProf):
                 print('\nPlease define either \"inClouds\" or \"sbRad\" and \"sbProf\". Returning.')
                 return
@@ -473,7 +489,7 @@ class KinMS:
                 
         # Find the los velocity and cube position of the clouds
         # If los velocity specified, assume that the clouds have already been projected correctly.
-        if len(self.vLOS_clouds):
+        if self.vLOS_clouds:
             los_vel = self.vLOS_clouds
             x2 = xPos
             y2 = yPos
@@ -496,8 +512,8 @@ class KinMS:
                 print('\n"velRad" not specified, setting it to "sbRad".')
                 self.velRad = self.sbRad
 
-            if len(self.massDist)>1:
-                gasGravVel = self.gasGravity_velocity(xPos * self.cellSize, yPos * self.cellSize, zPos * self.cellSize, self.massDist, self.velRad)
+            if self.gasGrav:
+                gasGravVel = self.gasGravity_velocity(xPos * self.cellSize, yPos * self.cellSize, zPos * self.cellSize, self.gasGrav, self.velRad)
                 self.velProf = np.sqrt((self.velProf ** 2) + (gasGravVel ** 2))
                 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
@@ -511,13 +527,13 @@ class KinMS:
                 if len(self.posAng) > 1:
                     # Creating a warp
                     posAngRadInterFunc = interpolate.interp1d(self.velRad, self.posAng, kind='linear') # Interpolation of position angles wrt cloudlet radii
-                    posAng_rad = posAngRadInterFunc(r_flat * self.cellSize)
+                    self.posAng_rad = posAngRadInterFunc(r_flat * self.cellSize)
                 else:
                     # No warp 
-                    posAng_rad = np.full(len(r_flat), self.posAng, float)
+                    self.posAng_rad = np.full(len(r_flat), self.posAng, float)
             except:
                 # No warp
-                posAng_rad = np.full(len(r_flat), self.posAng, float)
+                self.posAng_rad = np.full(len(r_flat), self.posAng, float)
                 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#      
         #~~~   CREATION OF INCLINATION  WARPS IN THE DISK ~~~~~~~~~~~~~~~~~~~~#
@@ -544,7 +560,7 @@ class KinMS:
 
             los_vel = self.kinms_create_velField_oneSided((self.velRad / self.cellSize), self.velProf, r_flat, self.inc, \
                       self.posAng, self.gasSigma, xPos, yPos, fixSeed=self.fixSeed, vPhaseCent= vPhaseCent, \
-                      vRadial = self.vRadial, posAng_rad=posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng) 
+                      vRadial = self.vRadial, posAng_rad=self.posAng_rad, inc_rad=inc_rad, vPosAng=self.vPosAng) 
             
            
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#      
@@ -559,7 +575,7 @@ class KinMS:
             z2 = (-s * yPos) + (c * zPos)
 
             # Correct orientation by rotating by position angle.
-            ang = posAng_rad
+            ang = self.posAng_rad
             c = np.cos(np.radians(ang))
             s = np.sin(np.radians(ang))
             x3 = (c * x2) + (s * y2)
@@ -673,7 +689,7 @@ class KinMS:
                 
         # If appropriate, generate the FITS file header and save to disc.
         if self.fileName:
-            self.save_fits(cube, cent)
+            self.save_fits(self.fileName, cube, self.cellSize, self.dv, cent, self.ra, self.dec, self.vSys, self.beamSize)
 
         # Output the final cube
         if self.returnClouds:
