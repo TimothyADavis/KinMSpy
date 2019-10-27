@@ -1,879 +1,599 @@
-# coding: utf-8
-from TimMS_2 import *
+from TimMS import *; run_kinms = KinMS()
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate,ndimage
 from sauron_colormap import sauron
 from astropy.io import fits
 import time
-from tqdm import tqdm
+import cProfile as profile
 
-def gaussian(x,x0,sigma):
-  return np.exp(-np.power((x - x0)/(sigma), 2.)/2.)
 
-def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,pvdthick=2,nconts=11.,title=False, **kwargs):
+def gaussian(x ,x0, sigma):
+  return np.exp(-np.power((x - x0) / (sigma), 2) / 2)
+
+
+def makeplots(f, xsize, ysize, vsize, cellsize, dv, beamsize, posang=0, overcube=False, pvdthick=2, nconts=11, title=False, **kwargs):
     
-# ;;;; Create plot data from cube ;;;;
-    mom0rot=f.sum(axis=2)
-    if np.any(overcube): mom0over=overcube.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
+    # Create plot data from the cube
+    mom0rot = f.sum(axis=2)
 
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
+    if np.any(overcube):
+        mom0over = overcube.sum(axis=2)
 
-    pvdcube=f 
+    x1 = np.arange(-xsize/2, xsize/2, cellsize)
+    y1 = np.arange(-ysize/2, ysize/2, cellsize)
+    v1 = np.arange(-vsize/2, vsize/2, dv)
+
+    mom1 = (mom0rot * 0.0) - 10000.0
+    for i in range(0, int(xsize / cellsize)):
+        for j in range(0, int(ysize / cellsize)):
+            if mom0rot[i, j] > 0.1 * np.max(mom0rot):
+                mom1[i, j] = (v1 * f[i, j, :]).sum() / f[i, j, :].sum()
+
+    pvdcube = f
     
-    pvdcube=ndimage.interpolation.rotate(f, 90-posang, axes=(1, 0), reshape=False)
-    if np.any(overcube): pvdcubeover=ndimage.interpolation.rotate(overcube, 90-posang, axes=(1, 0), reshape=False)
-        
-    pvd=pvdcube[:,np.int((ysize/(cellsize*2.))-pvdthick):np.int((ysize/(cellsize*2.))+pvdthick),:].sum(axis=1)
-    if np.any(overcube): pvdover=pvdcubeover[:,np.int((ysize/(cellsize*2.))-pvdthick):np.int((ysize/(cellsize*2.))+pvdthick),:].sum(axis=1)
-        
-    if not isinstance(beamsize, (list, tuple, np.ndarray)):
-        beamsize=np.array([beamsize,beamsize,0])
-    beamtot=(makebeam(xsize,ysize,beamsize)).sum()
-    spec=f.sum(axis=0).sum(axis=0)/beamtot
-    if np.any(overcube): specover=overcube.sum(axis=0).sum(axis=0)/beamtot
-     
-# ;;;;
+    pvdcube = ndimage.interpolation.rotate(f, 90 - posang, axes=(1, 0), reshape=False)
 
-# ;;;; Plot the results ;;;;
-    levs=v1[np.min(np.where(spec != 0)):np.max(np.where(spec != 0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
+    if np.any(overcube):
+        pvdcubeover = ndimage.interpolation.rotate(overcube, 90 - posang, axes=(1, 0), reshape=False)
+        
+    pvd = pvdcube[:, np.int((ysize / (cellsize * 2)) - pvdthick) : np.int((ysize / (cellsize * 2)) + pvdthick), :].sum(axis=1)
+    if np.any(overcube):
+        pvdover = pvdcubeover[:, np.int((ysize / (cellsize * 2)) - pvdthick) : np.int((ysize / (cellsize * 2)) + pvdthick), :].sum(axis=1)
+
+    try:
+        len(beamsize)
+    except:
+        beamsize = np.array([beamsize, beamsize, 0])
+
+    beamtot = KinMS().makebeam(xsize, ysize, beamsize).sum()
+    spec = f.sum(axis=0).sum(axis=0) / beamtot
+    if np.any(overcube):
+        specover = overcube.sum(axis=0).sum(axis=0) / beamtot
+
+    # Plot the results
+    levs = v1[np.min(np.where(spec != 0)) : np.max(np.where(spec != 0))]
+
+    # Initiate the figure and make it look nice
+    fig = plt.figure(figsize=(10, 10))
+    matplotlib.rcParams['font.family'] = 'Latin Modern Roman'
+    matplotlib.rcParams.update({'font.size': 25})  # fontsize figures
+    matplotlib.rcParams['axes.linewidth'] = 1.5  # thickness borders figures
+    matplotlib.rcParams['xtick.labelsize'] = 20  # labelsize ticks
+    matplotlib.rcParams['ytick.labelsize'] = 20  # labelsize ticks
+    matplotlib.rcParams['xtick.major.size'] = 10  # major x tickmark size
+    matplotlib.rcParams['xtick.major.width'] = 2  # major x tickmark width
+    matplotlib.rcParams['xtick.minor.size'] = 5  # minor x tickmark size
+    matplotlib.rcParams['xtick.minor.width'] = 1  # minor x tickmark width
+    matplotlib.rcParams['ytick.major.size'] = 10  # major y tickmark size
+    matplotlib.rcParams['ytick.major.width'] = 2  # major y tickmark width
+    matplotlib.rcParams['ytick.minor.size'] = 5  # minor y tickmark size
+    matplotlib.rcParams['ytick.minor.width'] = 1  # minor y tickmark width
+    matplotlib.rcParams['legend.fontsize'] = 15
+    matplotlib.rcParams['ytick.direction'] = 'in'
+    matplotlib.rcParams['xtick.direction'] = 'in'
+
+    # Plot the moment 0
     ax1 = fig.add_subplot(221, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.linspace(1,0,num=10,endpoint=False)[::-1]*np.max(mom0rot), cmap="YlOrBr")
-    if np.any(overcube): ax1.contour(x1,y1,mom0over.T,colors=('black'),levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0over))
+    ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(mom0rot), cmap="YlOrBr")
+    if np.any(overcube):
+        ax1.contour(x1, y1, mom0over.T, colors=('black'), levels = np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
+
     if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
     if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
+
+    plt.xlabel(r'Offset ($^{\prime\prime}$)'); plt.ylabel(r'Offset ($^{\prime\prime}$)')
+
+    # Plot moment 1
     ax2 = fig.add_subplot(222, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
+    ax2.contourf(x1, y1, mom1.T, levels=levs, cmap=sauron)
+    plt.xlabel(r'Offset ($^{\prime\prime}$)'); plt.ylabel(r'Offset ($^{\prime\prime}$)')
     if 'yrange' in kwargs: ax2.set_ylim(kwargs['yrange'])
     if 'xrange' in kwargs: ax2.set_xlim(kwargs['xrange'])
+
+    # Plot PVD
     ax3 = fig.add_subplot(223)
-    plt.xlabel('Offset (")')
-    plt.ylabel(r'Velocity (km s$^{-1}$)')
-    ax3.contourf(x1,v1,pvd.T,levels=np.linspace(1,0,num=10,endpoint=False)[::-1]*np.max(pvd), cmap="YlOrBr" ,aspect='auto')
-    if np.any(overcube): ax3.contour(x1,v1,pvdover.T,colors=('black'),levels=np.arange(0.1, 1.1, 0.1)*np.max(pvdover))
+
+    ax3.contourf(x1, v1, pvd.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(pvd), cmap="YlOrBr", aspect='auto')
+    if np.any(overcube):
+        ax3.contour(x1, v1, pvdover.T, colors='black', levels=np.arange(0.1, 1.1, 0.1) * np.max(pvdover))
+
     if 'vrange' in kwargs: ax3.set_ylim(kwargs['vrange'])
     if 'xrange' in kwargs: ax3.set_xlim(kwargs['xrange'])
+
+    plt.xlabel(r'Offset ($^{\prime\prime}$)'); plt.ylabel(r'Velocity (km s$^{-1}$)')
+
+    # Plot spectrum
     ax4 = fig.add_subplot(224)
-    plt.ylabel('Flux')
-    plt.xlabel(r'Velocity (km s$^{-1}$)')
-    ax4.plot(v1,spec, drawstyle='steps')
-    if np.any(overcube): ax4.plot(v1,specover,'r', drawstyle='steps')
+    ax4.plot(v1, spec, drawstyle='steps', c='k')
+    if np.any(overcube):
+        ax4.plot(v1, specover, 'r', drawstyle='steps')
+
     if 'vrange' in kwargs: ax4.set_xlim(kwargs['vrange'])
     if title: plt.suptitle(title)
-    plt.show()
-# ;;;;
+
+    plt.ylabel('Flux'); plt.xlabel(r'Velocity (km s$^{-1}$)')
+
+    plt.tight_layout()
 
 
+def expdisk(scalerad=10, inc=45):
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates how
+    to create a simulation of an exponential disk of molecular gas. The user can input values for the scalerad and inc
+    variables, and the procedure will the create the simulation and display it to screen.
+    :param scalerad: Scale radius for the exponential disk (in arcseconds)
+    :param inc: Inclination to project the disk (in degrees)
+    :return: N/A
+    """
+
+    # Set up the cube parameters
+    xsize = 128
+    ysize = 128
+    vsize = 1400
+    cellsize = 1
+    dv = 10
+    beamsize = [4, 4, 0]
+
+    # Set up exponential disk SB profile/velocity
+    x = np.arange(0, 100, 0.1)
+    fx = np.exp(-x / scalerad)
+    velfunc = interpolate.interp1d([0, 0.5, 1, 3, 500], [0, 50, 100, 210, 210], kind='linear')
+    vel = velfunc(x)
+
+    # Create the cube
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x,velProf=vel, intFlux=30, posAng=270,
+              gasSigma=10)
+
+    # Plot the results
+    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=270)
 
 
-def KinMStest_expdisk(scalerad=10.,inc=45.):
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure demonstrates how to create a simulation of an
-# ; exponential disk of molecular gas. The user can input values for the
-# ; scalerad and inc variables, and the procedure will the create the simulation
-# ; and display it to screen. 
-# ;
-# ;  INPUTS:
-# ;       Scalerad -    Scale radius for the exponential disk (arcseconds)
-# ;       Inc      -    Inclination to project the disk (degrees).
-# ;
-# ;;;;;;;;;;;
+def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates
+    how to create a simulation of an exponential disk of molecular gas, including the effect of the potential of the gas
+    on its own rotation. The user can input values for the scalerad and inc variables, and the procedure will the create
+    the simulation and display it to screen.
+    :param scalerad: Scale radius for the exponential disk (in arcseconds)
+    :param inc: Inclination to project the disk (in degrees)
+    :param gasmass: Total mass of the gas (in solar masses)
+    :param distance: Distance to the galaxy (in Mpc)
+    :return: N/A
+    """
 
-# ;;;; Setup cube parameters ;;;;
-    xsize=128
-    ysize=128
-    vsize=1400
-    cellsize=1
-    dv=10
-    beamsize=[4.,4.,0.]
-    nsamps=5e5
+    # Set up cube parameters
+    xsize = 64
+    ysize = 64
+    vsize = 1400
+    cellsize = 1
+    dv = 10
+    beamsize = [4, 4, 0]
+    posang = 270
+    intflux = 30
+    gassig = 10
 
-# ;;;; Set up exponential disk SB profile/velocity ;;;;
-    x=np.arange(0,100,0.1)
-    fx = np.exp(-x/scalerad)
-    velfunc = interpolate.interp1d([0.0,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
-# ;;;;
+    # Set up exponential disk SB profile/velocity
+    x = np.arange(0, 100, 0.1)
+    fx = np.exp(-x / scalerad)
+    velfunc = interpolate.interp1d([0, 0.5, 1, 3, 500], [0, 50, 100, 210, 210], kind='linear')
+    vel = velfunc(x)
 
-# ;;;; Simulate ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,verbose=False).model_cube()
-    
-# ;;;; Plot
-    #plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.)
-    
-    return f
+    # Create the cube WITHOUT gasgrav
+    cube1 = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velRad=x, velProf=vel,
+                  intFlux=intflux, posAng=posang, gasSigma=gassig)
 
-#cube = KinMStest_expdisk()
+    # Create the cube WITH gasgrav
+    cube2 = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velRad=x, velProf=vel,
+                  intFlux=intflux, posAng=posang, gasSigma=gassig, massDist=np.array([gasmass, distance]))
 
-#start =  time.time()
-#for _ in tqdm(range(100)):
-#        KinMStest_expdisk()
-#end = time.time()
-#print(end-start)
+    # Plot the results
+    makeplots(cube1, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, title="Without Potential of Gas")
+    makeplots(cube2, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, title="With Potential of Gas Included")
 
-### 43.6894428730011
 
-def KinMStest_expdisk_gasgrav(scalerad=5.,inc=45.,gasmass=5e10):
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure demonstrates how to create a simulation of an
-# ; exponential disk of molecular gas, including the effect of the potential of the gas on its own rotation.
-# ; The user can input values for the scalerad and inc variables, and the procedure will 
-# ; the create the simulation and display it to screen. 
-# ;
-# ;  INPUTS:
-# ;       Scalerad -    Scale radius for the exponential disk (arcseconds)
-# ;       Inc      -    Inclination to project the disk (degrees)
-# ;       Gasmass  -    Total mass of the gas (solar masses)
-# ;
-# ;;;;;;;;;;;
+def ngc4324():
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure makes a basic
+    simulation of the molecular gas ring in NGC4324, and plots the simulation moment zero, one and PVD against the
+    observed ones from the CARMA observations of Alatalo et al., 2012.
+    :return: N/A
+    """
 
-# ;;;; Setup cube parameters ;;;;
-    xsize=64
-    ysize=64
-    vsize=1400
-    cellsize=1
-    dv=10
-    beamsize=[4.,4.,0.]
-    nsamps=5e5
-    dist=16.5 # Mpc
+    # Define the simulated observation parameters
+    xsize = 100  # arcseconds
+    ysize = 100  # arcseconds
+    vsize = 420  # km/s
+    cellsize = 1  # arcseconds/pixel
+    dv = 20  # km/s/channel
+    beamsize = np.array([4.68, 3.85, 15.54])  # arcseconds
 
-# ;;;; Set up exponential disk SB profile/velocity ;;;;
-    x=np.arange(0,100,0.1)
-    fx = np.exp(-x/scalerad)
-    velfunc = interpolate.interp1d([0.0,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
-# ;;;;
+    #Define the gas distribution required
+    diskthick = 1  # arcseconds
+    inc = 65  # degrees
+    posang = 230  # degrees
+    intflux = 27.2
+    gassigma = 10
+    x = np.arange(0, 64)
+    fx = 0.1 * gaussian(x, 20, 2)
+    velfunc = interpolate.interp1d([0, 1, 3, 5, 7, 10, 200], [0, 50, 100, 175, 175, 175, 175], kind='linear')
+    vel = velfunc(x)
+    phasecen = [-1, -1]
+    voffset = 0
 
-# ;;;; Simulate and plot ;;;;
-    #plt.ion()
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.).model_cube()
-    #plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.,title="Without Potential of Gas")
-    
-    mom0rot=f.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
+    # Create the cube
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, posAng=posang,
+                  intFlux=intflux, phaseCent=phasecen, vOffset=voffset, gasSigma=gassigma, fileName="NGC4234_test")
 
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-                 
-    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
-    ax1 = fig.add_subplot(121, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-    ax2 = fig.add_subplot(122, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-    plt.show()
-        
+    # Read in data
+    hdulist = fits.open('test_suite/NGC4324.fits')
+    scidata = hdulist[0].data.T
+    scidata = scidata[:, :, :, 0]
+    scidata[scidata < np.std(scidata[:, :, 0]) * 4] = 0
 
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,massDist=[gasmass,dist]).model_cube()
-    #plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.,title="With Potential of Gas Included")
-    
-    mom0rot=f.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
+    # Plot the results
+    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, overcube=scidata, xrange=[-28, 28],
+                     yrange=[-28, 28], pvdthick=4)
 
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-                 
-    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
-    ax1 = fig.add_subplot(121, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-    ax2 = fig.add_subplot(122, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-    plt.show()
-  
-#KinMStest_expdisk_gasgrav()
 
-#start =  time.time()
-#for _ in tqdm(range(100)):
-#        KinMStest_expdisk_gasgrav()
-#end = time.time()
-#print(end-start)
+def use_inclouds():
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates
+    how to use the "inclouds" parameter set to create simulations, in this case of a very unrealistic object. Once you
+    understand this example then see the "infits" and "inclouds spiral" test for more realistic examples.
+    :return: N/A
+    """
 
-###  
+    # Set up the cube parameters
+    xsize = 128
+    ysize = 128
+    vsize = 1400
+    cellsize = 1
+    dv = 10
+    beamsize = [4, 4, 0]
+    inc = 35
+    intflux = 30
+    posang = 0
+    x = np.arange(0, 100, 0.1)
+    velfunc = interpolate.interp1d([0, 0.5, 1, 3, 500], [0, 50, 100, 210, 210], kind='linear')
+    vel = velfunc(x)
 
-def KinMStest_ngc4324():
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure makes a basic simulation of the
-# ; molecular gas ring in NGC4324, and plots the simulation moment zero,
-# ; one and PVD against the observed ones from the CARMA observations
-# ; of Alatalo et al., 2012. 
-# ;
-# ;;;;;;;;;;;
+    # Define where clouds are in each dimension (x,y,z)
+    inclouds = np.array([[40, 0, 0], [39.5075, 6.25738, 0], [38.0423, 12.3607, 0.00000], [35.6403, 18.1596, 0],
+                         [32.3607, 23.5114, 0], [28.2843, 28.2843, 0], [23.5114, 32.3607, 0], [18.1596, 35.6403, 0],
+                         [12.3607, 38.0423, 0], [6.25737, 39.5075, 0], [0, 40, 0], [-6.25738, 39.5075, 0],
+                         [-12.3607, 38.0423, 0], [-18.1596, 35.6403, 0], [-23.5114, 32.3607, 0],
+                         [-28.2843, 28.2843, 0], [-32.3607, 23.5114, 0], [-35.6403, 18.1596, 0],
+                         [-38.0423, 12.3607, 0], [-39.5075, 6.25738, 0], [-40, 0, 0], [-39.5075, -6.25738, 0],
+                         [-38.0423,-12.3607, 0], [-35.6403, -18.1596, 0], [-32.3607, -23.5114, 0], [-28.2843, -28.2843, 0],
+                         [-23.5114, -32.3607, 0], [-18.1596, -35.6403, 0], [-12.3607,-38.0423, 0], [-6.25738, -39.5075, 0],
+                         [0, -40, 0], [6.25738, -39.5075, 0], [12.3607, -38.0423, 0], [18.1596, -35.6403, 0],
+                         [23.5114, -32.3607, 0], [28.2843, -28.2843, 0], [32.3607,-23.5114, 0],  [35.6403, -18.1596, 0],
+                         [38.0423, -12.3607, 0], [39.5075, -6.25737, 0], [15, 15, 0], [-15, 15, 0],
+                         [-19.8504, -2.44189, 0], [-18.0194, -8.67768, 0], [-14.2856, -13.9972, 0],
+                         [-9.04344, -17.8386, 0], [-2.84630, -19.7964, 0], [3.65139, -19.6639, 0],
+                         [9.76353, -17.4549, 0], [14.8447, -13.4028, 0], [18.3583, -7.93546, 0],
+                         [19.9335, -1.63019, 0]])
 
-# ;;; Define the simulated observation parameters ;;;
-    xsize=100. # arcseconds
-    ysize=100. #;; arcseconds
-    vsize=420. #;; km/s
-    cellsize=1. #;; arcseconds/pixel
-    dv=20. #;; km/s/channel
-    beamsize=np.array([4.68,3.85,15.54]) #;; arcseconds
-# ;;;
-#
-# ;;; Define the gas distribution required ;;;
-    diskthick=1. # arcseconds
-    inc=65. # degrees
-    posang=230. # degrees
-    x=np.arange(0.,64.)
-    fx = 0.1*gaussian(x,20.0,2.0)
-    velfunc = interpolate.interp1d([0.0,1,3,5,7,10,200],[0,50,100,175,175,175,175], kind='linear')
-    vel=velfunc(x)
-    phasecen=[-1,-1]
-    voffset=0
-# ;;;
+    # Create the cube
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, intFlux=intflux, inClouds=inclouds, velProf=vel, velRad=x, posAng=posang)
 
-# ;;; Run KinMS
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=5e5,posAng=posang,intFlux=27.2,
-            phaseCent=phasecen,vOffset=voffset,gasSigma=10.,fileName="NGC4234_test",verbose=False).model_cube()
-    
-    
-#    mom0rot=f.sum(axis=2)
-#    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-#    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-#    v1=np.arange(-vsize/2.,vsize/2.,dv)
-#
-#    mom1=(mom0rot*0.0)-10000.0
-#    for i in range(0,int(xsize/cellsize)):
-#         for j in range(0,int(ysize/cellsize)):
-#             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-#                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-#                 
-#    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-#    fig = plt.figure()
-#    fig.patch.set_facecolor('white')
-#    ax1 = fig.add_subplot(121, aspect='equal')
-#    plt.xlabel('Offset (")')
-#    plt.ylabel('Offset (")')
-#    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-#    ax2 = fig.add_subplot(122, aspect='equal')
-#    plt.xlabel('Offset (")')
-#    plt.ylabel('Offset (")')
-#    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-#    plt.show()
-# ;;;
-
-# ;;; Read in data
-
-#    hdulist = fits.open('test_suite/NGC4324.fits')
-#    scidata = hdulist[0].data.T
-#    scidata=scidata[:,:,:,0]
-#    scidata[np.where(scidata < np.std(scidata[:,:,0])*4.)]=0.0
-## ;;;
-#
-## ;;; Create the plot 
-#    plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=posang,overcube=scidata,xrange=[-28,28],yrange=[-28,28],pvdthick=4.)
-    
-#kinms = KinMS()
-#start =  time.time()
-#for _ in tqdm(range(100)):
-#        KinMStest_ngc4324()
-#end = time.time()
-#print(end-start)
-
-### 30.94855284690857 
-    
-KinMStest_ngc4324()
-
-def KinMStest_inclouds():
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure demonstrates how to use the
-# ; INCLOUDS parameter set to create simulations, in this case of a very
-# ; unrealistic object. Once you understand this example then see the
-# ; INFITS and INCLOUDS_SPIRAL test for more realistic examples.
-# ;
-# ;;;;;;;;;;;
-
-# ;;;; Setup cube parameters ;;;;
-    xsize=128
-    ysize=128
-    vsize=1400
-    cellsize=1.0
-    dv=10
-    beamsize=[4.,4.,0]
-    inc=35.
-    x=np.arange(0.,100,0.1)
-    velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
-# ;;;;
-
-# ;;;; define where clouds are in each dimension (x,y,z) ;;;;
-    inclouds=np.array([[ 40.0000, 0.00000, 0.00000],[ 39.5075, 6.25738, 0.00000],[ 38.0423, 12.3607, 0.00000],[ 35.6403, 18.1596, 0.00000],[ 32.3607, 23.5114, 0.00000],[ 28.2843, 28.2843, 0.00000],[ 23.5114, 32.3607, 0.00000],[ 18.1596, 35.6403, 0.00000],[ 12.3607, 38.0423, 0.00000],[ 6.25737, 39.5075, 0.00000],[ 0.00000, 40.0000, 0.00000],[-6.25738, 39.5075, 0.00000],[-12.3607, 38.0423, 0.00000],[-18.1596, 35.6403, 0.00000],[-23.5114, 32.3607, 0.00000],[-28.2843, 28.2843, 0.00000],[-32.3607, 23.5114, 0.00000],[-35.6403, 18.1596, 0.00000],[-38.0423, 12.3607, 0.00000],[-39.5075, 6.25738, 0.00000],[-40.0000, 0.00000, 0.00000],[-39.5075,-6.25738, 0.00000],[-38.0423,-12.3607, 0.00000],[-35.6403,-18.1596, 0.00000],[-32.3607,-23.5114, 0.00000],[-28.2843,-28.2843, 0.00000],[-23.5114,-32.3607, 0.00000],[-18.1596,-35.6403, 0.00000],[-12.3607,-38.0423, 0.00000],[-6.25738,-39.5075, 0.00000],[ 0.00000,-40.0000, 0.00000],[ 6.25738,-39.5075, 0.00000],[ 12.3607,-38.0423, 0.00000],[ 18.1596,-35.6403, 0.00000],[ 23.5114,-32.3607, 0.00000],[ 28.2843,-28.2843, 0.00000],[ 32.3607,-23.5114, 0.00000],[ 35.6403,-18.1596, 0.00000],[ 38.0423,-12.3607, 0.00000],[ 39.5075,-6.25737, 0.00000],[ 15.0000, 15.0000, 0.00000],[-15.0000, 15.0000, 0.00000],[-19.8504,-2.44189, 0.00000],[-18.0194,-8.67768, 0.00000],[-14.2856,-13.9972, 0.00000],[-9.04344,-17.8386, 0.00000],[-2.84630,-19.7964, 0.00000],[ 3.65139,-19.6639, 0.00000],[ 9.76353,-17.4549, 0.00000],[ 14.8447,-13.4028, 0.00000],[ 18.3583,-7.93546, 0.00000],[ 19.9335,-1.63019, 0.00000]])
-# ;;;;
-
-# ;;;; run the simulation with a velocity curve ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intFlux=30.,inClouds=inclouds, velProf=vel,velRad=x,posAng=90.).model_cube()
-    
-# ;;;;
-# ;;; Create the plot 
-
-#    mom0rot=f.sum(axis=2)
-#    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-#    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-#    v1=np.arange(-vsize/2.,vsize/2.,dv)
-#
-#    mom1=(mom0rot*0.0)-10000.0
-#    for i in range(0,int(xsize/cellsize)):
-#         for j in range(0,int(ysize/cellsize)):
-#             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-#                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-#                 
-#    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-#    fig = plt.figure()
-#    fig.patch.set_facecolor('white')
-#    ax1 = fig.add_subplot(121, aspect='equal')
-#    plt.xlabel('Offset (")')
-#    plt.ylabel('Offset (")')
-#    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-#    ax2 = fig.add_subplot(122, aspect='equal')
-#    plt.xlabel('Offset (")')
-#    plt.ylabel('Offset (")')
-#    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-#    plt.show()
-  
-#start =  time.time()
-#for _ in tqdm(range(1000)):
-#        KinMStest_inclouds()
-#end = time.time()
-#print(end-start)
-    
-#KinMStest_inclouds()
+    # Plot the result
+    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize)
     
 
-### 102.99912619590759
+def inclouds_spiral():
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates
+    how to use the "inclouds" parameter set to create simulations, in this case of molecular gas in a two armed spiral
+    pattern. Any default parameters can be changed by specifying them at the command line (see KinMS.pro or the full
+    details of all the available parameters).
+    :return: N/A
+    """
 
-def KinMStest_inclouds_spiral():
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure demonstrates how to use the
-# ; INCLOUDS parameter set to create simulations, in this case of
-# ; molecular gas in a two armed spiral pattern. Any default paramaters
-# ; can be changed by specifying them at the command line (see KinMS.pro
-# ; for the full details of all the avaliable parameters).
-# ;
-# ;
-# ;;;;;;;;;;;
+    # Set up the cube parameters
+    xsize = 128
+    ysize = 128
+    vsize = 1400
+    cellsize = 1
+    dv = 10
+    beamsize = 4
+    inc = 55
+    intflux = 30
+    posang = 90
 
-# ;;;; Setup cube parameters ;;;;
-    xsize=128
-    ysize=128
-    vsize=1400
-    cellsize=1
-    dv=10
-    beamsize=4.
-    inc=55.
-# ;;;;
-#
-# ;;;; define where clouds are in each dimension (x,y,z) using a logarithmic spiral ;;;;
-    t=np.arange(-20,20,0.1)
-    a=0.002*60
-    b=0.5
-    x1=a*np.exp(b*t)*np.cos(t)
-    y1=a*np.exp(b*t)*np.sin(t)
-    x2=a*(-1)*np.exp(b*t)*np.cos(t)
-    y2=a*(-1)*np.exp(b*t)*np.sin(t)
-    inclouds=np.empty((len(t)*2,3))
-    inclouds[:,0]=np.concatenate((x1,x2))/20
-    inclouds[:,1]=np.concatenate((y1,y2))/20
-    inclouds[:,2]=np.concatenate((x1*0.0,x2*0.0))
-# ;;;;
-    inclouds=inclouds[np.where((abs(inclouds[:,0]) > 2.0) & (abs(inclouds[:,1]) > 2.0))[0],:]
+    # Define where clouds are in each dimension (x,y,z) using a logarithmic spiral
+    t = np.arange(-20, 20, 0.1)
+    a = 0.002 * 60
+    b = 0.5
+    x1 = a * np.exp(b * t) * np.cos(t)
+    y1 = a * np.exp(b * t) * np.sin(t)
+    x2 = -a * np.exp(b * t) * np.cos(t)
+    y2 = -a * np.exp(b * t) * np.sin(t)
 
-# ;;;; define velocity curve ;;;;
-    x=np.arange(0.,5000)
-    velfunc = interpolate.interp1d([0.00,0.5,1,3,5000],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
-# ;;;;
+    inclouds = np.empty((len(t) * 2, 3))
+    inclouds[:, 0] = np.concatenate((x1, x2)) / 20
+    inclouds[:, 1] = np.concatenate((y1, y2)) / 20
+    inclouds[:, 2] = np.concatenate((x1 * 0, x2 * 0))
 
-# ;;;; run the simulation ;;;;
-    f = KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90).model_cube()
-    
-    mom0rot=f.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
+    inclouds = inclouds[(abs(inclouds[:, 0]) > 2) & (abs(inclouds[:, 1]) > 2.0), :]
 
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-                 
-    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
-    ax1 = fig.add_subplot(121, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-    ax2 = fig.add_subplot(122, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-    plt.show()
-# ;;;;
+    # Define a velocity curve
+    x = np.arange(0, 5000)
+    velfunc = interpolate.interp1d([0, 0.5 ,1 ,3, 5000], [0, 50, 100, 210, 210], kind='linear')
+    vel = velfunc(x)
 
-# ;;;; Plot the results ;;;;
-    #plot=makeplots(cube,xsize,ysize,vsize,cellsize,dv,beamsize,pvdthick=50.)
-# ;;;;
-    
-#kinms = KinMS()
-#start =  time.time()
-#for _ in tqdm(range(100)):
-#        KinMStest_inclouds_spiral()
-#end = time.time()
-#print(end-start)
-    
-#KinMStest_inclouds_spiral()
+    # Create the cube
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, intFlux=intflux, inClouds=inclouds, velProf=vel, velRad=x, posAng=posang)
 
-### 14.279079914093018
+    # Plot the results
+    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, pvdthick=50)
 
 
-def KinMStest_infits():
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure demonstrates how to use the
-# ; an input FITS image to create a simulation of what the molecular gas
-# ; may look like, with a given instrument (in this case CARMA). We use a
-# ; GALEX (Morrissey et al., 2007) FUV image of NGC1437A, and scale it
-# ; assuming the FUV emission comes from star-formation and thus
-# ; molecular gas, and that the galaxy has a total integrated CO flux of
-# ; 30 Jy km/s. We use the FITS image to set the surface-brightness, and
-# ; impose a flat velocity gradient.
-# ;
-# ;;;;;;;;;;;
-#
-# ;;;; Setup cube parameters ;;;;
-    xsize=128
-    ysize=128
-    vsize=500
-    cellsize=1.0
-    dv=10
-    beamsize=4.
-    inc=0.
-# ;;;;
-#
-#
-# ;;;; Read in the FITS file and create the INCLOUDS variables based on it ;;;;
-    phasecent=[88,61] # point we wish to correspond to the phase centre in the simulation
+def infits():
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates
+    how to use an input FITS image to create a simulation of what the molecular gas may look like, with a given
+    instrument (in this case CARMA). We use a GALEX (Morrissey et al., 2007) FUV image of NGC1437A, and scale it
+    assuming the FUV emission comes from star-formation and thus molecular gas, and that the galaxy has a total
+    integrated CO flux of 30 Jy km/s. We use the FITS image to set the surface-brightness, and impose a flat velocity
+    gradient.
+    :return: N/A
+    """
+
+    # Set up the cube parameters
+    xsize = 128
+    ysize = 128
+    vsize = 500
+    cellsize = 1
+    dv = 10
+    beamsize = 4
+    inc = 0
+    intflux = 30
+
+    # Read in the FITS file and create the "inclouds" variables based on it
+    phasecent = [88, 61]
+
     hdulist = fits.open('test_suite/NGC1437A_FUV.fits')
     fin = hdulist[0].data.T
-    s=fin.shape
+    s = fin.shape
+
+    xvec = np.arange(0 - phasecent[0], s[0] - phasecent[0]) * (hdulist[0].header['cdelt1'] * 3600)
+    yvec = np.arange(0 - phasecent[1], s[1] - phasecent[1]) * (hdulist[0].header['cdelt2'] * 3600)
+    w = np.where(fin > 0.002)
+    flux_clouds = fin[w]  # Clip the image to avoid FUV noise entering the simulation
+    x = xvec[w[0]]
+    y = yvec[w[1]]
+
+    inclouds = np.empty((x.size, 3))
+    inclouds[:, 0] = x
+    inclouds[:, 1] = y
+    inclouds[:, 2] = x * 0
     
+    ang = np.radians(80)
+    velfunc = interpolate.interp1d([-130, 0, 130], [-400, 0, 400], kind='linear')
 
-    xvec=np.arange(0-phasecent[0], s[0]-phasecent[0])*(hdulist[0].header['cdelt1']*3600.)
-    yvec=np.arange(0-phasecent[1], s[1]-phasecent[1])*(hdulist[0].header['cdelt2']*3600.)
-    w=np.where(fin > 0.002) # clip the image to avoid FUV noise entering the simulation
-    flux_clouds=fin[w]
-    x=xvec[w[0]]
-    y=yvec[w[1]]
-    inclouds=np.empty((x.size,3))
-    inclouds[:,0]=x
-    inclouds[:,1]=y
-    inclouds[:,2]=x*0.0
+    vlos_clouds = velfunc(y * np.sin(ang) + x * np.cos(ang))  # Impose a flat velocity profile
+
+    # Create the cube
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, intFlux=intflux, inClouds=inclouds,
+                     vLOS_clouds = vlos_clouds, flux_clouds = flux_clouds)
+
+    # Plot the results
+    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize)
+
+
+def veldisp():
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates
+    how to create a simulation of an exponential disk of molecular gas with a velocity dispersion that varies with
+    radius.
+    :return: N/A
+    """
+
+    # Set up cube parameters
+    xsize = 128
+    ysize = 128
+    vsize = 1400
+    cellsize = 1
+    dv = 10
+    beamsize = 2
+    intflux = 30
+    posang = 90
+
+    # Set up exponential disk SB profile/velocity
+    fcent = 10
+    scalerad = 20
+    inc = 30
+    x = np.arange(0, 100, 0.1)
+    fx = fcent * np.exp(-x / scalerad)
+    velfunc = interpolate.interp1d([0, 0.5, 1, 3, 500], [0, 50, 100, 210, 210], kind='linear')
+    vel = velfunc(x)
+    gassigfunc = interpolate.interp1d([0, 20, 500], [50, 8, 8], kind='linear')
+    gassigma = gassigfunc(x)
+
+    # Create the cube
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velRad=x, velProf=vel,
+                     intFlux=intflux, gasSigma=gassigma, posAng=posang)
+
+    # Plot the reults
+    #makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, vrange=[-200, 200], posang=posang)
+
+
+def diskthick():
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates
+    how to create a simulation of an exponential disk of molecular gas with a thickness that varies with radius. Any
+    default parameters can be changed by specifying them at the command line (see KinMS.pro for the full details of all
+    the available parameters).
+    :return: N/A
+    """
+
+    # Set up cube parameters
+    xsize = 128
+    ysize = 128
+    vsize = 1400
+    cellsize = 1
+    dv = 10
+    beamsize = 2
+    intflux = 30
+    posang = 270
+
+    # Set up exponential disk SB profile/velocity
+    fcent = 10
+    scalerad = 20
+    inc = 90
+    x = np.arange(0, 100, 0.1)
+    fx = fcent * np.exp(-x / scalerad)
+    velfunc = interpolate.interp1d([0, 0.5, 1, 3, 500], [0, 50, 100, 210, 210], kind='linear')
+    vel = velfunc(x)
+    diskthickfunc = interpolate.interp1d([0, 10, 15, 20, 200], [1, 1, 5, 15, 15], kind='linear')
+    diskthick = diskthickfunc(x)
+
+    # Create the cube
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
+                     diskThick = diskthick, posAng=posang)
+
+    # Plot the results
+    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, vrange=[-250, 250], posang=90, xrange=[-30, 30],
+              yrange=[-30, 30])
+
+
+def warp():
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates
+    how to create a simulation of a warped exponential disk of molecular gas.
+    :return: N/A
+    """
+
+    # Set up the cube parameters
+    xsize = 128
+    ysize = 128
+    vsize = 1400
+    cellsize = 1
+    dv = 10
+    beamsize = 2
+    intflux = 30
+
+    # Set up exponential disk SB profile/velocity
+    fcent = 10
+    scalerad = 20
+    inc = 60
+    x = np.arange(0, 100, 0.1)
+    fx = fcent * np.exp(-x / scalerad)
+    velfunc = interpolate.interp1d([0, 0.5, 1, 3, 500], [0, 50, 100, 210, 210], kind='linear')
+    vel = velfunc(x)
+    diskthickfunc = interpolate.interp1d([0, 15, 50, 500], [270, 270, 300, 300], kind='linear')
+    posang = diskthickfunc(x)
+
+    # Create the cube
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
+                     posAng=posang)
+
+    # Plot the results
+    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, vrange=[-250, 250], posang=270)
+
+
+def retclouds():
+    """
+    A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates
+    how to use the return clouds feature to recursivly build models - here a misaligned central and outer disc.
+    :return: N/A
+    """
+
+    # Set up the cube parameters
+    xsize = 64
+    ysize = 64
+    vsize = 1000
+    cellsize = 1
+    dv = 10
+    beamsize = [4, 4, 0]
+    intflux = 30
+    posang = 90
+    gassigma = 10
+
+    # Set up exponential disk SB profile/velocity for disc one
+    inc1 = 75
+    x1 = np.arange(0, 100, 0.1)
+    fx1 = np.exp(-x1 / 4)
+    fx1[x1 > 5] = 0
+    velfunc = interpolate.interp1d([0, 0.5, 1, 3, 500], [0, 50, 100, 210, 210], kind='linear')
+    vel = velfunc(x1)
+    nsamps1 = int(5e4)
+
+    # Run KinMS for disc 1
+    _, inclouds1, vlos1 = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc1, sbProf=fx1, sbRad=x1, velProf=vel,
+                                    nSamps=nsamps1, intFlux=intflux, posAng=posang, gasSigma=gassigma, returnClouds=True)
+
+    # Set up exponential disk SB profile for disc two
+    inc2 = 35
+    x2 = np.arange(0, 100, 0.1)
+    fx2 = np.exp(-x2 / 15)
+    fx2[x2 < 10] = 0
+    nsamps2 = int(1e6)
+
+    # Run KinMS for disc 2
+    _, inclouds2, vlos2 = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc2, sbProf=fx2, sbRad=x2, velProf=vel,
+                                    nSamps=nsamps2, intFlux=intflux, posAng=posang, gasSigma=gassigma, returnClouds=True)
+
+    # Combine
+    inclouds = np.concatenate((inclouds1, inclouds2), axis=0)
+    vlos = np.concatenate((vlos1, vlos2))
+
+    # Make a cube for the whole thing
+    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc1, inClouds=inclouds, vLOS_clouds=vlos,
+                     intFlux=intflux)
     
-    ang=np.radians(80.)
-    velfunc = interpolate.interp1d([-130,0,130],[-400,0,400], kind='linear')
-
-    vlos_clouds=velfunc(y*np.sin(ang)+x*np.cos(ang)) # impose a flat velocity profile
-
-# ;;;;
-#
-# ;;;; run the simulation ;;;;
-    
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intFlux=30.,inClouds=inclouds,vLOS_clouds=vlos_clouds,flux_clouds=flux_clouds).model_cube()
-    
-    mom0rot=f.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
-
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-                 
-    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
-    ax1 = fig.add_subplot(121, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-    ax2 = fig.add_subplot(122, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-    plt.show()
-# ;;;; Plot the results ;;;;
-    #plot=makeplots(cube,xsize,ysize,vsize,cellsize,dv,beamsize)
-# ;;;;
-
-#kinms = KinMS()
-#start =  time.time()
-#for _ in tqdm(range(100)):
-#        KinMStest_infits()
-#end = time.time()
-#print(end-start)
-
-### 14.592328548431396
-    
-#KinMStest_infits()
-
-
-def KinMStest_veldisp():
-# ;;;;;;;;;;;
-#;
-#; A test procedure to demonstrate the KinMS code, and check if it
-#; works on your system. This procedure demonstrates how to create a simulation of an
-#; exponential disk of molecular gas with a velocity dispersion that
-#; varies with radius.
-#;
-#;;;;;;;;;;;
-# ;;;; Setup cube parameters ;;;;
-    xsize=128
-    ysize=128
-    vsize=1400
-    cellsize=1.0
-    dv=10
-    beamsize=2.
-    nsamps=5e5
-# ;;;;
-
-# ;;;; Set up exponential disk SB profile/velocity ;;;;
-    fcent=10.
-    scalerad=20.
-    inc=30.
-    x=np.arange(0,100,0.1)
-    fx = fcent*np.exp(-x/scalerad)
-    velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
-    gassigfunc = interpolate.interp1d([0,20,500],[50,8,8], kind='linear')
-    gassigma=gassigfunc(x)
-# ;;;;
-
-# ;;;; Simulate ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,gasSigma=gassigma,posAng=90).model_cube()
-    
-    mom0rot=f.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
-
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-                 
-    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
-    ax1 = fig.add_subplot(121, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-    ax2 = fig.add_subplot(122, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-    plt.show()
-# ;;;;
-
-# ;;;; Plot
-    #plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,vrange=[-200,200],posang=90)
-    
-#kinms = KinMS()
-#start =  time.time()
-#for _ in tqdm(range(100)):
-#        KinMStest_veldisp()
-#end = time.time()
-#print(end-start)
-
-### 53.321778535842896
-    
-#KinMStest_veldisp()
-
-
-def KinMStest_diskthick():
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure demonstrates how to create a simulation of an
-# ; exponential disk of molecular gas with a thickness that
-# ; varies with radius. Any default paramaters
-# ; can be changed by specifying them at the command line (see KinMS.pro
-# ; for the full details of all the avaliable parameters).
-# ;
-# ;
-# ;;;;;;;;;;;
-
-# ;;;; Setup cube parameters ;;;;
-    xsize=128
-    ysize=128
-    vsize=1400
-    cellsize=1.0
-    dv=10
-    beamsize=2.
-    nsamps=5e5
-# ;;;;
-
-# ;;;; Set up exponential disk SB profile/velocity ;;;;
-    fcent=10.
-    scalerad=20.
-    inc=90.
-    x=np.arange(0,100,0.1)
-    fx = fcent*np.exp(-x/scalerad)
-    velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
-    diskthickfunc = interpolate.interp1d([0,10,15,20,200],[1,1,5,15,15], kind='linear')
-    diskthick=diskthickfunc(x)
-# ;;;;
-
-# ;;;;  ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,diskThick=diskthick,posAng=270).model_cube()
-    
-    mom0rot=f.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
-
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-                 
-    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
-    ax1 = fig.add_subplot(121, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-    ax2 = fig.add_subplot(122, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-    plt.show()
-# ;;;;
-
-# ;;;; Plot
-    #plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,vrange=[-250,250],posang=90,xrange=[-30,30],yrange=[-30,30])
-
-#kinms = KinMS()
-#start =  time.time()
-#for _ in tqdm(range(100)):
-#        KinMStest_diskthick()
-#end = time.time()
-#print(end-start)
-
-### 46.2593457698822
-    
-#KinMStest_diskthick()
-
-
-def KinMStest_warp():
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure demonstrates how to create a simulation of a
-# ; warped exponential disk of molecular gas. 
-# ;
-# ;;;;;;;;;;;
-
-# ;;;; Setup cube parameters ;;;;
-    xsize=128
-    ysize=128
-    vsize=1400
-    cellsize=1.0
-    dv=10
-    beamsize=2.
-    nsamps=5e5
-# ;;;;
-
-# ;;;; Set up exponential disk SB profile/velocity ;;;;
-    fcent=10.
-    scalerad=20.
-    inc=60.
-    x=np.arange(0,100,0.1)
-    fx = fcent*np.exp(-x/scalerad)
-    velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
-    diskthickfunc = interpolate.interp1d([0.0,15,50,500],[270,270,300,300], kind='linear')
-    posang=diskthickfunc(x)
-# ;;;;
-
-# ;;;; Simulate ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=posang).model_cube()
-# ;;;;
-    
-    mom0rot=f.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
-
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*f[i,j,:]).sum()/f[i,j,:].sum()
-                 
-    levs=v1[np.where(f.sum(axis=0).sum(axis=0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
-    ax1 = fig.add_subplot(121, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-    ax2 = fig.add_subplot(122, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-    plt.show()
-
-# ;;;; Plot
-    #plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,vrange=[-250,250],posang=270)
-
-#kinms = KinMS()
-#start =  time.time()
-#for _ in tqdm(range(100)):
-#        KinMStest_warp()
-#end = time.time()
-#print(end-start)
-
-### 47.74343419075012
-    
-#KinMStest_warp()
-
-
-def KinMStest_retclouds():
-# ;;;;;;;;;;;
-# ;
-# ; A test procedure to demonstrate the KinMS code, and check if it
-# ; works on your system. This procedure demonstrates how to use the
-# ; return clouds feature to recursivly build models - here a 
-# ; misaligned central and outer disc.
-# ;
-# ;;;;;;;;;;;
-
-# ;;;; Setup cube parameters ;;;;
-    xsize=64.
-    ysize=64.
-    vsize=1000
-    cellsize=1
-    dv=10
-    beamsize=[4.,4.,0.]
-
-
-# ;;;; Set up exponential disk SB profile/velocity for disc one ;;;;
-    inc=75.
-    x=np.arange(0,100,0.1)
-    fx = np.exp(-x/4.)
-    fx[np.where(x > 5.)]=0.0
-    velfunc = interpolate.interp1d([0.0,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
-    nsamps=5e4
-# ;;;;
-
-# ;;;; Simulate disc 1 ;;;;
-    __,inclouds1,vlos1=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=90,gasSigma=10.,returnClouds=True)
-
-# ;;;; Set up exponential disk SB profile for disc two ;;;;
-    inc=35.
-    x=np.arange(0,100,0.1)
-    fx = np.exp(-x/15.)
-    fx[np.where(x < 10.)]=0.0
-    nsamps=1e6
-# ;;;;
-
-# ;;;; Simulate disc 2 ;;;;
-    __,inclouds2,vlos2=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,returnClouds=True)
-
-# ;;;; Combine ;;;;
-
-    inclouds=np.concatenate((inclouds1,inclouds2),axis=0)
-    vlos=np.concatenate((vlos1,vlos2))
-
-# ;;;; Simulate whole thing ;;;;
-    
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,inClouds=inclouds,vLOS_clouds=vlos,intFlux=30.)
-    
-
-# ;;;; Plot
-    plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.)
+    # Plot the results
+    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang)
 
 
 def run_tests():
     print("Test - simulate the gas ring in NGC4324")
     print("[Close plot to continue]")
-    KinMStest_ngc4324()
+    ngc4324()
     print("Test - simulate an exponential disk")
     print("[Close plot to continue]")
-    KinMStest_expdisk()
+    expdisk()
     print("Test - using the INCLOUDS mechanism - unrealistic")
     print("[Close plot to continue]")
-    KinMStest_inclouds()
+    use_inclouds()
     print("Test - using the INCLOUDS mechanism - realistic")
     print("[Close plot to continue]")
-    KinMStest_inclouds_spiral()
+    inclouds_spiral()
     print("Test - using a FITS file as input")
     print("[Close plot to continue]")
-    KinMStest_infits()
+    infits()
     print("Test - using variable velocity dispersion")
     print("[Close plot to continue]")
-    KinMStest_veldisp()
+    veldisp()
     print("Test - using variable disk thickness")
     print("[Close plot to continue]")
-    KinMStest_diskthick()
+    diskthick()
     print("Test - simulate a warped exponential disk")
     print("[Close plot to finish]")
-    KinMStest_warp()
+    warp()
     print("Test - using the returnclouds mechanism")
     print("[Close plot to finish]")
-    KinMStest_retclouds()
+    retclouds()
     print("Test - using the gravgas mechanism")
-    KinMStest_expdisk_gasgrav()
-    
+    expdisk_gasgrav()
+
+
+#profile.run('retclouds()')
+
+
+"""
+cProfile tests:
+- makebeam: 0 seconds
+- kinms_sampleFromArbDist_oneSided: ~0.1 seconds
+- kinms_create_velField_oneSided: ~0.2 seconds
+- gasGravity_velocity: ~0.4 seconds
+- save_fits: ~0.03 seconds
+
+- Profiling is not very helpful at the moment because there is too much in model_cube
+- The variable nSamps should be able to take floats, so should be set to an int in the init
+- retClouds is throwing an error but I'm too tired to look into it now
+- Plot function needs to be an option in KinMS
+"""
