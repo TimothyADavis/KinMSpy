@@ -27,6 +27,9 @@ from TimMS import KinMS
 from scipy import interpolate
 from sauron_colormap import sauron
 
+import time
+from tqdm import tqdm
+
 #=============================================================================#
 #/// TESTY TEST //////////////////////////////////////////////////////////////#
 #=============================================================================#
@@ -60,6 +63,8 @@ def exp_disk():
 #/// WITH GASGRAV  ///////////////////////////////////////////////////////////#
 #=============================================================================#
         
+start =  time.time()
+        
 def gasgrav():
 
         scalerad=5.
@@ -82,66 +87,72 @@ def gasgrav():
         # ;;;;
         
         # ;;;; Simulate and plot ;;;;
-        kinms = KinMS()
         cube=kinms(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,
-                   velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,verbose=True)
+                   velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,verbose=False)
         
-        mom0rot=cube.sum(axis=2)
-        x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-        y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-        v1=np.arange(-vsize/2.,vsize/2.,dv)
-        
-        mom1=(mom0rot*0.0)-10000.0
-        for i in range(0,int(xsize/cellsize)):
-             for j in range(0,int(ysize/cellsize)):
-                 if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                     mom1[i,j]=(v1*cube[i,j,:]).sum()/cube[i,j,:].sum()
-                         
-        levs=v1[np.where(cube.sum(axis=0).sum(axis=0))]
-        fig = plt.figure()
-        fig.patch.set_facecolor('white')
-        ax1 = fig.add_subplot(121, aspect='equal')
-        plt.xlabel('Offset (")')
-        plt.ylabel('Offset (")')
-        ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-        ax2 = fig.add_subplot(122, aspect='equal')
-        plt.xlabel('Offset (")')
-        plt.ylabel('Offset (")')
-        ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-        plt.show()                 
+#        mom0rot=cube.sum(axis=2)
+#        x1=np.arange(-xsize/2.,xsize/2.,cellsize)
+#        y1=np.arange(-ysize/2.,ysize/2.,cellsize)
+#        v1=np.arange(-vsize/2.,vsize/2.,dv)
+#        
+#        mom1=(mom0rot*0.0)-10000.0
+#        for i in range(0,int(xsize/cellsize)):
+#             for j in range(0,int(ysize/cellsize)):
+#                 if mom0rot[i,j] > 0.1*np.max(mom0rot):
+#                     mom1[i,j]=(v1*cube[i,j,:]).sum()/cube[i,j,:].sum()
+#                         
+#        levs=v1[np.where(cube.sum(axis=0).sum(axis=0))]
+#        fig = plt.figure()
+#        fig.patch.set_facecolor('white')
+#        ax1 = fig.add_subplot(121, aspect='equal')
+#        plt.xlabel('Offset (")')
+#        plt.ylabel('Offset (")')
+#        ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
+#        ax2 = fig.add_subplot(122, aspect='equal')
+#        plt.xlabel('Offset (")')
+#        plt.ylabel('Offset (")')
+#        ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
+#        plt.show()                 
         
         cube=kinms(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,
-                   velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,gasGrav=[gasmass,dist],verbose=True)
+                   velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,gasGrav=[gasmass,dist],verbose=False)
         
-        mom0rot=cube.sum(axis=2)
-        x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-        y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-        v1=np.arange(-vsize/2.,vsize/2.,dv)
-        
-        mom1=(mom0rot*0.0)-10000.0
-        for i in range(0,int(xsize/cellsize)):
-             for j in range(0,int(ysize/cellsize)):
-                 if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                     mom1[i,j]=(v1*cube[i,j,:]).sum()/cube[i,j,:].sum()
-                         
-        levs=v1[np.where(cube.sum(axis=0).sum(axis=0))]
-        fig = plt.figure()
-        fig.patch.set_facecolor('white')
-        ax1 = fig.add_subplot(121, aspect='equal')
-        plt.xlabel('Offset (")')
-        plt.ylabel('Offset (")')
-        ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-        ax2 = fig.add_subplot(122, aspect='equal')
-        plt.xlabel('Offset (")')
-        plt.ylabel('Offset (")')
-        ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-        plt.show() 
-        
-#gasgrav()
+#        mom0rot=cube.sum(axis=2)
+#        x1=np.arange(-xsize/2.,xsize/2.,cellsize)
+#        y1=np.arange(-ysize/2.,ysize/2.,cellsize)
+#        v1=np.arange(-vsize/2.,vsize/2.,dv)
+#        
+#        mom1=(mom0rot*0.0)-10000.0
+#        for i in range(0,int(xsize/cellsize)):
+#             for j in range(0,int(ysize/cellsize)):
+#                 if mom0rot[i,j] > 0.1*np.max(mom0rot):
+#                     mom1[i,j]=(v1*cube[i,j,:]).sum()/cube[i,j,:].sum()
+#                         
+#        levs=v1[np.where(cube.sum(axis=0).sum(axis=0))]
+#        fig = plt.figure()
+#        fig.patch.set_facecolor('white')
+#        ax1 = fig.add_subplot(121, aspect='equal')
+#        plt.xlabel('Offset (")')
+#        plt.ylabel('Offset (")')
+#        ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
+#        ax2 = fig.add_subplot(122, aspect='equal')
+#        plt.xlabel('Offset (")')
+#        plt.ylabel('Offset (")')
+#        ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
+#        plt.show() 
+ 
+#kinms = KinMS()
+#for _ in tqdm(range(1000)):
+#        gasgrav()
+#        
+#end = time.time()
+#print(end-start)
 
 #=============================================================================#
 #/// INCLLOUDS TEST  /////////////////////////////////////////////////////////#
 #=============================================================================#
+
+
         
 def inclouds():
 
@@ -161,31 +172,37 @@ def inclouds():
     kinms = KinMS()        
     cube=kinms(xsize,ysize,vsize,cellsize,dv,beamsize,inc,intFlux=30.,inClouds=inclouds,velProf=vel,velRad=x,posAng=90.)
 
-    mom0rot=cube.sum(axis=2)
-    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
-    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
-    v1=np.arange(-vsize/2.,vsize/2.,dv)
+#    mom0rot=cube.sum(axis=2)
+#    x1=np.arange(-xsize/2.,xsize/2.,cellsize)
+#    y1=np.arange(-ysize/2.,ysize/2.,cellsize)
+#    v1=np.arange(-vsize/2.,vsize/2.,dv)
+#
+#    mom1=(mom0rot*0.0)-10000.0
+#    for i in range(0,int(xsize/cellsize)):
+#         for j in range(0,int(ysize/cellsize)):
+#             if mom0rot[i,j] > 0.1*np.max(mom0rot):
+#                 mom1[i,j]=(v1*cube[i,j,:]).sum()/cube[i,j,:].sum()
+#                 
+#    levs=v1[np.where(cube.sum(axis=0).sum(axis=0))]
+#    fig = plt.figure()
+#    fig.patch.set_facecolor('white')
+#    ax1 = fig.add_subplot(121, aspect='equal')
+#    plt.xlabel('Offset (")')
+#    plt.ylabel('Offset (")')
+#    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
+#    ax2 = fig.add_subplot(122, aspect='equal')
+#    plt.xlabel('Offset (")')
+#    plt.ylabel('Offset (")')
+#    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
+#    plt.show()        
+ 
+start =  time.time()
+for _ in tqdm(range(100)):
+        inclouds()
+end = time.time()
+print(end-start)
 
-    mom1=(mom0rot*0.0)-10000.0
-    for i in range(0,int(xsize/cellsize)):
-         for j in range(0,int(ysize/cellsize)):
-             if mom0rot[i,j] > 0.1*np.max(mom0rot):
-                 mom1[i,j]=(v1*cube[i,j,:]).sum()/cube[i,j,:].sum()
-                 
-    levs=v1[np.where(cube.sum(axis=0).sum(axis=0))]
-    fig = plt.figure()
-    fig.patch.set_facecolor('white')
-    ax1 = fig.add_subplot(121, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax1.contourf(x1,y1,mom0rot.T,levels=np.arange(0.1, 1.1, 0.1)*np.max(mom0rot), cmap="YlOrBr")
-    ax2 = fig.add_subplot(122, aspect='equal')
-    plt.xlabel('Offset (")')
-    plt.ylabel('Offset (")')
-    ax2.contourf(x1,y1,mom1.T,levels=levs, cmap=sauron)
-    plt.show()        
-        
-#inclouds()
+### Time = 10.686s
 
 #=============================================================================#
 #/// SPIRAL TEST  ////////////////////////////////////////////////////////////#

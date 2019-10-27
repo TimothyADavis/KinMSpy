@@ -12,6 +12,7 @@ import cProfile as profile
 def gaussian(x ,x0, sigma):
   return np.exp(-np.power((x - x0) / (sigma), 2) / 2)
 
+
 def makeplots(f, xsize, ysize, vsize, cellsize, dv, beamsize, posang=0, overcube=False, pvdthick=2, nconts=11, title=False, **kwargs):
     
     # Create plot data from the cube
@@ -280,6 +281,7 @@ def use_inclouds():
 
     # Plot the result
     makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize)
+    
 
 def inclouds_spiral():
     """
@@ -352,6 +354,7 @@ def infits():
 
     # Read in the FITS file and create the "inclouds" variables based on it
     phasecent = [88, 61]
+
     hdulist = fits.open('test_suite/NGC1437A_FUV.fits')
     fin = hdulist[0].data.T
     s = fin.shape
@@ -592,4 +595,5 @@ cProfile tests:
 - Profiling is not very helpful at the moment because there is too much in model_cube
 - The variable nSamps should be able to take floats, so should be set to an int in the init
 - retClouds is throwing an error but I'm too tired to look into it now
+- Plot function needs to be an option in KinMS
 """
