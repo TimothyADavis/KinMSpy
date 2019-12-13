@@ -25,9 +25,7 @@ from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
 import warnings; warnings.filterwarnings("ignore")
-
-import time
-import matplotlib.pyplot as plt
+from KinMS_figures import KinMS_plotter
 
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#
@@ -40,10 +38,10 @@ class KinMS:
     #=========================================================================#
 
     def __init__(self, xs, ys, vs, cellSize, dv, beamSize, inc, posAng, gasSigma=0, diskThick=0, flux_clouds=0, 
-                 sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], ra=None, 
-                 dec=None, nSamps=None, fixedSeed=None, intFlux=None, vSys=None, phaseCent=None, vOffset=None, 
-                 vRadial=None, vPosAng=None, vPhaseCent=None, restFreq=None, fileName=False, fixSeed=False, 
-                 cleanOut=False, returnClouds=False, verbose=False):
+                 sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], vRadial=[],
+                 ra=None, dec=None, nSamps=None, seed=None, intFlux=None, vSys=None, phaseCent=None, vOffset=None,
+                 vPosAng=None, vPhaseCent=None, restFreq=None, fileName=False, fixSeed=False,
+                 cleanOut=False, returnClouds=False, verbose=False, toplot=False):
 
         self.xs = xs
         self.ys = ys
@@ -55,14 +53,12 @@ class KinMS:
         self.vLOS_clouds = np.array(vLOS_clouds) 
         self.massDist = np.array(massDist)
         self.ra = ra 
-        self.dec = dec 
-        self.nSamps = int(nSamps) or int(5e5)
-        self.fixedSeed = fixedSeed or np.array([100, 101, 102, 103])
+        self.dec = dec
+        self.seed = seed or np.array([100, 101, 102, 103], dtype='int')
         self.intFlux = intFlux or 0
         self.vSys = vSys
         self.phaseCent = phaseCent or np.zeros(2)
-        self.vOffset = vOffset or 0        
-        self.vRadial = vRadial or 0
+        self.vOffset = vOffset or 0
         self.vPosAng = vPosAng or 0
         self.vPhaseCent = vPhaseCent or np.zeros(2)
         self.restFreq = restFreq or 115.271e9
@@ -71,60 +67,74 @@ class KinMS:
         self.cleanOut = cleanOut
         self.returnClouds = returnClouds
         self.verbose = verbose
+        self.toplot = toplot
+
+        if not nSamps:
+            self.nSamps = int(5e5)
+        else:
+            self.nSamps = int(nSamps)
 
         try:
-            if len(inc) > 1:
+            if len(inc) > -1:
                 self.inc = np.array(inc)
         except:
             self.inc = np.array([inc])
 
         try:
-            if len(posAng) > 1:
+            if len(posAng) > -1:
                 self.posAng = np.array(posAng)
         except:
             self.posAng = np.array([posAng])
 
         try:
-            if len(gasSigma) > 1:
+            if len(gasSigma) > -1:
                 self.gasSigma = np.array(gasSigma)
         except:
             self.gasSigma = np.array([gasSigma])
 
         try:
-            if len(diskThick) > 1:
+            if len(diskThick) > -1:
                 self.diskThick = np.array(diskThick)
         except:
             self.diskThick = np.array([diskThick])
 
         try:
-            if len(sbProf) > 1:
+            if len(sbProf) > -1:
                 self.sbProf = np.array(sbProf)
         except:
             self.sbProf = np.array([sbProf])
 
         try:
-            if len(sbRad) > 1:
-                self.inc = np.array(sbRad)
+            if len(sbRad) > -1:
+                self.sbRad = np.array(sbRad)
         except:
             self.sbRad = np.array([sbRad])
 
         try:
-            if len(velRad) > 1:
+            if len(velRad) > -1:
                 self.velRad = np.array(velRad)
         except:
             self.velRad = np.array([velRad])
 
         try:
-            if len(velProf) > 1:
+            if len(velProf) > -1:
                 self.velProf = np.array(velProf)
         except:
             self.velProf = np.array([velProf])
 
         try:
-            if len(flux_clouds) > 1:
+            if len(flux_clouds) > -1:
                 self.flux_clouds = np.array(flux_clouds)
         except:
             self.flux_clouds = np.array([flux_clouds])
+
+        try:
+            if len(vRadial) > 1:
+                self.vRadial = np.array(vRadial)
+            else:
+                self.vRadial = np.array([0])
+        except:
+            self.vRadial = np.array([vRadial])
 
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
@@ -225,9 +235,9 @@ class KinMS:
 
         # If variables are not entered by user, adopt default (global) values.
         if not fixSeed:
-            seed = np.random.uniform(0,100,4)
+            seed = np.random.uniform(0, 100, 4).astype('int')
         else:
-            seed = self.fixedSeed
+            seed = self.seed
         
         # Randomly generate the radii of clouds based on the distribution given by the brightness profile.
         px = scipy.integrate.cumtrapz(sbProf * 2 * np.pi * abs(sbRad), abs(sbRad), initial=0) #  Integrates the surface brightness profile
@@ -242,21 +252,16 @@ class KinMS:
         phi = rng2.random_sample(nSamps) * 2 * np.pi
 
         # Find the thickness of the disk at the radius of each cloud.
-        try:
-            if len(diskThick) != len(sbRad):
-                print('\n \n ... Please make sure the length of diskThick is the same as that of sbRad! Returning.')
-                return
+        if len(diskThick) > 1 and len(diskThick) != len(sbRad):
+            print('\n \n ... Please make sure the length of diskThick is the same as that of sbRad! Returning.')
+            return
 
-            elif len(diskThick) > 1:
-                diskThick = np.array(diskThick)
-                interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear')
-                diskThick_here = interpfunc2(r_flat)
-                if self.verbose: print('using the scale height profile provided.')
-            else:
-                diskThick_here = diskThick
-                if self.verbose: print('using a constant scale height of ' + str(diskThick) + '.')
-
-        except:
+        elif len(diskThick) > 1:
+            diskThick = np.array(diskThick)
+            interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear')
+            diskThick_here = interpfunc2(r_flat)
+            if self.verbose: print('using the scale height profile provided.')
+        else:
             diskThick_here = diskThick
             if self.verbose: print('using a constant scale height of ' + str(diskThick) + '.')
 
@@ -291,13 +296,13 @@ class KinMS:
         #start = time.time()
 
         if not self.fixSeed:
-            seed = np.random.uniform(0, 100, 4)
+            seed = np.random.uniform(0, 100, 4).astype('int')
         else:
-            seed = self.fixedSeed
+            seed = self.seed
                                                                 
-        velInterFunc = interpolate.interp1d(velRad, self.velProf, kind='linear') # Interpolate the velocity profile as a function of radius
+        velInterFunc = interpolate.interp1d(velRad, self.velProf, kind='linear')  # Interpolate the velocity profile as a function of radius
         
-        vRad = velInterFunc(self.r_flat) # Evaluate the velocity profile at the sampled radii
+        vRad = velInterFunc(self.r_flat)  # Evaluate the velocity profile at the sampled radii
 
         # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
         rng4 = np.random.RandomState(seed[3]) 
@@ -693,7 +698,7 @@ class KinMS:
         self.vPhaseCent = self.vPhaseCent / [self.cellSize, self.cellSize]
 
         # If cloudlets not previously specified, generate them
-        if not len(self.inClouds):
+        if len(self.inClouds) < 1:
             self.generate_cloudlets()
 
         self.set_cloud_positions()
@@ -724,6 +729,10 @@ class KinMS:
         # If appropriate, generate the FITS file header and save to disc.
         if self.fileName:
             self.save_fits(cube, cent)
+
+        # Plot the results if so desired
+        if self.toplot:
+            KinMS_plotter(cube, self.xs, self.ys, self.vs, self.cellSize, self.dv, self.beamSize).makeplots()
 
         # Output the final cube
         if self.returnClouds:
