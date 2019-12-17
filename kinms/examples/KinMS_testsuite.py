@@ -7,6 +7,7 @@ from kinms.makebeam import makebeam
 from kinms.examples.sauron_colormap import sauron
 from astropy.io import fits
 import time
+import os.path
 
 def gaussian(x,x0,sigma):
   return np.exp(-np.power((x - x0)/(sigma), 2.)/2.)
@@ -109,7 +110,7 @@ def KinMStest_expdisk(scalerad=10.,inc=45.,fileName=None):
     x=np.arange(0,100,0.1)
     fx = np.exp(-x/scalerad)
     # velfunc = interpolate.interp1d([0.0,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=(v_flat*2/np.pi)*np.arctan(rad/r_turn)
+    vel=(v_flat*2/np.pi)*np.arctan(x/r_turn)
 # ;;;;
 
 # ;;;; Simulate ;;;;
@@ -563,9 +564,11 @@ def KinMStest_retclouds():
 
 
 def run_tests():
-    print("Test - simulate the gas ring in NGC4324")
-    print("[Close plot to continue]")
-    KinMStest_ngc4324()
+    
+    if os.path.isfile("NGC4324.fits"): 
+        print("Test - simulate the gas ring in NGC4324")
+        print("[Close plot to continue]")
+        KinMStest_ngc4324()
     print("Test - simulate an exponential disk")
     print("[Close plot to continue]")
     KinMStest_expdisk()
@@ -575,9 +578,10 @@ def run_tests():
     print("Test - using the INCLOUDS mechanism - realistic")
     print("[Close plot to continue]")
     KinMStest_inclouds_spiral()
-    print("Test - using a FITS file as input")
-    print("[Close plot to continue]")
-    KinMStest_infits()
+    if os.path.isfile("NGC1437A_FUV.fits"): 
+        print("Test - using a FITS file as input")
+        print("[Close plot to continue]")
+        KinMStest_infits()
     print("Test - using variable velocity dispersion")
     print("[Close plot to continue]")
     KinMStest_veldisp()
