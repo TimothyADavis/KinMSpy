@@ -2,7 +2,6 @@
 """
 Copyright (C) 2016, Timothy A. Davis
 E-mail: DavisT -at- cardiff.ac.uk
-
 Updated versions of the software are available through github:
 https://github.com/TimothyADavis/KinMSpy
  
@@ -10,7 +9,6 @@ If you have found this software useful for your research,
 I would appreciate an acknowledgment to the use of the
 "KINematic Molecular Simulation (KinMS) routines of Davis et al., (2013)".
 [MNRAS, Volume 429, Issue 1, p.534-555]
-
 This software is provided as is without any warranty whatsoever.
 For details of permissions granted please see LICENCE.md
 """
@@ -23,7 +21,6 @@ from kinms.makebeam import makebeam
 
 def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
     """
-
     This function takes the input radial distribution and generates the positions of
     `nsamps` cloudlets from under it. It also accounts for disk thickness
     if requested. Returns 
@@ -47,7 +44,6 @@ def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
             The disc scaleheight. If a single value then this is used at all radii.
             If a ndarray then it should have the same length as sbrad, and will be 
             the disc thickness as a function of sbrad. 
-
     Returns
     -------
     inClouds : np.ndarray of double
@@ -55,9 +51,7 @@ def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
             the x, y, z position of a cloudlet. 
     """
     #Randomly generate the radii of clouds based on the distribution given by the brightness profile
-    px = np.zeros(len(sbProf))
-    sbProf = sbProf * (2 * np.pi * abs(sbRad))  
-    px = np.cumsum(sbProf)
+    px=scipy.integrate.cumtrapz(sbProf*2.*np.pi*abs(sbRad),abs(sbRad),initial=0.)
     px /= max(px)           
     rng1 = np.random.RandomState(seed[0])            
     pick = rng1.random_sample(nSamps)  
@@ -94,7 +88,6 @@ def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
 
 def kinms_create_velField_oneSided(velRad,velProf,r_flat,inc,posAng,gasSigma,seed,xPos,yPos,vPhaseCent=[0.0,0.0],vPosAng=False,vRadial=0.0,posAng_rad=0.0,inc_rad=0.0):
     """
-
     This function takes the input circular velocity distribution
     and the position of point sources and creates the velocity field 
     taking into account warps, inflow/outflow etc as required.
@@ -257,7 +250,6 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
     
     The main KinMS function. Takes inputs specifing the observing parameters and type of model.
     Returns the created model cube.
-
     Parameters
     ----------
     xs : float
@@ -382,7 +374,6 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
         (Default value= False)
         If set True then KinMS returns the created `inclouds` and `vlos_clouds`
         in addition to the cube.
-
     Other Parameters
     ----------------
     
@@ -407,7 +398,6 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
     vsys : double, optional
          (Default value = 0)
         Systemic velocity (km/s). 
-
     Returns
     -------
     
@@ -441,8 +431,8 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
     ySize = float(round(ys/cellSize))
     vSize = float(round(vs/dv))
     cent = [(xSize/2.) + (phaseCen[0] / cellSize),(ySize / 2.) + (phaseCen[1] / cellSize),(vSize / 2.) + (vOffset / dv)]
-    vPhaseCent = (vPhaseCen-phaseCen) / [cellSize,cellSize]
-
+    vPhaseCent = (vPhaseCen) / [cellSize,cellSize]
+    
     #If cloudlets not previously specified, generate them
     if not len(inClouds):
         inClouds = kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,fixSeed,diskThick=diskThick)
