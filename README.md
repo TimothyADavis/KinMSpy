@@ -15,9 +15,9 @@ It requires the following modules:
 ### Documentation
 
 
-To run the test suite, which demonstrates some of the functionality of this code, please install the software. Then:
+To run the test suite, which demonstrates some of the functionality of this code, please install the software. If you want to run the full suite of tests you also need to download the two fits files included in this repo, and put them in your working directory, however the rest of the tests will still run without this. Once this is done then run the following from within an ipython terminal:
+
 ```
-ipython
 from kinms.examples.KinMS_testsuite import *
 run_tests()
 ```
