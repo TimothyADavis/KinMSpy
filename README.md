@@ -23,7 +23,7 @@ run_tests()
 ```
 examples/KinMS_testsuite.py contains the example code, which can be modified and updated for most use cases.
 
-To get you started fitting galaxies with KinMS, see the walk through here: https://github.com/TimothyADavis/KinMSpy/blob/master/documentation/KinMSpy_tutorial.ipynb
+To get you started fitting galaxies with KinMS, see the walk through here: https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/documentation/KinMSpy_tutorial.ipynb
 
 
 Author & License
@@ -31,4 +31,4 @@ Author & License
 
 Copyright 2019 Timothy A. Davis
 
-Built by `Timothy A. Davis <https://github.com/TimothyADavis>`. Licensed under the MIT License (see ``LICENSE``).
+Built by Timothy A. Davis <https://github.com/TimothyADavis>. Licensed under the MIT License (see ``LICENSE``).
