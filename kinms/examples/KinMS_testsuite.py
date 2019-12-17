@@ -1,10 +1,10 @@
 # coding: utf-8
-from KinMS import *
+from kinms import *
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate,ndimage
-from makebeam import makebeam
-from sauron_colormap import sauron
+from kinms.makebeam import makebeam
+from kinms.examples.sauron_colormap import sauron
 from astropy.io import fits
 import time
 
@@ -79,7 +79,7 @@ def makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=0,overcube=False,p
 
 
 
-def KinMStest_expdisk(scalerad=10.,inc=45.):
+def KinMStest_expdisk(scalerad=10.,inc=45.,fileName=None):
 # ;;;;;;;;;;;
 # ;
 # ; A test procedure to demonstrate the KinMS code, and check if it
@@ -102,16 +102,18 @@ def KinMStest_expdisk(scalerad=10.,inc=45.):
     dv=10
     beamsize=[4.,4.,0.]
     nsamps=5e5
+    v_flat=210.
+    r_turn=2.0
 
 # ;;;; Set up exponential disk SB profile/velocity ;;;;
     x=np.arange(0,100,0.1)
     fx = np.exp(-x/scalerad)
-    velfunc = interpolate.interp1d([0.0,0.5,1,3,500],[0,50,100,210,210], kind='linear')
-    vel=velfunc(x)
+    # velfunc = interpolate.interp1d([0.0,0.5,1,3,500],[0,50,100,210,210], kind='linear')
+    vel=(v_flat*2/np.pi)*np.arctan(rad/r_turn)
 # ;;;;
 
 # ;;;; Simulate ;;;;
-    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.)
+    f=KinMS(xsize,ysize,vsize,cellsize,dv,beamsize,inc,sbProf=fx,sbRad=x,velRad=x,velProf=vel,nSamps=nsamps,intFlux=30.,posAng=270,gasSigma=10.,fileName=None)
 
 # ;;;; Plot
     plot=makeplots(f,xsize,ysize,vsize,cellsize,dv,beamsize,posang=270.)
@@ -201,7 +203,7 @@ def KinMStest_ngc4324():
 
 # ;;; Read in data
 
-    hdulist = fits.open('test_suite/NGC4324.fits')
+    hdulist = fits.open('NGC4324.fits')
     scidata = hdulist[0].data.T
     scidata=scidata[:,:,:,0]
     scidata[np.where(scidata < np.std(scidata[:,:,0])*4.)]=0.0
@@ -283,7 +285,7 @@ def KinMStest_inclouds_spiral():
 # ;;;; Setup cube parameters ;;;;
     xsize=128
     ysize=128
-    vsize=1400
+    vsize=600
     cellsize=1
     dv=10
     beamsize=4.
@@ -348,7 +350,7 @@ def KinMStest_infits():
 #
 # ;;;; Read in the FITS file and create the INCLOUDS variables based on it ;;;;
     phasecent=[88,61] # point we wish to correspond to the phase centre in the simulation
-    hdulist = fits.open('test_suite/NGC1437A_FUV.fits')
+    hdulist = fits.open('NGC1437A_FUV.fits')
     fin = hdulist[0].data.T
     s=fin.shape
     
