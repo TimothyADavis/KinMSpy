@@ -23,11 +23,11 @@ import numpy as np
 import scipy.integrate
 from scipy import interpolate
 from astropy.io import fits
+from astropy.nddata.utils import Cutout2D
 from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 import warnings; warnings.filterwarnings("ignore")
 from KinMS_figures import KinMS_plotter
-from astropy.nddata.utils import Cutout2D
 
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#
