@@ -143,43 +143,67 @@ class KinMS:
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
 
-    def print_variables(self, param_dict):
-
-        # Make sure variables are printed in the right order and split up into user defined, default, and bools.
-        keys = list(param_dict.keys())[::-1]
-        values = list(param_dict.values())[::-1]
-        default_keys = []
-        default_values = []
-        bool_keys = []
-        bool_values = []
+    def print_variables(self):
 
         print("\n\n*** Hello and welcome to the grand KinMSpy :D ***")
 
+        default_dict = {}
+        option_dict = {}
+
         print('_' * 37 + '\n \n' + 'Setting user defined variables to: \n')
 
-        for i in range(len(keys)):
-            if values[i][1] == 0:
-                print(keys[i] + ' = ' + str(values[i][0]))
-            elif values[i][1] == 1:
-                default_keys.append(keys[i])
-                default_values.append(values[i])
+        for k, v in self.__dict__.items():
+
+            if isinstance(v, bool):
+                option_dict[k] = v
+            elif isinstance(v, (int, float)):
+                if k == 'restFreq' and v == 115.271e9:
+                    default_dict[k] = v
+                elif k == 'nSamps' and v == int(5e5):
+                    default_dict[k] = v
+                elif v > 0:
+                    print(k + ' = ' + str(v))
+                else:
+                    default_dict[k] = v
+            elif isinstance(v, np.ndarray):
+                if len(v) == 1:
+                    if v != 0:
+                        print(k + ' = ' + str(v))
+                    else:
+                        default_dict[k] = v
+                elif len(v) == 0:
+                    default_dict[k] = v
+                else:
+                    if (v != 0).all():
+                        if k == 'seed' and v[0] == 100 and v[3] == 103:
+                            default_dict[k] = v
+                            continue
+                        if len(v) > 5:
+                            print(k + ' = user defined array of length ' + str(len(v)))
+                        else:
+                            print(k + ' = ' + str(v))
+                    else:
+                        default_dict[k] = v
+
+        print('_' * 37 + '\n \n' + 'Setting default values to: \n')
+
+        for k, v in default_dict.items():
+            if isinstance(v, (int, float)):
+                print(k + ' = ' + str(v))
+            elif len(v) > 5:
+                print(k + ' = user defined array of length ' + str(len(v)))
             else:
-                bool_keys.append(keys[i])
-                bool_values.append(values[i])
+                print(k + ' = ' + str(v))
 
-        print('\nSetting default values to: \n')
+        print('_' * 37 + '\n \n' + 'Setting options to: \n')
 
-        for i in range(len(default_keys)):
-            print(default_keys[i] + ' = ' + str(default_values[i][0]))
+        for k, v in option_dict.items():
+            print(k + ' = ' + str(v))
 
-        print('\nSetting options to: \n')
-
-        for i in range(len(bool_keys)):
-            print(bool_keys[i] + ' = ' + str(bool_values[i][0]))
-
-        print('_' * 37)
+        print('_' * 37 + '\n')
 
         return
+
 
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
@@ -241,7 +265,7 @@ class KinMS:
         newsize = (idx[-1] - idx[0])  # the size of the actual (non-zero) beam is this
 
         if newsize % 2 == 0:
-            newsize += 1  # add 1 pixel just in case (keep in mind this is a radius)
+            newsize += 1  # add 1 pixel just in case
         else:
             newsize += 2  # if necessary to keep the kernel size odd, add 2 pixels
 
@@ -680,38 +704,9 @@ class KinMS:
         return cube
 
     def model_cube(self):
-            
-        """
-                                                       
-        # Set all values that were not defined by user to default values and make sure the right values get printed
-        local_vars = locals()
-        global_vars = vars(self)
-        print_dict = {} # 0 = user defined, 1 = default, 2 = bool
-        
-        #start =  time.time()
-
-        for k, v in local_vars.items():
-            try:
-                if not v == None:
-                    global_vars[k] = local_vars[k]
-                    if k != 'self':
-                        if type(v) != type(True):
-                            print_dict[k] = (global_vars[k], 0)
-                        else:
-                            print_dict[k] = (global_vars[k], 2)
-                else:
-                    print_dict[k] = (global_vars[k], 1)
-            except:
-                global_vars[k] = local_vars[k]
-                print_dict[k] = ('User defined array of length ' + str(len(global_vars[k])), 0)
-
-
-        self.__dict__.update(global_vars)
 
         if self.verbose:
-            self.print_variables(print_dict)
-            
-        """
+            self.print_variables()
                 
         # Work out images sizes
         x_size = np.round(self.xs / self.cellSize)
@@ -794,5 +789,4 @@ class KinMS:
 #=============================================================================#
 #/// END OF SCRIPT ///////////////////////////////////////////////////////////#
 #=============================================================================#
-
 
