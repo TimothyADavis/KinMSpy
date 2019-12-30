@@ -191,7 +191,7 @@ class KinMS:
             if isinstance(v, (int, float)):
                 print(k + ' = ' + str(v))
             elif len(v) > 5:
-                print(k + ' = user defined array of length ' + str(len(v)))
+                print(k + ' = default array of length ' + str(len(v)))
             else:
                 print(k + ' = ' + str(v))
 

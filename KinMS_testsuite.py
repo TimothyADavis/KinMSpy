@@ -39,9 +39,9 @@ def expdisk(scalerad=10, inc=45):
 
     return cube
 
-profile.run('expdisk()')
+#profile.run('expdisk()')
 
-#test = expdisk()
+test = expdisk()
 
     # Plot the results
     #makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=270)
