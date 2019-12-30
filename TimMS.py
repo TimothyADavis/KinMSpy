@@ -24,8 +24,10 @@ import scipy.integrate
 from scipy import interpolate
 from astropy.io import fits
 from astropy.convolution import convolve_fft
+from astropy.convolution import convolve
 import warnings; warnings.filterwarnings("ignore")
 from KinMS_figures import KinMS_plotter
+from astropy.nddata.utils import Cutout2D
 
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#
@@ -41,7 +43,7 @@ class KinMS:
                  sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], vRadial=[],
                  ra=None, dec=None, nSamps=None, seed=None, intFlux=None, vSys=None, phaseCent=None, vOffset=None,
                  vPosAng=None, vPhaseCent=None, restFreq=None, fileName=False, fixSeed=False,
-                 cleanOut=False, returnClouds=False, verbose=False, toplot=False):
+                 cleanOut=False, returnClouds=False, huge_beam=False, verbose=False, toplot=False):
 
         self.xs = xs
         self.ys = ys
@@ -66,6 +68,7 @@ class KinMS:
         self.fixSeed = fixSeed
         self.cleanOut = cleanOut
         self.returnClouds = returnClouds
+        self.huge_beam = huge_beam
         self.verbose = verbose
         self.toplot = toplot
 
@@ -193,6 +196,8 @@ class KinMS:
                 beamSize = np.append(beamSize, 0)
             if beamSize[1] > beamSize[0]:
                 beamSize[1], beamSize[0] = beamSize[0], beamSize[1]
+            if beamSize[2] >= 180:
+                beamSize[2] -= 180
         except:
             beamSize = np.array([beamSize, beamSize, 0])
 
@@ -221,7 +226,28 @@ class KinMS:
 
         psf = np.exp(-1 * (a * x ** 2 - 2 * b * (x * y) + c * y ** 2))
 
-        return psf
+        ### NEW BIT STARTS HERE ###
+
+        psf[psf < 1e-5] = 0  # set all kernel values that are very low to zero
+
+        # sum the psf in the beam major axis
+        if 45 < beamSize[2] < 135:
+            flat = np.sum(psf, axis=1)
+        else:
+            flat = np.sum(psf, axis=0)
+
+        idx = np.where(flat > 0)[0]  # find the location of the non-zero values of the psf
+
+        newsize = (idx[-1] - idx[0])  # the size of the actual (non-zero) beam is this
+
+        if newsize % 2 == 0:
+            newsize += 1  # add 1 pixel just in case (keep in mind this is a radius)
+        else:
+            newsize += 2  # if necessary to keep the kernel size odd, add 2 pixels
+
+        trimmed_psf = Cutout2D(psf, (cent[1], cent[0]), newsize).data  # cut around the psf in the right location
+
+        return trimmed_psf
 
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
@@ -719,9 +745,14 @@ class KinMS:
 
             psf = self.makebeam(x_size, y_size, self.beamSize)
 
-            for i in range(cube.shape[2]):
-                if np.sum(cube[:, :, i]) > 0:
-                    cube[:, :, i] = convolve_fft(cube[:, :, i], psf)
+            if not self.huge_beam:  # For very large beams convolve_fft is faster
+                for i in range(cube.shape[0]):
+                    if np.sum(cube[i, :, :]) > 0:
+                        cube[i, :, :] = convolve(cube[i, :, :], psf)
+            else:
+                for i in range(cube.shape[0]):
+                    if np.sum(cube[i, :, :]) > 0:
+                        cube[i, :, :] = convolve_fft(cube[i, :, :], psf)
 
         # Normalise the cube by known integrated flux
         self.normalise_cube(cube, psf)
