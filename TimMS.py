@@ -582,7 +582,8 @@ class KinMS:
         else:
             # If velRad is not defined but sbRad is, set velRad to sbRad
             if not len(self.velRad) and len(self.sbRad):
-                print('\n"velRad" not specified, setting it to "sbRad".')
+                if self.verbose:
+                    print('\n"velRad" not specified, setting it to "sbRad".')
                 self.velRad = self.sbRad
 
             if len(self.massDist) > 1:
@@ -742,12 +743,12 @@ class KinMS:
 
             if not self.huge_beam:  # For very large beams convolve_fft is faster
                 for i in range(cube.shape[0]):
-                    if np.sum(cube[i, :, :]) > 0:
-                        cube[i, :, :] = convolve(cube[i, :, :], psf)
+                    if np.sum(cube[:, :, i]) > 0:
+                        cube[:, :, i] = convolve(cube[:, :, i], psf)
             else:
                 for i in range(cube.shape[0]):
-                    if np.sum(cube[i, :, :]) > 0:
-                        cube[i, :, :] = convolve_fft(cube[i, :, :], psf)
+                    if np.sum(cube[:, :, i]) > 0:
+                        cube[:, :, i] = convolve_fft(cube[:, :, i], psf)
 
         # Normalise the cube by known integrated flux
         self.normalise_cube(cube, psf)
