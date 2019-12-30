@@ -21,7 +21,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../KinMSpy" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -128,5 +128,11 @@
     <MESSAGE value="Working through main, stopped halfway." />
     <MESSAGE value="Merge branch 'snoofles_branch'&#10;&#10;# Conflicts:&#10;#&#9;KinMS.py" />
     <option name="LAST_COMMIT_MESSAGE" value="Merge branch 'snoofles_branch'&#10;&#10;# Conflicts:&#10;#&#9;KinMS.py" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="776" y="311" width="424" height="491" key="FileChooserDialogImpl" timestamp="1577701748443">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="776" y="311" width="424" height="491" key="FileChooserDialogImpl/67.27.1853.1053@67.27.1853.1053" timestamp="1577701748443" />
   </component>
 </project>
