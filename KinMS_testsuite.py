@@ -1,4 +1,5 @@
-from TimMS import *; run_kinms = KinMS()
+from TimMS import KinMS
+from KinMS_figures import KinMS_plotter
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,116 +8,6 @@ from sauron_colormap import sauron
 from astropy.io import fits
 import time
 import cProfile as profile
-
-
-def gaussian(x ,x0, sigma):
-  return np.exp(-np.power((x - x0) / (sigma), 2) / 2)
-
-
-def makeplots(f, xsize, ysize, vsize, cellsize, dv, beamsize, posang=0, overcube=False, pvdthick=2, nconts=11, title=False, **kwargs):
-    
-    # Create plot data from the cube
-    mom0rot = f.sum(axis=2)
-
-    if np.any(overcube):
-        mom0over = overcube.sum(axis=2)
-
-    x1 = np.arange(-xsize/2, xsize/2, cellsize)
-    y1 = np.arange(-ysize/2, ysize/2, cellsize)
-    v1 = np.arange(-vsize/2, vsize/2, dv)
-
-    mom1 = (mom0rot * 0.0) - 10000.0
-    for i in range(0, int(xsize / cellsize)):
-        for j in range(0, int(ysize / cellsize)):
-            if mom0rot[i, j] > 0.1 * np.max(mom0rot):
-                mom1[i, j] = (v1 * f[i, j, :]).sum() / f[i, j, :].sum()
-
-    pvdcube = f
-    
-    pvdcube = ndimage.interpolation.rotate(f, 90 - posang, axes=(1, 0), reshape=False)
-
-    if np.any(overcube):
-        pvdcubeover = ndimage.interpolation.rotate(overcube, 90 - posang, axes=(1, 0), reshape=False)
-        
-    pvd = pvdcube[:, np.int((ysize / (cellsize * 2)) - pvdthick) : np.int((ysize / (cellsize * 2)) + pvdthick), :].sum(axis=1)
-    if np.any(overcube):
-        pvdover = pvdcubeover[:, np.int((ysize / (cellsize * 2)) - pvdthick) : np.int((ysize / (cellsize * 2)) + pvdthick), :].sum(axis=1)
-
-    try:
-        len(beamsize)
-    except:
-        beamsize = np.array([beamsize, beamsize, 0])
-
-    beamtot = KinMS().makebeam(xsize, ysize, beamsize).sum()
-    spec = f.sum(axis=0).sum(axis=0) / beamtot
-    if np.any(overcube):
-        specover = overcube.sum(axis=0).sum(axis=0) / beamtot
-
-    # Plot the results
-    levs = v1[np.min(np.where(spec != 0)) : np.max(np.where(spec != 0))]
-
-    # Initiate the figure and make it look nice
-    fig = plt.figure(figsize=(10, 10))
-    matplotlib.rcParams['font.family'] = 'Latin Modern Roman'
-    matplotlib.rcParams.update({'font.size': 25})  # fontsize figures
-    matplotlib.rcParams['axes.linewidth'] = 1.5  # thickness borders figures
-    matplotlib.rcParams['xtick.labelsize'] = 20  # labelsize ticks
-    matplotlib.rcParams['ytick.labelsize'] = 20  # labelsize ticks
-    matplotlib.rcParams['xtick.major.size'] = 10  # major x tickmark size
-    matplotlib.rcParams['xtick.major.width'] = 2  # major x tickmark width
-    matplotlib.rcParams['xtick.minor.size'] = 5  # minor x tickmark size
-    matplotlib.rcParams['xtick.minor.width'] = 1  # minor x tickmark width
-    matplotlib.rcParams['ytick.major.size'] = 10  # major y tickmark size
-    matplotlib.rcParams['ytick.major.width'] = 2  # major y tickmark width
-    matplotlib.rcParams['ytick.minor.size'] = 5  # minor y tickmark size
-    matplotlib.rcParams['ytick.minor.width'] = 1  # minor y tickmark width
-    matplotlib.rcParams['legend.fontsize'] = 15
-    matplotlib.rcParams['ytick.direction'] = 'in'
-    matplotlib.rcParams['xtick.direction'] = 'in'
-
-    # Plot the moment 0
-    ax1 = fig.add_subplot(221, aspect='equal')
-    ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(mom0rot), cmap="YlOrBr")
-    if np.any(overcube):
-        ax1.contour(x1, y1, mom0over.T, colors=('black'), levels = np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
-
-    if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
-    if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
-
-    plt.xlabel(r'Offset ($^{\prime\prime}$)'); plt.ylabel(r'Offset ($^{\prime\prime}$)')
-
-    # Plot moment 1
-    ax2 = fig.add_subplot(222, aspect='equal')
-    ax2.contourf(x1, y1, mom1.T, levels=levs, cmap=sauron)
-    plt.xlabel(r'Offset ($^{\prime\prime}$)'); plt.ylabel(r'Offset ($^{\prime\prime}$)')
-    if 'yrange' in kwargs: ax2.set_ylim(kwargs['yrange'])
-    if 'xrange' in kwargs: ax2.set_xlim(kwargs['xrange'])
-
-    # Plot PVD
-    ax3 = fig.add_subplot(223)
-
-    ax3.contourf(x1, v1, pvd.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(pvd), cmap="YlOrBr", aspect='auto')
-    if np.any(overcube):
-        ax3.contour(x1, v1, pvdover.T, colors='black', levels=np.arange(0.1, 1.1, 0.1) * np.max(pvdover))
-
-    if 'vrange' in kwargs: ax3.set_ylim(kwargs['vrange'])
-    if 'xrange' in kwargs: ax3.set_xlim(kwargs['xrange'])
-
-    plt.xlabel(r'Offset ($^{\prime\prime}$)'); plt.ylabel(r'Velocity (km s$^{-1}$)')
-
-    # Plot spectrum
-    ax4 = fig.add_subplot(224)
-    ax4.plot(v1, spec, drawstyle='steps', c='k')
-    if np.any(overcube):
-        ax4.plot(v1, specover, 'r', drawstyle='steps')
-
-    if 'vrange' in kwargs: ax4.set_xlim(kwargs['vrange'])
-    if title: plt.suptitle(title)
-
-    plt.ylabel('Flux'); plt.xlabel(r'Velocity (km s$^{-1}$)')
-
-    plt.tight_layout()
-
 
 def expdisk(scalerad=10, inc=45):
     """
@@ -143,11 +34,17 @@ def expdisk(scalerad=10, inc=45):
     vel = velfunc(x)
 
     # Create the cube
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x,velProf=vel, intFlux=30, posAng=270,
-              gasSigma=10)
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30, posAng=270,
+              gasSigma=10, toplot=True).model_cube()
+
+    return cube
+
+#profile.run('expdisk()')
+
+test = expdisk()
 
     # Plot the results
-    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=270)
+    #makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=270)
 
 
 def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
