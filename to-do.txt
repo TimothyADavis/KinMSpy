@@ -1,0 +1,7 @@
+- Parallelize convolution
+- Automatically call model_cube with nice syntax
+- Debug, run all the tests
+- Remove unnecessary comments and files like these
+- Let people try to break it
+- Some last fixes
+- Release!
