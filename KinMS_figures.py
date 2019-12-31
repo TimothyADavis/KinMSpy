@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 from scipy import ndimage
+from astropy.nddata.utils import Cutout2D
 from sauron_colormap import sauron
+import warnings; warnings.filterwarnings("ignore", module="matplotlib")
 
 class KinMS_plotter:
 
@@ -16,31 +18,37 @@ class KinMS_plotter:
         self.cellsize = cellsize
         self.dv = dv
         self.beamsize = beamsize
-        self.posang = posang or 0
+        self.posang = posang or 0  # for some reason this is defined differently in KinMS
         self.pvdthick = pvdthick or 2
         self.nconts = nconts or 11
-        self.savepath = None
-        self.savename = None
+        self.savepath = savepath or None
+        self.savename = savename or None
         self.pdf = pdf
         self.overcube = overcube
         self.title = title
 
+        matplotlib.rcParams['text.usetex'] = True
         matplotlib.rcParams['font.family'] = 'Latin Modern Roman'
-        matplotlib.rcParams.update({'font.size': 25})  # fontsize figures
-        matplotlib.rcParams['axes.linewidth'] = 1.5  # thickness borders figures
-        matplotlib.rcParams['xtick.labelsize'] = 20  # labelsize ticks
-        matplotlib.rcParams['ytick.labelsize'] = 20  # labelsize ticks
-        matplotlib.rcParams['xtick.major.size'] = 10  # major x tickmark size
-        matplotlib.rcParams['xtick.major.width'] = 2  # major x tickmark width
-        matplotlib.rcParams['xtick.minor.size'] = 5  # minor x tickmark size
-        matplotlib.rcParams['xtick.minor.width'] = 1  # minor x tickmark width
-        matplotlib.rcParams['ytick.major.size'] = 10  # major y tickmark size
-        matplotlib.rcParams['ytick.major.width'] = 2  # major y tickmark width
-        matplotlib.rcParams['ytick.minor.size'] = 5  # minor y tickmark size
-        matplotlib.rcParams['ytick.minor.width'] = 1  # minor y tickmark width
-        matplotlib.rcParams['legend.fontsize'] = 15
+        matplotlib.rcParams.update({'font.size': 20})
+        matplotlib.rcParams['legend.fontsize'] = 17.5
+        matplotlib.rcParams['axes.linewidth'] = 1.5
+        matplotlib.rcParams['xtick.labelsize'] = 20;
+        matplotlib.rcParams['ytick.labelsize'] = 20
+        matplotlib.rcParams['xtick.major.size'] = 10;
+        matplotlib.rcParams['ytick.major.size'] = 10
+        matplotlib.rcParams['xtick.major.width'] = 2;
+        matplotlib.rcParams['ytick.major.width'] = 2
+        matplotlib.rcParams['xtick.minor.size'] = 5;
+        matplotlib.rcParams['ytick.minor.size'] = 5
+        matplotlib.rcParams['xtick.minor.width'] = 1;
+        matplotlib.rcParams['ytick.minor.width'] = 1
+        matplotlib.rcParams['xtick.direction'] = 'in';
         matplotlib.rcParams['ytick.direction'] = 'in'
-        matplotlib.rcParams['xtick.direction'] = 'in'
+        matplotlib.rcParams['xtick.bottom'] = True
+        matplotlib.rcParams['ytick.left'] = True
+        params = {'mathtext.default': 'regular'}
+        matplotlib.rcParams.update(params)
+        matplotlib.rcParams['axes.labelsize'] = 30
 
     def gaussian(self, x, x0, sigma):
         return np.exp(-np.power((x - x0) / (sigma), 2) / 2)
@@ -49,13 +57,15 @@ class KinMS_plotter:
 
         if not cent: cent = [xpixels / 2, ypixels / 2]
 
+        beamSize = np.array(beamSize)
+
         try:
             if len(beamSize) == 2:
                 beamSize = np.append(beamSize, 0)
             if beamSize[1] > beamSize[0]:
                 beamSize[1], beamSize[0] = beamSize[0], beamSize[1]
-            elif len(beamSize) == 3:
-                beamSize = np.array(beamSize)
+            if beamSize[2] >= 180:
+                beamSize[2] -= 180
         except:
             beamSize = np.array([beamSize, beamSize, 0])
 
@@ -84,12 +94,34 @@ class KinMS_plotter:
 
         psf = np.exp(-1 * (a * x ** 2 - 2 * b * (x * y) + c * y ** 2))
 
-        return psf
+        ### Trim around high values in the psf, to speed up the convolution ###
+
+        psf[psf < 1e-5] = 0  # set all kernel values that are very low to zero
+
+        # sum the psf in the beam major axis
+        if 45 < beamSize[2] < 135:
+            flat = np.sum(psf, axis=1)
+        else:
+            flat = np.sum(psf, axis=0)
+
+        idx = np.where(flat > 0)[0]  # find the location of the non-zero values of the psf
+
+        newsize = (idx[-1] - idx[0])  # the size of the actual (non-zero) beam is this
+
+        if newsize % 2 == 0:
+            newsize += 1  # add 1 pixel just in case
+        else:
+            newsize += 2  # if necessary to keep the kernel size odd, add 2 pixels
+
+        trimmed_psf = Cutout2D(psf, (cent[1], cent[0]), newsize).data  # cut around the psf in the right location
+
+        return trimmed_psf
+
 
     def makeplots(self, **kwargs):
 
         # Create plot data from the cube
-        mom0rot = self.f.sum(axis=2)
+        mom0rot = np.sum(self.f, axis=2)
 
         if np.any(self.overcube):
             mom0over = self.overcube.sum(axis=2)
@@ -107,7 +139,7 @@ class KinMS_plotter:
 
         pvdcube = self.f
 
-        pvdcube = ndimage.interpolation.rotate(self.f, 90 - self.posang, axes=(1, 0), reshape=False)
+        pvdcube = ndimage.interpolation.rotate(self.f, self.posang, axes=(1, 0), reshape=False)
 
         if np.any(self.overcube):
             pvdcubeover = ndimage.interpolation.rotate(self.overcube, 90 - self.posang, axes=(1, 0), reshape=False)
@@ -183,12 +215,12 @@ class KinMS_plotter:
         if self.savepath:
             if self.savename:
                 if self.pdf:
-                    plt.savefig(self.savepath + self.savename + '.pdf', bbox_inches='tight')
+                    plt.savefig(self.savepath + '/' + self.savename + '.pdf', bbox_inches='tight')
                 else:
-                    plt.savefig(self.savepath + self.savename + '.png', bbox_inches='tight')
+                    plt.savefig(self.savepath + '/' + self.savename + '.png', bbox_inches='tight')
             else:
                 if self.pdf:
-                    plt.savefig(self.savepath + 'KinMS_plots.pdf', bbox_inches='tight')
+                    plt.savefig(self.savepath + '/' + 'KinMS_plots.pdf', bbox_inches='tight')
                 else:
-                    plt.savefig(self.savepath + 'KinMS_plots.png', bbox_inches='tight')
+                    plt.savefig(self.savepath + '/' + 'KinMS_plots.png', bbox_inches='tight')
 

@@ -1,12 +1,9 @@
 from TimMS import KinMS
 from KinMS_figures import KinMS_plotter
-import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy import interpolate,ndimage
-from sauron_colormap import sauron
+from scipy import interpolate
 from astropy.io import fits
-import time
+import warnings; warnings.filterwarnings("ignore")
 import cProfile as profile
 
 def expdisk(scalerad=10, inc=45):
@@ -26,6 +23,7 @@ def expdisk(scalerad=10, inc=45):
     cellsize = 1
     dv = 10
     beamsize = [4, 4, 0]
+    posang = 270
 
     # Set up exponential disk SB profile/velocity
     x = np.arange(0, 100, 0.1)
@@ -34,17 +32,15 @@ def expdisk(scalerad=10, inc=45):
     vel = velfunc(x)
 
     # Create the cube
-    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30, posAng=270,
-              gasSigma=10, toplot=False, verbose=False, huge_beam=True).model_cube()
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30,
+                 posAng=posang, gasSigma=10, pool=False, toplot=False, verbose=False, huge_beam=False).model_cube()
+
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='exp_disk',
+    #              pdf=True).makeplots()
 
     return cube
-
-# profile.run('expdisk()')
-
-test = expdisk()
-
-    # Plot the results
-    #makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=270)
 
 
 def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
@@ -78,17 +74,20 @@ def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
     vel = velfunc(x)
 
     # Create the cube WITHOUT gasgrav
-    cube1 = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velRad=x, velProf=vel,
-                  intFlux=intflux, posAng=posang, gasSigma=gassig)
+    cube1 = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel,
+                  intFlux=intflux, posAng=posang, gasSigma=gassig, toplot=False).model_cube()
 
     # Create the cube WITH gasgrav
-    cube2 = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velRad=x, velProf=vel,
-                  intFlux=intflux, posAng=posang, gasSigma=gassig, massDist=np.array([gasmass, distance]))
+    cube2 = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel,
+                  intFlux=intflux, posAng=posang, gasSigma=gassig, massDist=[gasmass, distance], toplot=False)\
+                    .model_cube()
 
-    # Plot the results
-    makeplots(cube1, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, title="Without Potential of Gas")
-    makeplots(cube2, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, title="With Potential of Gas Included")
-
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube1, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='without_potential',
+    #              pdf=True, title="Without Potential of Gas").makeplots()
+    #KinMS_plotter(cube2, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='with_potential',
+    #              pdf=True, title="With Potential of Gas").makeplots()
 
 def ngc4324():
     """
@@ -113,15 +112,15 @@ def ngc4324():
     intflux = 27.2
     gassigma = 10
     x = np.arange(0, 64)
-    fx = 0.1 * gaussian(x, 20, 2)
+    fx = 0.1 * np.exp(-np.power((x - 20) / 2, 2) / 2)
     velfunc = interpolate.interp1d([0, 1, 3, 5, 7, 10, 200], [0, 50, 100, 175, 175, 175, 175], kind='linear')
     vel = velfunc(x)
     phasecen = [-1, -1]
     voffset = 0
 
     # Create the cube
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, posAng=posang,
-                  intFlux=intflux, phaseCent=phasecen, vOffset=voffset, gasSigma=gassigma, fileName="NGC4234_test")
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, posAng=posang,
+                  intFlux=intflux, phaseCent=phasecen, vOffset=voffset, gasSigma=gassigma, fileName="NGC4234_test").model_cube()
 
     # Read in data
     hdulist = fits.open('test_suite/NGC4324.fits')
@@ -129,9 +128,10 @@ def ngc4324():
     scidata = scidata[:, :, :, 0]
     scidata[scidata < np.std(scidata[:, :, 0]) * 4] = 0
 
-    # Plot the results
-    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, overcube=scidata, xrange=[-28, 28],
-                     yrange=[-28, 28], pvdthick=4)
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, overcube=scidata, pvdthick=4).makeplots(xrange=[-28, 28],
+    #                 yrange=[-28, 28])
 
 
 def use_inclouds():
@@ -174,11 +174,13 @@ def use_inclouds():
                          [19.9335, -1.63019, 0]])
 
     # Create the cube
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, intFlux=intflux, inClouds=inclouds, velProf=vel, velRad=x, posAng=posang)
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, intFlux=intflux, inClouds=inclouds, velProf=vel,
+                 velRad=x, posAng=posang).model_cube()
 
-    # Plot the result
-    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize)
-    
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize).makeplots()
+
 
 def inclouds_spiral():
     """
@@ -190,8 +192,8 @@ def inclouds_spiral():
     """
 
     # Set up the cube parameters
-    xsize = 128
-    ysize = 128
+    xsize = 128 * 2
+    ysize = 128 * 2
     vsize = 1400
     cellsize = 1
     dv = 10
@@ -201,7 +203,7 @@ def inclouds_spiral():
     posang = 90
 
     # Define where clouds are in each dimension (x,y,z) using a logarithmic spiral
-    t = np.arange(-20, 20, 0.1)
+    t = np.arange(-20, 20, 0.01)
     a = 0.002 * 60
     b = 0.5
     x1 = a * np.exp(b * t) * np.cos(t)
@@ -218,14 +220,16 @@ def inclouds_spiral():
 
     # Define a velocity curve
     x = np.arange(0, 5000)
-    velfunc = interpolate.interp1d([0, 0.5 ,1 ,3, 5000], [0, 50, 100, 210, 210], kind='linear')
+    velfunc = interpolate.interp1d([0, 0.5, 1, 3, 5000], [0, 50, 100, 210, 210], kind='linear')
     vel = velfunc(x)
 
     # Create the cube
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, intFlux=intflux, inClouds=inclouds, velProf=vel, velRad=x, posAng=posang)
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, intFlux=intflux, inClouds=inclouds, velProf=vel,
+                 velRad=x, posAng=posang).model_cube()
 
-    # Plot the results
-    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, pvdthick=50)
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, pvdthick=50).makeplots()
 
 
 def infits():
@@ -247,6 +251,7 @@ def infits():
     dv = 10
     beamsize = 4
     inc = 0
+    posang = 0
     intflux = 30
 
     # Read in the FITS file and create the "inclouds" variables based on it
@@ -274,11 +279,12 @@ def infits():
     vlos_clouds = velfunc(y * np.sin(ang) + x * np.cos(ang))  # Impose a flat velocity profile
 
     # Create the cube
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, intFlux=intflux, inClouds=inclouds,
-                     vLOS_clouds = vlos_clouds, flux_clouds = flux_clouds)
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, posang, intFlux=intflux, inClouds=inclouds,
+                     vLOS_clouds = vlos_clouds, flux_clouds = flux_clouds).model_cube()
 
-    # Plot the results
-    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize)
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize).makeplots()
 
 
 def veldisp():
@@ -311,11 +317,12 @@ def veldisp():
     gassigma = gassigfunc(x)
 
     # Create the cube
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velRad=x, velProf=vel,
-                     intFlux=intflux, gasSigma=gassigma, posAng=posang)
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel,
+                     intFlux=intflux, gasSigma=gassigma, posAng=posang).model_cube()
 
-    # Plot the reults
-    #makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, vrange=[-200, 200], posang=posang)
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang).makeplots(vrange=[-200, 200])
 
 
 def diskthick():
@@ -349,12 +356,13 @@ def diskthick():
     diskthick = diskthickfunc(x)
 
     # Create the cube
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
-                     diskThick = diskthick, posAng=posang)
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
+                     diskThick = diskthick, posAng=posang).model_cube()
 
-    # Plot the results
-    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, vrange=[-250, 250], posang=90, xrange=[-30, 30],
-              yrange=[-30, 30])
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=90).makeplots(xrange=[-30, 30],
+    #          yrange=[-30, 30], vrange=[-250, 250])
 
 
 def warp():
@@ -385,11 +393,12 @@ def warp():
     posang = diskthickfunc(x)
 
     # Create the cube
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
-                     posAng=posang)
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
+                     posAng=posang).model_cube()
 
-    # Plot the results
-    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, vrange=[-250, 250], posang=270)
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=270).makeplots(vrange=[-250, 250])
 
 
 def retclouds():
@@ -420,8 +429,8 @@ def retclouds():
     nsamps1 = int(5e4)
 
     # Run KinMS for disc 1
-    _, inclouds1, vlos1 = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc1, sbProf=fx1, sbRad=x1, velProf=vel,
-                                    nSamps=nsamps1, intFlux=intflux, posAng=posang, gasSigma=gassigma, returnClouds=True)
+    _, inclouds1, vlos1 = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc1, posang, sbProf=fx1, sbRad=x1, velProf=vel,
+                        nSamps=nsamps1, intFlux=intflux, gasSigma=gassigma, returnClouds=True).model_cube()
 
     # Set up exponential disk SB profile for disc two
     inc2 = 35
@@ -431,19 +440,21 @@ def retclouds():
     nsamps2 = int(1e6)
 
     # Run KinMS for disc 2
-    _, inclouds2, vlos2 = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc2, sbProf=fx2, sbRad=x2, velProf=vel,
-                                    nSamps=nsamps2, intFlux=intflux, posAng=posang, gasSigma=gassigma, returnClouds=True)
+    _, inclouds2, vlos2 = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc2, posang, sbProf=fx2, sbRad=x2, velProf=vel,
+                        nSamps=nsamps2, intFlux=intflux, gasSigma=gassigma, returnClouds=True).model_cube()
 
     # Combine
     inclouds = np.concatenate((inclouds1, inclouds2), axis=0)
     vlos = np.concatenate((vlos1, vlos2))
 
     # Make a cube for the whole thing
-    cube = run_kinms(xsize, ysize, vsize, cellsize, dv, beamsize, inc1, inClouds=inclouds, vLOS_clouds=vlos,
-                     intFlux=intflux)
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc1, posang, inClouds=inclouds, vLOS_clouds=vlos,
+                     intFlux=intflux).model_cube()
     
-    # Plot the results
-    makeplots(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang)
+    # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
+    # script separately:
+    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang).makeplots()
+
 
 
 def run_tests():
@@ -476,21 +487,3 @@ def run_tests():
     retclouds()
     print("Test - using the gravgas mechanism")
     expdisk_gasgrav()
-
-
-#profile.run('retclouds()')
-
-
-"""
-cProfile tests:
-- makebeam: 0 seconds
-- kinms_sampleFromArbDist_oneSided: ~0.1 seconds
-- kinms_create_velField_oneSided: ~0.2 seconds
-- gasGravity_velocity: ~0.4 seconds
-- save_fits: ~0.03 seconds
-
-- Profiling is not very helpful at the moment because there is too much in model_cube
-- The variable nSamps should be able to take floats, so should be set to an int in the init
-- retClouds is throwing an error but I'm too tired to look into it now
-- Plot function needs to be an option in KinMS
-"""
