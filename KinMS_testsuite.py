@@ -35,11 +35,11 @@ def expdisk(scalerad=10, inc=45):
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30, posAng=270,
-              gasSigma=10, toplot=True, verbose=False).model_cube()
+              gasSigma=10, toplot=False, verbose=False, huge_beam=True).model_cube()
 
     return cube
 
-#profile.run('expdisk()')
+# profile.run('expdisk()')
 
 test = expdisk()
 
