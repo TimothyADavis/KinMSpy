@@ -254,7 +254,7 @@ class KinMS:
 
         psf = np.exp(-1 * (a * x ** 2 - 2 * b * (x * y) + c * y ** 2))
 
-        ### NEW BIT STARTS HERE ###
+        ### Trim around high values in the psf, to speed up the convolution ###
 
         psf[psf < 1e-5] = 0  # set all kernel values that are very low to zero
 
@@ -283,11 +283,8 @@ class KinMS:
 
     def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, nSamps, diskThick, fixSeed=None):
 
-        #start = time.time()
-
         if self.verbose: print('Generating cloudlets,', end=' ')
 
-        # If variables are not entered by user, adopt default (global) values.
         if not fixSeed:
             seed = np.random.uniform(0, 100, 4).astype('int')
         else:
@@ -314,30 +311,26 @@ class KinMS:
             diskThick = np.array(diskThick)
             interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear')
             diskThick_here = interpfunc2(r_flat)
-            if self.verbose: print('using the scale height profile provided.')
+            if self.verbose: print('Using the scale height profile provided.')
         else:
             diskThick_here = diskThick
-            if self.verbose: print('using a constant scale height of ' + str(diskThick) + '.')
+            if self.verbose: print('Using a constant scale height of ' + str(diskThick) + '.')
 
         # Generates a random (uniform) z-position satisfying |z|<disk_here.
         rng3 = np.random.RandomState(seed[3])
         z_pos = diskThick_here * rng3.uniform(-1, 1, nSamps)
 
         # Calculate the x & y position of the clouds in the x-y plane of the disk.
-        r_3d = np.sqrt((r_flat ** 2) + (z_pos ** 2))
+        r_3d = np.sqrt(r_flat ** 2 + z_pos ** 2)
         theta = np.arccos(z_pos / r_3d)
-        x_pos = ((r_3d * np.cos(phi) * np.sin(theta)))
-        y_pos = ((r_3d * np.sin(phi) * np.sin(theta)))
+        x_pos = r_3d * np.cos(phi) * np.sin(theta)
+        y_pos = r_3d * np.sin(phi) * np.sin(theta)
 
         # Generates the output array
         inClouds = np.empty((nSamps, 3))
-        inClouds[:,0] = x_pos
-        inClouds[:,1] = y_pos
-        inClouds[:,2] = z_pos
-               
-        #end = time.time()
-        #duration = end-start
-        #print('kinms_sampleFromArbDist_oneSided duration: ', duration)
+        inClouds[:, 0] = x_pos
+        inClouds[:, 1] = y_pos
+        inClouds[:, 2] = z_pos
 
         return inClouds
 
@@ -346,8 +339,6 @@ class KinMS:
     #=========================================================================#
     
     def kinms_create_velField_oneSided(self, velRad, posAng_rad=None, inc_rad=None):
-
-        #start = time.time()
 
         if not self.fixSeed:
             seed = np.random.uniform(0, 100, 4).astype('int')
@@ -383,15 +374,13 @@ class KinMS:
 
         else:
             vPosAng_rad = np.full(len(self.r_flat), self.vPosAng)
-            ang2rot = ((posAng_rad - vPosAng_rad))
+            ang2rot = posAng_rad - vPosAng_rad
 
         #Calculate the los velocity for each cloudlet
         los_vel = velDisp                                                                                                                    
         los_vel += (-1) * vRad * (np.cos(np.arctan2((self.y_pos + self.vPhaseCent[1]),
                 (self.x_pos + self.vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
 
-        #Add radial inflow/outflow
-        
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
         #~~~   OPTIONAL INFLOW/OUTFLOW TO THE DISK    ~~~~~~~~~~~~~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
@@ -406,9 +395,6 @@ class KinMS:
                 (self.x_pos + self.vPhaseCent[0])) + (np.radians(ang2rot))) * np.sin(np.radians(inc_rad)))
 
         # Output the array of los velocities
-        #end = time.time()
-        #duration = end-start
-        #print('kinms_create_velField_oneSided: ', duration)
         
         return los_vel
 
@@ -428,7 +414,10 @@ class KinMS:
         hdu.header['CRPIX3'] = cent[2]
         hdu.header['CRVAL1'] = self.ra or "None given" 
         hdu.header['CRVAL2'] = self.dec or "None given"
-        hdu.header['CRVAL3'] = (self.vSys * 1000.) or "None given", 'm/s'
+        try:
+            hdu.header['CRVAL3'] = (self.vSys * 1000.), 'm/s'
+        except:
+            "None given"
         hdu.header['CUNIT1'] = 'deg'
         hdu.header['CUNIT2'] = 'deg'
         hdu.header['CUNIT3'] = 'm/s'
@@ -463,18 +452,16 @@ class KinMS:
         grav_const = 4.301e-3  # g in solar masses, pc, and km/s
         arcsec_to_pc = 4.84  # Angular distance in arcsec to physical distance in pc, when seen at distance D in Mpc
         
-        x_pos = np.array(x_pos); y_pos = np.array(y_pos); z_pos = np.array(z_pos)
-        massDist = np.array(massDist); velRad = np.array(velRad)
-        
-        rad = np.sqrt((x_pos**2) + (y_pos**2) + (z_pos**2))  # 3D radius
-        cumMass = ((np.arange(x_pos.size + 1)) * (massDist[0] / x_pos.size))  # Cumulative mass
+        rad = np.sqrt((x_pos ** 2) + (y_pos ** 2) + (z_pos ** 2))  # 3D radius
+
+        cumMass = (np.arange(x_pos.size + 1)) * (massDist[0] / x_pos.size)  # Cumulative mass
 
         max_velRad = np.max(velRad).clip(min=np.max(rad), max=None) + 1  # The max vel_Rad clipped to above the minimum rad
         new_rad = np.insert(sorted(rad), 0, 0)  # sorts rad and puts a 0 value at the start of it
 
         cumMass_interFunc = interpolate.interp1d(new_rad, cumMass, kind='linear', fill_value='extrapolate')  # Interpolates the cumulative mass as a function of radii
 
-        add_to_circ_vel = np.sqrt(grav_const * cumMass_interFunc(velRad)) / (arcsec_to_pc * velRad * massDist[1])
+        add_to_circ_vel = np.sqrt(grav_const * cumMass_interFunc(velRad) / (arcsec_to_pc * velRad * massDist[1]))
         add_to_circ_vel[~np.isfinite(add_to_circ_vel)] = 0
 
         return add_to_circ_vel
@@ -698,7 +685,7 @@ class KinMS:
             if not self.cleanOut:
                 cube *= ((self.intFlux * psf.sum()) / (cube.sum() * self.dv))
             else:
-                cube *= ((self.intFlux) / (cube.sum() * self.dv))
+                cube *= (self.intFlux / (cube.sum() * self.dv))
 
         elif len(self.flux_clouds) > 0:
             cube *= (self.flux_clouds.sum() / cube.sum())
@@ -753,32 +740,33 @@ class KinMS:
         if not self.cleanOut:
 
             psf = self.makebeam(x_size, y_size, self.beamSize)
-            
+
             if not self.huge_beam:  # For very large beams convolve_fft is faster
                 
                 if not self.pool:
                     
-                    for i in range(cube.shape[0]):
+                    for i in range(cube.shape[2]):
                         if np.sum(cube[:, :, i]) > 0:
                             cube[:, :, i] = convolve(cube[:, :, i], psf) 
                 else:
                     with Pool(10) as pool:
-                        cube = pool.starmap(self.convolution_func, zip(cube,repeat(psf)),
+                        cube = pool.starmap(self.convolution_func, zip(cube, repeat(psf)),
                                             chunksize=100000)
+                        cube = np.array(cube)
              
             else:
                 
                 if not self.pool:
                     
-                    for i in range(cube.shape[0]):
+                    for i in range(cube.shape[2]):
                         if np.sum(cube[:, :, i]) > 0:
                             cube[:, :, i] = convolve_fft(cube[:, :, i], psf)  
                             
                 else:
-                    
                     with Pool(10) as pool:
-                        cube = pool.starmap(self.convolution_func_fft, zip(cube,repeat(psf)),
+                        cube = pool.starmap(self.convolution_func_fft, zip(cube, repeat(psf)),
                                             chunksize=100000)
+                        cube = np.array(cube)
               
         # Normalise the cube by known integrated flux
         self.normalise_cube(cube, psf)
@@ -789,7 +777,8 @@ class KinMS:
 
         # Plot the results if so desired
         if self.toplot:
-            KinMS_plotter(cube, self.xs, self.ys, self.vs, self.cellSize, self.dv, self.beamSize).makeplots()
+            KinMS_plotter(cube, self.xs, self.ys, self.vs, self.cellSize, self.dv, self.beamSize,
+                          posang=float(self.posAng)).makeplots()
 
         # Output the final cube
         if self.returnClouds:
@@ -798,9 +787,15 @@ class KinMS:
             retClouds[:, 1] = y2 * self.cellSize
             retClouds[:, 2] = z2 * self.cellSize
 
+            if self.verbose:
+                print('_' * 37 + '\n\n *** Cube successfully created, all done! Doei doei! ***')
+
             return cube, retClouds, los_vel
 
         else:
+            if self.verbose:
+                print('_' * 37 + '\n\n *** Cube successfully created, all done! Doei doei! ***')
+
             return cube
     
     #=========================================================================#
@@ -810,11 +805,6 @@ class KinMS:
 #=============================================================================#
 #/// END OF CLASS ////////////////////////////////////////////////////////////#
 #=============================================================================#
-
-
-#KinMS().gasGravity_velocity([3,2,1], [3,2,1], [3,2,1], [10, 10], [10,5,40])
-
-#KinMS(20, 20, 40, 2, 10, 2, 30, sbRad=[30,40,50], sbProf=[1,2,3], velProf=[5,10,15]).model_cube()
 
 
 #=============================================================================#

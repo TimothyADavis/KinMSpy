@@ -3,8 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="d5a66111-823c-407c-8f56-b966d6130dfb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KinMS_figures.py" beforeDir="false" afterPath="$PROJECT_DIR$/KinMS_figures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KinMS_testsuite.py" beforeDir="false" afterPath="$PROJECT_DIR$/KinMS_testsuite.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NGC4234_test_simcube.fits" beforeDir="false" afterPath="$PROJECT_DIR$/NGC4234_test_simcube.fits" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TimMS.py" beforeDir="false" afterPath="$PROJECT_DIR$/TimMS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config_figs.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/to-do.txt" beforeDir="false" afterPath="$PROJECT_DIR$/to-do.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -13,6 +17,12 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="67" />
+    <option name="y" value="27" />
+    <option name="width" value="1853" />
+    <option name="height" value="1053" />
   </component>
   <component name="ProjectId" id="1SdukRsAXEvPrCbmtyKikcat8HE" />
   <component name="ProjectViewState">
@@ -130,9 +140,13 @@
     <option name="LAST_COMMIT_MESSAGE" value="Merge branch 'snoofles_branch'&#10;&#10;# Conflicts:&#10;#&#9;KinMS.py" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="776" y="311" width="424" height="491" key="FileChooserDialogImpl" timestamp="1577701748443">
+    <state x="776" y="311" width="424" height="491" key="FileChooserDialogImpl" timestamp="1577772859924">
       <screen x="67" y="27" width="1853" height="1053" />
     </state>
-    <state x="776" y="311" width="424" height="491" key="FileChooserDialogImpl/67.27.1853.1053@67.27.1853.1053" timestamp="1577701748443" />
+    <state x="776" y="311" width="424" height="491" key="FileChooserDialogImpl/67.27.1853.1053@67.27.1853.1053" timestamp="1577772859924" />
+    <state x="649" y="381" key="com.intellij.ide.util.TipDialog" timestamp="1577768960083">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="649" y="381" key="com.intellij.ide.util.TipDialog/67.27.1853.1053@67.27.1853.1053" timestamp="1577768960083" />
   </component>
 </project>

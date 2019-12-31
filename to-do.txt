@@ -1,9 +1,9 @@
 - Parallelize convolution
 - Automatically call model_cube with nice syntax
-- Debug, run all the tests
 - Update the docstrings and put them back in
 - Finish Jupiter notebook
 - Remove unnecessary comments and files like these
+- Check if the print function prints the correct things
 - Let people try to break it
 - Some last fixes
 - Release!
