@@ -8,6 +8,24 @@ from kinms.examples.sauron_colormap import sauron
 from astropy.io import fits
 import time
 import os.path
+import socket
+
+def internet(host="8.8.8.8", port=53, timeout=3):
+  """
+  Host: 8.8.8.8 (google-public-dns-a.google.com)
+  OpenPort: 53/tcp
+  Service: domain (DNS/TCP)
+  """
+  try:
+    socket.setdefaulttimeout(timeout)
+    socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+    return True
+  except socket.error as ex:
+    print(ex)
+    return False
+
+
+
 
 def gaussian(x,x0,sigma):
   return np.exp(-np.power((x - x0)/(sigma), 2.)/2.)
@@ -204,7 +222,7 @@ def KinMStest_ngc4324():
 
 # ;;; Read in data
 
-    hdulist = fits.open('NGC4324.fits')
+    hdulist = fits.open('http://www.astro.cardiff.ac.uk/pub/Tim.Davis/NGC4324.fits')
     scidata = hdulist[0].data.T
     scidata=scidata[:,:,:,0]
     scidata[np.where(scidata < np.std(scidata[:,:,0])*4.)]=0.0
@@ -351,7 +369,7 @@ def KinMStest_infits():
 #
 # ;;;; Read in the FITS file and create the INCLOUDS variables based on it ;;;;
     phasecent=[88,61] # point we wish to correspond to the phase centre in the simulation
-    hdulist = fits.open('NGC1437A_FUV.fits')
+    hdulist = fits.open('http://www.astro.cardiff.ac.uk/pub/Tim.Davis/NGC1437A_FUV.fits')
     fin = hdulist[0].data.T
     s=fin.shape
     
@@ -564,8 +582,8 @@ def KinMStest_retclouds():
 
 
 def run_tests():
-    
-    if os.path.isfile("NGC4324.fits"): 
+    have_connection=internet()
+    if have_connection: 
         print("Test - simulate the gas ring in NGC4324")
         print("[Close plot to continue]")
         KinMStest_ngc4324()
@@ -578,7 +596,7 @@ def run_tests():
     print("Test - using the INCLOUDS mechanism - realistic")
     print("[Close plot to continue]")
     KinMStest_inclouds_spiral()
-    if os.path.isfile("NGC1437A_FUV.fits"): 
+    if have_connection: 
         print("Test - using a FITS file as input")
         print("[Close plot to continue]")
         KinMStest_infits()
