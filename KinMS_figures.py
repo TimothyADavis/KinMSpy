@@ -27,7 +27,7 @@ class KinMS_plotter:
         self.overcube = overcube
         self.title = title
 
-        matplotlib.rcParams['text.usetex'] = True
+        #matplotlib.rcParams['text.usetex'] = True
         matplotlib.rcParams['font.family'] = 'Latin Modern Roman'
         matplotlib.rcParams.update({'font.size': 20})
         matplotlib.rcParams['legend.fontsize'] = 17.5
@@ -165,10 +165,10 @@ class KinMS_plotter:
 
         # Plot the moment 0
         ax1 = fig.add_subplot(221, aspect='equal')
-        ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(mom0rot),
+        ax1.contourf(x1, y1, mom0rot, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(mom0rot),
                      cmap="YlOrBr")
         if np.any(self.overcube):
-            ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
+            ax1.contour(x1, y1, mom0over, colors=('black'), levels=np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
 
         if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
         if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
@@ -178,7 +178,7 @@ class KinMS_plotter:
 
         # Plot moment 1
         ax2 = fig.add_subplot(222, aspect='equal')
-        ax2.contourf(x1, y1, mom1.T, levels=levs, cmap=sauron)
+        ax2.contourf(x1, y1, mom1, levels=levs, cmap=sauron)
         plt.xlabel(r'Offset ($^{\prime\prime}$)');
         plt.ylabel(r'Offset ($^{\prime\prime}$)')
         if 'yrange' in kwargs: ax2.set_ylim(kwargs['yrange'])

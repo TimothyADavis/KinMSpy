@@ -89,9 +89,9 @@ class KinMS:
 
         try:
             if len(posAng) > -1:
-                self.posAng = np.array(posAng)
+                self.posAng = 180 + np.array(posAng) 
         except:
-            self.posAng = np.array([posAng])
+            self.posAng = 180 + np.array([posAng])
 
         try:
             if len(gasSigma) > -1:
