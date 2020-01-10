@@ -26,15 +26,20 @@ from astropy.io import fits
 from astropy.nddata.utils import Cutout2D
 from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
-import warnings; warnings.filterwarnings("ignore")
 from KinMS_figures import KinMS_plotter
 from multiprocessing import Pool 
 from itertools import repeat
+import warnings; warnings.filterwarnings("ignore")
+import sys; sys.tracebacklimit = 0
 
+
+class KinMSError(Exception):
+    pass
 
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#
 #=============================================================================#
+
 
 class KinMS:
         
@@ -47,6 +52,56 @@ class KinMS:
                  ra=None, dec=None, nSamps=None, seed=None, intFlux=None, vSys=None, phaseCent=None, vOffset=None,
                  vPosAng=None, vPhaseCent=None, restFreq=None, fileName=False, fixSeed=False,
                  cleanOut=False, returnClouds=False, huge_beam=False, pool=False, verbose=False, toplot=False):
+
+        """
+        :param xs (float or int): x-axis size for resultant cube (in arcseconds)
+        :param ys (float or int): y-axis size for resultant cube (in arcseconds)
+        :param vs (float or int): Velocity axis size for resultant cube (in km/s)
+        :param cellSize (float or int): Pixel size required (arcsec/pixel)
+        :param dv (float or int): Channel size in velocity direction (km/s/channel)
+        :param beamSize (float or int, or list or array of float or int): Scalar or three element list for size of
+                convolving beam (in arcseconds). If a scalar then beam is assumed to be circular. If a list/array of
+                lenght two. these are the sizes of the major and minor axes, and the position angle is assumed to be 0.
+                If a list/array of length 3, the first 2 elements are the major and minor beam sizes, and the last the
+                position angle (i.e. [bmaj, bmin, bpa]).
+        :param inc (float or int, or list or array of float or int): Inclination angle of the gas disc on the sky
+                (degrees). Can input a constant or a vector, giving the inclination as a function of the radius vector
+                'velrad' (in order to model warps etc).
+        :param posAng (float or int, or list or array of float or int): Position angle (PA) of the disc (a PA of zero
+                means that the redshifted part of the cube is aligned with the positive y-axis). If single valued
+                then the disc major axis is straight. If an array is passed then it should describe how the position
+                angle changes as a function of `velrad` (so this can be used to create position angle warps).
+        :param gasSigma:
+        :param diskThick:
+        :param flux_clouds:
+        :param sbProf:
+        :param sbRad:
+        :param velRad:
+        :param velProf:
+        :param inClouds:
+        :param vLOS_clouds:
+        :param massDist:
+        :param vRadial:
+        :param ra:
+        :param dec:
+        :param nSamps:
+        :param seed:
+        :param intFlux:
+        :param vSys:
+        :param phaseCent:
+        :param vOffset:
+        :param vPosAng:
+        :param vPhaseCent:
+        :param restFreq:
+        :param fileName:
+        :param fixSeed:
+        :param cleanOut:
+        :param returnClouds:
+        :param huge_beam:
+        :param pool:
+        :param verbose:
+        :param toplot:
+        """
 
         self.xs = xs
         self.ys = ys
@@ -143,6 +198,7 @@ class KinMS:
         except:
             self.vRadial = np.array([vRadial])
 
+
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
@@ -207,7 +263,6 @@ class KinMS:
         print('_' * 37 + '\n')
 
         return
-
 
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
@@ -304,8 +359,7 @@ class KinMS:
 
         # Find the thickness of the disk at the radius of each cloud.
         if len(diskThick) > 1 and len(diskThick) != len(sbRad):
-            print('\n \n ... Please make sure the length of diskThick is the same as that of sbRad! Returning.')
-            return
+            raise KinMSError('\n \n ... Please make sure the length of diskThick is the same as that of sbRad!')
 
         elif len(diskThick) > 1:
             diskThick = np.array(diskThick)
@@ -446,8 +500,7 @@ class KinMS:
     def gasGravity_velocity(self, x_pos, y_pos, z_pos, massDist, velRad):
 
         if not len(massDist) == 2:
-            print('\n Please provide "massDist" as a list of [gasmass, distance] - total gas mass in solar masses, total distance in Mpc. Returning.')
-            return
+            raise KinMSError('\n Please provide "massDist" as a list of [gasmass, distance] - total gas mass in solar masses, total distance in Mpc.')
 
         grav_const = 4.301e-3  # g in solar masses, pc, and km/s
         arcsec_to_pc = 4.84  # Angular distance in arcsec to physical distance in pc, when seen at distance D in Mpc
@@ -476,8 +529,7 @@ class KinMS:
         """
 
         if not len(self.sbRad) or not len(self.sbProf):
-            print('\nPlease define either \"inClouds\" or \"sbRad\" and \"sbProf\". Returning.')
-            return
+            raise KinMSError('\nPlease define either \"inClouds\" or \"sbRad\" and \"sbProf\"')
         else:
             self.inClouds_given = False
             self.inClouds = self.kinms_sampleFromArbDist_oneSided(self.sbRad, self.sbProf, self.nSamps,
@@ -567,8 +619,7 @@ class KinMS:
         # If los velocities not specified, calculate them.
         # Include the potential of the gas.
         elif not len(self.velProf):
-            print('\nPlease define either \"vLOS_clouds\" or \"velRad\" and \"velProf\". Returning.')
-            return
+            raise KinMSError('\nPlease define either \"vLOS_clouds\" or \"velRad\" and \"velProf\".')
 
         else:
             # If velRad is not defined but sbRad is, set velRad to sbRad
@@ -584,6 +635,10 @@ class KinMS:
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
             # ~~~   CREATION OF POSITION ANGLE/INCLINATION  WARPS IN THE DISK ~~~~~#
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+            if len(self.posAng > 1):
+                if not len(self.posAng) == len(self.velRad):
+                    raise KinMSError('Please make sure \'posAng\' is either a single value, or has the same length as \'velRad\'.')
 
             posAng_rad = self.create_warp(self.posAng, self.r_flat)
             inc_rad = self.create_warp(self.inc, self.r_flat)
@@ -645,14 +700,11 @@ class KinMS:
             if len(self.flux_clouds) > 1:
 
                 if not self.inClouds_given:
-                    print('\n\"flux_clouds\" can only be used in combination with \"inClouds\". '
-                          'Please specify \"inClouds\" if you would like to define \"flux_clouds\". Returning.')
-                    return
+                    raise KinMSError('\n\"flux_clouds\" can only be used in combination with \"inClouds\". '
+                          'Please specify \"inClouds\" if you would like to define \"flux_clouds\".')
 
                 if not (len(self.flux_clouds.shape) == 1 and len(self.flux_clouds) == max(self.inClouds.shape)):
-                    print('\nPlease make sure \"flux_clouds\" is a 1D array matching the length of \"inClouds\". '
-                          'Returning.')
-                    return
+                    raise KinMSError('\nPlease make sure \"flux_clouds\" is a 1D array matching the length of \"inClouds\".')
 
                 cube = np.zeros((np.int(x_size), np.int(y_size), np.int(v_size)))
                 self.flux_clouds = self.flux_clouds[subs]
@@ -724,6 +776,7 @@ class KinMS:
             self.generate_cloudlets()
 
         self.set_cloud_positions()
+
         x2, y2, z2, los_vel = self.set_cloud_velocities()
             
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
