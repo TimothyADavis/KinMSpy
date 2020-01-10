@@ -16,6 +16,6 @@ KinMS_testsuite.py contains the example code, which can be modified and updated 
 
 Many thanks,
 
-Dr Timothy A. Davis,
+Dr Timothy A. Davis, Nikki Zabel, and James M. Dawson
 
 Cardiff, UK
