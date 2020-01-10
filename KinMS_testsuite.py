@@ -33,7 +33,7 @@ def expdisk(scalerad=10, inc=45):
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30,
-                 posAng=posang, gasSigma=10, pool=False, toplot=True, verbose=True, huge_beam=False).model_cube()
+                 posAng=posang, gasSigma=10, pool=False, huge_beam=False).model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
@@ -74,11 +74,11 @@ def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
 
     # Create the cube WITHOUT gasgrav
     cube1 = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel,
-                  intFlux=intflux, posAng=posang, gasSigma=gassig, toplot=False).model_cube()
+                  intFlux=intflux, posAng=posang, gasSigma=gassig).model_cube()
 
     # Create the cube WITH gasgrav
     cube2 = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel,
-                  intFlux=intflux, posAng=posang, gasSigma=gassig, massDist=[gasmass, distance], toplot=False)\
+                  intFlux=intflux, posAng=posang, gasSigma=gassig, massDist=[gasmass, distance])\
                     .model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
@@ -393,7 +393,7 @@ def warp():
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
-                     posAng=posang, toplot=True, verbose=True).model_cube()
+                     posAng=posang).model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
