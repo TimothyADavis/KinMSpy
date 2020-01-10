@@ -23,7 +23,7 @@ def expdisk(scalerad=10, inc=45):
     cellsize = 1
     dv = 10
     beamsize = [4, 4, 0]
-    posang = 270
+    posang = 90
 
     # Set up exponential disk SB profile/velocity
     x = np.arange(0, 100, 0.1)
@@ -33,14 +33,13 @@ def expdisk(scalerad=10, inc=45):
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30,
-                 posAng=posang, gasSigma=10, pool=False, toplot=False, verbose=False, huge_beam=False).model_cube()
+                 posAng=posang, gasSigma=10, pool=False, toplot=False, huge_beam=False).model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='exp_disk',
     #              pdf=True).makeplots()
 
-    return cube
 
 
 def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
@@ -394,7 +393,7 @@ def warp():
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
-                     posAng=posang).model_cube()
+                     posAng=posang, toplot=False).model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:

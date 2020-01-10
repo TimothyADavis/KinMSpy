@@ -5,6 +5,7 @@ from scipy import ndimage
 from astropy.nddata.utils import Cutout2D
 from sauron_colormap import sauron
 import warnings; warnings.filterwarnings("ignore", module="matplotlib")
+plt.close('all')
 
 class KinMS_plotter:
 
@@ -27,7 +28,7 @@ class KinMS_plotter:
         self.overcube = overcube
         self.title = title
 
-        #matplotlib.rcParams['text.usetex'] = True
+        matplotlib.rcParams['text.usetex'] = True
         matplotlib.rcParams['font.family'] = 'Latin Modern Roman'
         matplotlib.rcParams.update({'font.size': 20})
         matplotlib.rcParams['legend.fontsize'] = 17.5
