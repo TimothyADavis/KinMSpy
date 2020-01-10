@@ -5,6 +5,7 @@ from scipy import ndimage
 from astropy.nddata.utils import Cutout2D
 from sauron_colormap import sauron
 import warnings; warnings.filterwarnings("ignore", module="matplotlib")
+plt.close('all')
 
 class KinMS_plotter:
 
@@ -142,7 +143,7 @@ class KinMS_plotter:
         pvdcube = ndimage.interpolation.rotate(self.f, self.posang, axes=(1, 0), reshape=False)
 
         if np.any(self.overcube):
-            pvdcubeover = ndimage.interpolation.rotate(self.overcube, 90 - self.posang, axes=(1, 0), reshape=False)
+            pvdcubeover = ndimage.interpolation.rotate(self.overcube, self.posang, axes=(1, 0), reshape=False)
 
         pvd = pvdcube[:, np.int((self.ysize / (self.cellsize * 2)) - self.pvdthick):
                          np.int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
@@ -165,10 +166,10 @@ class KinMS_plotter:
 
         # Plot the moment 0
         ax1 = fig.add_subplot(221, aspect='equal')
-        ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(mom0rot),
+        ax1.contourf(x1, y1, mom0rot, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(mom0rot),
                      cmap="YlOrBr")
         if np.any(self.overcube):
-            ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
+            ax1.contour(x1, y1, mom0over, colors=('black'), levels=np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
 
         if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
         if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
@@ -178,7 +179,7 @@ class KinMS_plotter:
 
         # Plot moment 1
         ax2 = fig.add_subplot(222, aspect='equal')
-        ax2.contourf(x1, y1, mom1.T, levels=levs, cmap=sauron)
+        ax2.contourf(x1, y1, mom1, levels=levs, cmap=sauron)
         plt.xlabel(r'Offset ($^{\prime\prime}$)');
         plt.ylabel(r'Offset ($^{\prime\prime}$)')
         if 'yrange' in kwargs: ax2.set_ylim(kwargs['yrange'])
