@@ -1,3 +1,22 @@
+"""
+Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
+E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
+Updated versions of the software are available through github:
+https://github.com/TimothyADavis/KinMSpy
+
+If you have found this software useful for your research,
+I would appreciate an acknowledgment to the use of the
+"KINematic Molecular Simulation (KinMS) routines of Davis et al., (2013)".
+[MNRAS, Volume 429, Issue 1, p.534-555]
+
+This software is provided as is without any warranty whatsoever.
+For details of permissions granted please see LICENCE.md
+"""
+
+#=============================================================================#
+#/// IMPORT PACKAGES /////////////////////////////////////////////////////////#
+#=============================================================================#
+
 import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
@@ -6,6 +25,10 @@ from astropy.nddata.utils import Cutout2D
 from sauron_colormap import sauron
 import warnings; warnings.filterwarnings("ignore", module="matplotlib")
 plt.close('all')
+
+#=============================================================================#
+#/// START OF CLASS //////////////////////////////////////////////////////////#
+#=============================================================================#
 
 class KinMS_plotter:
 
@@ -224,4 +247,11 @@ class KinMS_plotter:
                     plt.savefig(self.savepath + '/' + 'KinMS_plots.pdf', bbox_inches='tight')
                 else:
                     plt.savefig(self.savepath + '/' + 'KinMS_plots.png', bbox_inches='tight')
+                    
+#=============================================================================#
+#/// END OF CLASS ////////////////////////////////////////////////////////////#
+#=============================================================================#
 
+#=============================================================================#
+#/// END OF SCRIPT ///////////////////////////////////////////////////////////#
+#=============================================================================#

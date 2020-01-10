@@ -1,3 +1,22 @@
+"""
+Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
+E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
+Updated versions of the software are available through github:
+https://github.com/TimothyADavis/KinMSpy
+
+If you have found this software useful for your research,
+I would appreciate an acknowledgment to the use of the
+"KINematic Molecular Simulation (KinMS) routines of Davis et al., (2013)".
+[MNRAS, Volume 429, Issue 1, p.534-555]
+
+This software is provided as is without any warranty whatsoever.
+For details of permissions granted please see LICENCE.md
+"""
+
+#=============================================================================#
+#/// IMPORT PACKAGES /////////////////////////////////////////////////////////#
+#=============================================================================#
+
 from TimMS import KinMS
 from KinMS_figures import KinMS_plotter
 import numpy as np
@@ -5,6 +24,10 @@ from scipy import interpolate
 from astropy.io import fits
 import warnings; warnings.filterwarnings("ignore")
 import cProfile as profile
+
+#=============================================================================#
+#/////////////////////////////////////////////////////////////////////////////#
+#=============================================================================#
 
 def expdisk(scalerad=10, inc=45):
     """
@@ -486,3 +509,7 @@ def run_tests():
     retclouds()
     print("Test - using the gravgas mechanism")
     expdisk_gasgrav()
+
+#=============================================================================#
+#/// END OF SCRIPT ///////////////////////////////////////////////////////////#
+#=============================================================================#
