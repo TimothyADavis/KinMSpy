@@ -1,8 +1,7 @@
 # coding: utf-8
 """
-Copyright (C) 2016, Timothy A. Davis
-E-mail: DavisT -at- cardiff.ac.uk
-
+Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
+E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
 Updated versions of the software are available through github:
 https://github.com/TimothyADavis/KinMSpy
 
@@ -36,6 +35,7 @@ import sys; sys.tracebacklimit = 0
 class KinMSError(Exception):
     pass
 
+ 
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#
 #=============================================================================#
@@ -144,9 +144,9 @@ class KinMS:
 
         try:
             if len(posAng) > -1:
-                self.posAng = np.array(posAng)
+                self.posAng = 180 + np.array(posAng) 
         except:
-            self.posAng = np.array([posAng])
+            self.posAng = 180 + np.array([posAng])
 
         try:
             if len(gasSigma) > -1:
@@ -222,13 +222,16 @@ class KinMS:
                 elif k == 'nSamps' and v == int(5e5):
                     default_dict[k] = v
                 elif v > 0:
-                    print(k + ' = ' + str(v))
+                    print(k + ' = ' + str(v))       
                 else:
                     default_dict[k] = v
             elif isinstance(v, np.ndarray):
                 if len(v) == 1:
                     if v != 0:
-                        print(k + ' = ' + str(v))
+                        if k == 'posAng':
+                            print(k + ' = ' + str(v - 180))
+                        else:
+                            print(k + ' = ' + str(v)) 
                     else:
                         default_dict[k] = v
                 elif len(v) == 0:
@@ -338,7 +341,8 @@ class KinMS:
 
     def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, nSamps, diskThick, fixSeed=None):
 
-        if self.verbose: print('Generating cloudlets,', end=' ')
+        if self.verbose: 
+            print('Generating cloudlets,', end =' ')
 
         if not fixSeed:
             seed = np.random.uniform(0, 100, 4).astype('int')
@@ -830,8 +834,16 @@ class KinMS:
 
         # Plot the results if so desired
         if self.toplot:
+            if len(self.posAng)>1:
+                posAng_plotting = float(np.median(self.posAng)-180)
+                if self.verbose == True:
+                    print('_' * 37 + '\n\n *** WARNING! posAng warp detected: Using the average posAng for plotting the pvd, calculated as: %.2f' \
+                          % posAng_plotting, 'degrees *** \n\n' + '_' * 37)
+            else:
+                posAng_plotting = float(self.posAng)
+                      
             KinMS_plotter(cube, self.xs, self.ys, self.vs, self.cellSize, self.dv, self.beamSize,
-                          posang=float(self.posAng)).makeplots()
+                          posang = posAng_plotting).makeplots()
 
         # Output the final cube
         if self.returnClouds:
@@ -858,7 +870,6 @@ class KinMS:
 #=============================================================================#
 #/// END OF CLASS ////////////////////////////////////////////////////////////#
 #=============================================================================#
-
 
 #=============================================================================#
 #/// END OF SCRIPT ///////////////////////////////////////////////////////////#

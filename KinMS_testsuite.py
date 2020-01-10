@@ -1,3 +1,22 @@
+"""
+Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
+E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
+Updated versions of the software are available through github:
+https://github.com/TimothyADavis/KinMSpy
+
+If you have found this software useful for your research,
+I would appreciate an acknowledgment to the use of the
+"KINematic Molecular Simulation (KinMS) routines of Davis et al., (2013)".
+[MNRAS, Volume 429, Issue 1, p.534-555]
+
+This software is provided as is without any warranty whatsoever.
+For details of permissions granted please see LICENCE.md
+"""
+
+#=============================================================================#
+#/// IMPORT PACKAGES /////////////////////////////////////////////////////////#
+#=============================================================================#
+
 from TimMS import KinMS
 from KinMS_figures import KinMS_plotter
 import numpy as np
@@ -5,6 +24,10 @@ from scipy import interpolate
 from astropy.io import fits
 import warnings; warnings.filterwarnings("ignore")
 import cProfile as profile
+
+#=============================================================================#
+#/////////////////////////////////////////////////////////////////////////////#
+#=============================================================================#
 
 def expdisk(scalerad=10, inc=45):
     """
@@ -23,7 +46,7 @@ def expdisk(scalerad=10, inc=45):
     cellsize = 1
     dv = 10
     beamsize = [4, 4, 0]
-    posang = 270
+    posang = 180
 
     # Set up exponential disk SB profile/velocity
     x = np.arange(0, 100, 0.1)
@@ -33,14 +56,13 @@ def expdisk(scalerad=10, inc=45):
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30,
-                 posAng=posang, gasSigma=10, pool=False, toplot=False, verbose=False, huge_beam=False).model_cube()
+                 posAng=posang, gasSigma=10, pool=False, huge_beam=False).model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='exp_disk',
     #              pdf=True).makeplots()
 
-    return cube
 
 
 def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
@@ -75,11 +97,11 @@ def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
 
     # Create the cube WITHOUT gasgrav
     cube1 = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel,
-                  intFlux=intflux, posAng=posang, gasSigma=gassig, toplot=False).model_cube()
+                  intFlux=intflux, posAng=posang, gasSigma=gassig).model_cube()
 
     # Create the cube WITH gasgrav
     cube2 = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel,
-                  intFlux=intflux, posAng=posang, gasSigma=gassig, massDist=[gasmass, distance], toplot=False)\
+                  intFlux=intflux, posAng=posang, gasSigma=gassig, massDist=[gasmass, distance])\
                     .model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
@@ -488,5 +510,7 @@ def run_tests():
     retclouds()
     print("Test - using the gravgas mechanism")
     expdisk_gasgrav()
-
-warp()
+    
+#=============================================================================#
+#/// END OF SCRIPT ///////////////////////////////////////////////////////////#
+#=============================================================================#
