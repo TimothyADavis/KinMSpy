@@ -392,9 +392,11 @@ def warp():
     diskthickfunc = interpolate.interp1d([0, 15, 50, 500], [270, 270, 300, 300], kind='linear')
     posang = diskthickfunc(x)
 
+    posang = np.delete(posang, 0)
+
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
-                     posAng=posang).model_cube()
+                     posAng=posang, toplot=False).model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
@@ -456,7 +458,6 @@ def retclouds():
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang).makeplots()
 
 
-
 def run_tests():
     print("Test - simulate the gas ring in NGC4324")
     print("[Close plot to continue]")
@@ -487,3 +488,5 @@ def run_tests():
     retclouds()
     print("Test - using the gravgas mechanism")
     expdisk_gasgrav()
+
+warp()
