@@ -143,7 +143,7 @@ class KinMS_plotter:
         pvdcube = ndimage.interpolation.rotate(self.f, self.posang, axes=(1, 0), reshape=False)
 
         if np.any(self.overcube):
-            pvdcubeover = ndimage.interpolation.rotate(self.overcube, 90 - self.posang, axes=(1, 0), reshape=False)
+            pvdcubeover = ndimage.interpolation.rotate(self.overcube, self.posang, axes=(1, 0), reshape=False)
 
         pvd = pvdcube[:, np.int((self.ysize / (self.cellsize * 2)) - self.pvdthick):
                          np.int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
