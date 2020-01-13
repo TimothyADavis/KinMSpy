@@ -17,7 +17,7 @@ For details of permissions granted please see LICENCE.md
 #/// IMPORT PACKAGES /////////////////////////////////////////////////////////#
 #=============================================================================#
 
-from TimMS import KinMS
+from KimMS import KinMS
 from KinMS_figures import KinMS_plotter
 import numpy as np
 from scipy import interpolate
