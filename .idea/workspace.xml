@@ -3,23 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="d5a66111-823c-407c-8f56-b966d6130dfb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.ipynb_checkpoints/KinMS_example_notebook-checkpoint.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/KinMS_example_notebook-checkpoint.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KinMS_example_notebook.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/KinMS_example_notebook.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KinMS_figures.py" beforeDir="false" afterPath="$PROJECT_DIR$/KinMS_figures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/KinMS_testsuite.py" beforeDir="false" afterPath="$PROJECT_DIR$/KinMS_testsuite.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logo.png" beforeDir="false" afterPath="$PROJECT_DIR$/logo_files/Logo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Logo.xcf" beforeDir="false" afterPath="$PROJECT_DIR$/logo_files/Logo.xcf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NGC4234_test_simcube.fits" beforeDir="false" afterPath="$PROJECT_DIR$/example_cubes/NGC4234_test_simcube.fits" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TimMS.py" beforeDir="false" afterPath="$PROJECT_DIR$/TimMS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/full_profile_exp_disk.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/multiprocessing_test.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output_file" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_file.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/time_check.ods" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/with_potential.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/without_potential.pdf" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
