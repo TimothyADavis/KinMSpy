@@ -31,7 +31,6 @@ from itertools import repeat
 import warnings; warnings.filterwarnings("ignore")
 import sys; sys.tracebacklimit = 0
 import psutil
-import ray
 
 
 class KinMSError(Exception):
