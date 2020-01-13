@@ -30,6 +30,8 @@ from multiprocessing import Pool
 from itertools import repeat
 import warnings; warnings.filterwarnings("ignore")
 import sys; sys.tracebacklimit = 0
+import psutil
+import ray
 
 
 class KinMSError(Exception):
@@ -51,7 +53,7 @@ class KinMS:
                  sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], vRadial=[],
                  ra=None, dec=None, nSamps=None, seed=None, intFlux=None, vSys=None, phaseCent=None, vOffset=None,
                  vPosAng=None, vPhaseCent=None, restFreq=None, fileName=False, fixSeed=False,
-                 cleanOut=False, returnClouds=False, huge_beam=False, pool=False, verbose=False, toplot=False):
+                 cleanOut=False, returnClouds=False, huge_beam=False, verbose=False, toplot=False):
 
         """
         :param xs (float or int): x-axis size for resultant cube (in arcseconds)
@@ -98,7 +100,6 @@ class KinMS:
         :param cleanOut:
         :param returnClouds:
         :param huge_beam:
-        :param pool:
         :param verbose:
         :param toplot:
         """
@@ -127,7 +128,6 @@ class KinMS:
         self.cleanOut = cleanOut
         self.returnClouds = returnClouds
         self.huge_beam = huge_beam
-        self.pool = pool
         self.verbose = verbose
         self.toplot = toplot
 
@@ -640,8 +640,9 @@ class KinMS:
             # ~~~   CREATION OF POSITION ANGLE/INCLINATION  WARPS IN THE DISK ~~~~~#
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-            if len(self.posAng > 1):
+            if len(self.posAng) > 1:
                 if not len(self.posAng) == len(self.velRad):
+                    print(self.posAng, len(self.posAng))
                     raise KinMSError('Please make sure \'posAng\' is either a single value, or has the same length as \'velRad\'.')
 
             posAng_rad = self.create_warp(self.posAng, self.r_flat)
@@ -750,15 +751,6 @@ class KinMS:
             cube /= cube.sum()
 
         return cube
-    
-    def convolution_func(self, cube, psf):
-        cube = convolve(cube, psf)
-        return cube
-            
-    def convolution_func_fft(self, cube, psf):
-        if np.sum(cube) > 0:
-            cube = convolve_fft(cube, psf)
-        return cube
 
     def model_cube(self):
 
@@ -799,32 +791,18 @@ class KinMS:
             psf = self.makebeam(x_size, y_size, self.beamSize)
 
             if not self.huge_beam:  # For very large beams convolve_fft is faster
-                
-                if not self.pool:
                     
-                    for i in range(cube.shape[2]):
-                        if np.sum(cube[:, :, i]) > 0:
-                            cube[:, :, i] = convolve(cube[:, :, i], psf) 
-                else:
-                    with Pool(10) as pool:
-                        cube = pool.starmap(self.convolution_func, zip(cube, repeat(psf)),
-                                            chunksize=100000)
-                        cube = np.array(cube)
+                for i in range(cube.shape[2]):
+                    if np.sum(cube[:, :, i]) > 0:
+                        cube[:, :, i] = convolve(cube[:, :, i], psf) 
+
              
             else:
-                
-                if not self.pool:
                     
-                    for i in range(cube.shape[2]):
-                        if np.sum(cube[:, :, i]) > 0:
-                            cube[:, :, i] = convolve_fft(cube[:, :, i], psf)  
+                for i in range(cube.shape[2]):
+                    if np.sum(cube[:, :, i]) > 0:
+                        cube[:, :, i] = convolve_fft(cube[:, :, i], psf)  
                             
-                else:
-                    with Pool(10) as pool:
-                        cube = pool.starmap(self.convolution_func_fft, zip(cube, repeat(psf)),
-                                            chunksize=100000)
-                        cube = np.array(cube)
-              
         # Normalise the cube by known integrated flux
         self.normalise_cube(cube, psf)
                 

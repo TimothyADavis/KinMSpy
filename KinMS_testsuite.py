@@ -56,7 +56,7 @@ def expdisk(scalerad=10, inc=45):
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30,
-                 posAng=posang, gasSigma=10, pool=False, huge_beam=False).model_cube()
+                 posAng=posang, gasSigma=10, huge_beam=False).model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
@@ -413,8 +413,6 @@ def warp():
     vel = velfunc(x)
     diskthickfunc = interpolate.interp1d([0, 15, 50, 500], [270, 270, 300, 300], kind='linear')
     posang = diskthickfunc(x)
-
-    posang = np.delete(posang, 0)
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
