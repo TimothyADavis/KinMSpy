@@ -26,11 +26,7 @@ from astropy.nddata.utils import Cutout2D
 from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 from KinMS_figures import KinMS_plotter
-from multiprocessing import Pool 
-from itertools import repeat
 import warnings; warnings.filterwarnings("ignore")
-import sys; sys.tracebacklimit = 0
-import psutil
 
 
 class KinMSError(Exception):
