@@ -1,3 +1,4 @@
+# coding: utf-8
 """
 Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
 E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
