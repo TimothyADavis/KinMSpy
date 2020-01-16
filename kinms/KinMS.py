@@ -55,7 +55,7 @@ def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
     px /= max(px)           
     rng1 = np.random.RandomState(seed[0])            
     pick = rng1.random_sample(nSamps)  
-    interpfunc = interpolate.interp1d(px,sbRad, kind='linear')
+    interpfunc = interpolate.interp1d(px,sbRad, kind='linear',fill_value="extrapolate")
     r_flat = interpfunc(pick)
     
     #Generates a random phase around the galaxy's axis for each cloud
@@ -64,7 +64,7 @@ def kinms_sampleFromArbDist_oneSided(sbRad,sbProf,nSamps,seed,diskThick=0.0):
  
     # Find the thickness of the disk at the radius of each cloud
     if isinstance(diskThick, (list, tuple, np.ndarray)):
-        interpfunc2 = interpolate.interp1d(sbRad,diskThick,kind='linear')
+        interpfunc2 = interpolate.interp1d(sbRad,diskThick,kind='linear',fill_value="extrapolate")
         diskThick_here = interpfunc2(r_flat)
     else:
         diskThick_here = diskThick    
@@ -171,14 +171,14 @@ def kinms_create_velField_oneSided(velRad,velProf,r_flat,inc,posAng,gasSigma,see
             Line of sight velocity of each cloudlet, in km/s.
     
     """
-    velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear')
+    velInterFunc = interpolate.interp1d(velRad,velProf,kind='linear',fill_value="extrapolate")
     vRad = velInterFunc(r_flat)
     los_vel = np.empty(len(vRad))
     # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
     rng4 = np.random.RandomState(seed[3]) 
     velDisp = rng4.randn(len(xPos))
     if isinstance(gasSigma, (list, tuple, np.ndarray)):
-        gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear')
+        gasSigmaInterFunc = interpolate.interp1d(velRad,gasSigma,kind='linear',fill_value="extrapolate")
         velDisp *= gasSigmaInterFunc(r_flat)
     else:
         velDisp *= gasSigma
@@ -188,7 +188,7 @@ def kinms_create_velField_oneSided(velRad,velProf,r_flat,inc,posAng,gasSigma,see
         ang2rot=0.0
     else:
         if isinstance(vPosAng, (list, tuple, np.ndarray)):
-            vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear')
+            vPosAngInterFunc = interpolate.interp1d(velRad,vPosAng,kind='linear',fill_value="extrapolate")
             vPosAng_rad = vPosAngInterFunc(r_flat)
         else:
             vPosAng_rad = np.full(len(r_flat),vPosAng,np.double)
@@ -200,7 +200,7 @@ def kinms_create_velField_oneSided(velRad,velProf,r_flat,inc,posAng,gasSigma,see
     #Add radial inflow/outflow
     if vRadial != 0:
         if isinstance(vRadial, (list, tuple, np.ndarray)):
-            vRadialInterFunc = interpolate.interp1d(velRad,vRadial,kind='linear')
+            vRadialInterFunc = interpolate.interp1d(velRad,vRadial,kind='linear',fill_value="extrapolate")
             vRadial_rad = vRadialInterFunc(r_flat)
         else:
             vRadial_rad=np.full(len(r_flat),vRadial,np.double)
@@ -238,7 +238,7 @@ def gasGravity_velocity(xPos,yPos,zPos,massDist,velRad):
     """
     rad = np.sqrt((xPos**2) + (yPos**2) + (zPos**2))						                            ## 3D radius	
     cumMass = ((np.arange(xPos.size + 1)) * (massDist[0] / np.float(xPos.size)))					    ## cumulative mass
-    cumMass_interFunc = interpolate.interp1d(np.append(np.insert(sorted(rad),0,0),np.max(velRad).clip(min=np.max(rad), max=None)+1),np.append(cumMass,np.max(cumMass)),kind='linear')
+    cumMass_interFunc = interpolate.interp1d(np.append(np.insert(sorted(rad),0,0),np.max(velRad).clip(min=np.max(rad), max=None)+1),np.append(cumMass,np.max(cumMass)),kind='linear',fill_value="extrapolate")
     if velRad[0] == 0.0:
         return 	np.append(0.0,np.sqrt((4.301e-3 * cumMass_interFunc(velRad[1:]))/(4.84 * velRad[1:] * massDist[1])))					    ## return velocity
     else:
@@ -459,13 +459,13 @@ def KinMS(xs,ys,vs,cellSize,dv,beamSize,inc,gasSigma=0,sbProf=[],sbRad=[],velRad
         
         posAng = 90 - posAng
         if isinstance(posAng, (list, tuple, np.ndarray)):
-            posAngRadInterFunc = interpolate.interp1d(velRad,posAng,kind='linear')
+            posAngRadInterFunc = interpolate.interp1d(velRad,posAng,kind='linear',fill_value="extrapolate")
             posAng_rad = posAngRadInterFunc(r_flat*cellSize)
         else:
             posAng_rad = np.full(len(r_flat),posAng,np.double)
         
         if isinstance(inc, (list, tuple, np.ndarray)):
-            incRadInterFunc = interpolate.interp1d(velRad,inc,kind='linear')
+            incRadInterFunc = interpolate.interp1d(velRad,inc,kind='linear',fill_value="extrapolate")
             inc_rad = incRadInterFunc(r_flat*cellSize)
         else:
             inc_rad = np.full(len(r_flat),inc,np.double)

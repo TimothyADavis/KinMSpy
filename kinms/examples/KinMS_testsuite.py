@@ -250,7 +250,7 @@ def KinMStest_inclouds():
     dv=10
     beamsize=[4.,4.,0]
     inc=35.
-    x=np.arange(0.,100,0.1)
+    x=np.arange(0.,50,0.1)
     velfunc = interpolate.interp1d([0.00,0.5,1,3,500],[0,50,100,210,210], kind='linear')
     vel=velfunc(x)
 # ;;;;
