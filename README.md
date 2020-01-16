@@ -3,7 +3,7 @@ The KinMS (KINematic Molecular Simulation) package can be used to simulate obser
 If you find any bugs, or wish to be kept up to date when new versions of this software are released, please email me at DavisT -at- cardiff.ac.uk
 
 ### Install
-You can install KinMS with `pip install kinms`
+You can install KinMS with `pip install kinms`.  Alternatively you can download the code, navigate to the directory you unpack it too, and run `python setup.py install`.
     
 It requires the following modules:
 
