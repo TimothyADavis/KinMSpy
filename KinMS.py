@@ -32,11 +32,9 @@ import warnings; warnings.filterwarnings("ignore")
 class KinMSError(Exception):
     pass
 
-
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#
 #=============================================================================#
-
 
 class KinMS:
         
@@ -420,7 +418,7 @@ class KinMS:
         px /= max(px) # Normalised integral of the surface brightness profile
         rng1 = np.random.RandomState(seed[0])
         pick = rng1.random_sample(nSamps) # Draws random float samples in the range [0,1]
-        interpfunc = interpolate.interp1d(px,sbRad, kind='linear') # Interplolate (x,y) -returns interpolated radii based on SBprof
+        interpfunc = interpolate.interp1d(px,sbRad, kind='linear', fill_value='extrapolate') # Interplolate (x,y) -returns interpolated radii based on SBprof
         r_flat = interpfunc(pick)
         
         # Generates a random phase around the galaxy's axis for each cloud.
@@ -433,7 +431,7 @@ class KinMS:
 
         elif len(diskThick) > 1:
             diskThick = np.array(diskThick)
-            interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear')
+            interpfunc2 = interpolate.interp1d(sbRad, diskThick, kind='linear', fill_value='extrapolate')
             diskThick_here = interpfunc2(r_flat)
             if self.verbose: print('Using the scale height profile provided.')
         else:
@@ -469,7 +467,7 @@ class KinMS:
         else:
             seed = self.seed
                                                                 
-        velInterFunc = interpolate.interp1d(velRad, self.velProf, kind='linear')  # Interpolate the velocity profile as a function of radius
+        velInterFunc = interpolate.interp1d(velRad, self.velProf, kind='linear', fill_value='extrapolate')  # Interpolate the velocity profile as a function of radius
         
         vRad = velInterFunc(self.r_flat)  # Evaluate the velocity profile at the sampled radii
 
@@ -478,7 +476,7 @@ class KinMS:
         velDisp = rng4.randn(len(self.x_pos))
 
         if len(self.gasSigma) > 1:
-            gasSigmaInterFunc = interpolate.interp1d(velRad, self.gasSigma, kind='linear')
+            gasSigmaInterFunc = interpolate.interp1d(velRad, self.gasSigma, kind='linear', fill_value='extrapolate')
             velDisp *= gasSigmaInterFunc(self.r_flat)
         else:
             velDisp *= self.gasSigma
@@ -493,7 +491,7 @@ class KinMS:
             ang2rot = 0
 
         elif len(self.vPosAng) > 1:
-            vPosAngInterFunc = interpolate.interp1d(velRad, self.vPosAng, kind='linear') #posiiton angle as a function of radius
+            vPosAngInterFunc = interpolate.interp1d(velRad, self.vPosAng, kind='linear', fill_value='extrapolate') #posiiton angle as a function of radius
             vPosAng_rad = vPosAngInterFunc(self.r_flat) ### DO WE NEED TO CALCULATE ANG2ROT FOR THIS IF AS WELL AS THOSE BELOW? !!! ###
 
         else:
@@ -510,7 +508,7 @@ class KinMS:
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
 
         if len(self.vRadial) > 1:
-            vRadialInterFunc = interpolate.interp1d(velRad, self.vRadial, kind='linear')
+            vRadialInterFunc = interpolate.interp1d(velRad, self.vRadial, kind='linear', fill_value='extrapolate')
             vRadial_rad = vRadialInterFunc(self.r_flat)
         else:
             vRadial_rad = np.full(len(self.r_flat), self.vRadial)
