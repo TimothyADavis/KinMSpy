@@ -18,7 +18,7 @@ For details of permissions granted please see LICENCE.md
 #/// IMPORT PACKAGES /////////////////////////////////////////////////////////#
 #=============================================================================#
 
-from KimMS import KinMS
+from KinMS import KinMS
 from KinMS_figures import KinMS_plotter
 import numpy as np
 from scipy import interpolate
@@ -47,7 +47,7 @@ def expdisk(scalerad=10, inc=45):
     cellsize = 1
     dv = 10
     beamsize = [4, 4, 0]
-    posang = 180
+    posang = 45
 
     # Set up exponential disk SB profile/velocity
     x = np.arange(0, 100, 0.1)
@@ -63,7 +63,6 @@ def expdisk(scalerad=10, inc=45):
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='exp_disk',
     #              pdf=True).makeplots()
-
 
 
 def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
@@ -422,7 +421,7 @@ def warp():
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=270).makeplots(vrange=[-250, 250])
-
+    
 
 def retclouds():
     """
@@ -514,3 +513,5 @@ def run_tests():
 #=============================================================================#
 #/// END OF SCRIPT ///////////////////////////////////////////////////////////#
 #=============================================================================#
+    
+
