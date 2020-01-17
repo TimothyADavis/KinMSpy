@@ -1,7 +1,7 @@
-- <s> Parallelize convolution </s>
+- <s> Parallelize convolution <\s>
 - Automatically call model_cube with nice syntax
 - Update the docstrings and put them back in
-- <s> Finish Jupiter notebook </s>
+- <s> Finish Jupiter notebook <\s>
 - Remove unnecessary comments and files like these
 - Check if the print function prints the correct things
 - Let people try to break it
