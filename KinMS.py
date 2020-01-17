@@ -404,6 +404,14 @@ class KinMS:
     #=========================================================================#
 
     def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, nSamps, diskThick, fixSeed=None):
+        """
+        :param sbRad:
+        :param sbProf:
+        :param nSamps:
+        :param diskThick:
+        :param fixSeed:
+        :return:
+        """
 
         if self.verbose: 
             print('Generating cloudlets,', end =' ')
@@ -461,6 +469,12 @@ class KinMS:
     #=========================================================================#
     
     def kinms_create_velField_oneSided(self, velRad, posAng_rad=None, inc_rad=None):
+        """
+        :param velRad:
+        :param posAng_rad:
+        :param inc_rad:
+        :return:
+        """
 
         if not self.fixSeed:
             seed = np.random.uniform(0, 100, 4).astype('int')
@@ -525,6 +539,11 @@ class KinMS:
     #=========================================================================#
 
     def save_fits(self, cube, cent):
+        """
+        :param cube:
+        :param cent:
+        :return:
+        """
 
         hdu = fits.PrimaryHDU(cube.T)
 
@@ -566,6 +585,14 @@ class KinMS:
     #=========================================================================#
 
     def gasGravity_velocity(self, x_pos, y_pos, z_pos, massDist, velRad):
+        """
+        :param x_pos:
+        :param y_pos:
+        :param z_pos:
+        :param massDist:
+        :param velRad:
+        :return:
+        """
 
         if not len(massDist) == 2:
             raise KinMSError('\n Please provide "massDist" as a list of [gasmass, distance] - total gas mass in solar masses, total distance in Mpc.')
@@ -624,6 +651,12 @@ class KinMS:
     #=========================================================================#
 
     def create_warp(self, array, r_flat):
+        """
+        :param array:
+        :param r_flat:
+        :return:
+        """
+        
         '''
         If the array provided is an array, create a warp. If it's a single value, create a flat profile.
         '''
@@ -643,6 +676,14 @@ class KinMS:
 
     def inclination_projection(self, inc_rad, x1, y1, z1):
         """
+        :param inc_rad:
+        :param x1:
+        :param y1:
+        :param z1:
+        :return:
+        """
+        
+        """
         Project the clouds to take into account inclination.
         """
         c = np.cos(np.radians(inc_rad))
@@ -658,6 +699,14 @@ class KinMS:
     #=========================================================================#
 
     def position_angle_rotation(self, ang, x2, y2, z2):
+        """
+        :param ang:
+        :param x2:
+        :param y2:
+        :param z2:
+        :return:
+        """
+        
         """
         Correct orientation by rotating by position angle.
         """
@@ -733,6 +782,17 @@ class KinMS:
 
     def find_clouds_in_cube(self, los_vel, cent, x2, y2, x_size, y_size, v_size):
         """
+        :param los_vel:
+        :param cent:
+        :param x2:
+        :param y2:
+        :param x_size:
+        :param y_size:
+        :param v_size:
+        :return:
+        """
+        
+        """
         Returns the clouds that lie inside the cube.
         """
 
@@ -757,6 +817,15 @@ class KinMS:
     # =========================================================================#
 
     def add_fluxes(self, clouds2do, subs, x_size, y_size, v_size):
+        """
+        :param clouds2do:
+        :param subs:
+        :param x_size:
+        :param y_size:
+        :param v_size:
+        :return:
+        """
+        
         """
         If there are clouds to use, and we know the flux of each cloud, add them to the cube.
         If not, bin each position to get a relative flux.
@@ -798,6 +867,11 @@ class KinMS:
         # =========================================================================#
 
     def normalise_cube(self, cube, psf):
+        """
+        :param cube:
+        :param psf:
+        """
+        
         """
         Normalise cube by the known integrated flux.
         """
