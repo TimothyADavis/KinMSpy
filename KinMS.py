@@ -624,7 +624,9 @@ class KinMS:
         """
 
         if not len(self.sbRad) or not len(self.sbProf):
-            raise KinMSError('\nPlease define either \"inClouds\" or \"sbRad\" and \"sbProf\"')
+            raise KinMSError('\n Please define either \"inClouds\" or \"sbRad\" and \"sbProf\"')
+        elif not len(self.sbRad) == len(self.sbProf):
+            raise KinMSError('\n Please make sure "sbProf" and "sbRad" have the same length.')
         else:
             self.inClouds_given = False
             self.inClouds = self.kinms_sampleFromArbDist_oneSided(self.sbRad, self.sbProf, self.nSamps,
@@ -652,16 +654,17 @@ class KinMS:
 
     def create_warp(self, array, r_flat):
         """
-        :param array:
-        :param r_flat:
-        :return:
+        If the array provided has a length > 1, create a warp. If it's a single value, create a flat profile.
+        :param array (ndarray): array containing the radial profile
+        :param r_flat (ndarray): Radius of each cloudlet from the kinematic centre in the plane of the disc
+        (units of pixels)
+        :return: ndarray with the radial profile of the disc
         """
-        
-        '''
-        If the array provided is an array, create a warp. If it's a single value, create a flat profile.
-        '''
 
         if len(array) > 1:
+            if not len(self.sbRad) == len(self.velRad):
+                raise KinMSError('\n If you want to create a warp, please make sure "sbRad" and "velRad" have the same '
+                                 'length.')
             interp_func = interpolate.interp1d(self.velRad, array, kind='linear')
             radial_profile = interp_func(r_flat * self.cellSize)
 
@@ -674,20 +677,18 @@ class KinMS:
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
 
-    def inclination_projection(self, inc_rad, x1, y1, z1):
+    def inclination_projection(self, ang, x1, y1, z1):
         """
-        :param inc_rad:
-        :param x1:
-        :param y1:
-        :param z1:
-        :return:
+        Apply the projection as a result of inclination to the cloudlets
+        :param ang (float): inclination angle (in degrees)
+        :param x1 (ndarray): x-positions of the cloudlets
+        :param y1 (ndarray): y-positions of the cloudlets
+        :param z1 (ndarray): z-positions of the cloudlets
+        :return: x-, y-, and z-positions of the projected cloudlets
         """
-        
-        """
-        Project the clouds to take into account inclination.
-        """
-        c = np.cos(np.radians(inc_rad))
-        s = np.sin(np.radians(inc_rad))
+
+        c = np.cos(np.radians(ang))
+        s = np.sin(np.radians(ang))
         x2 = x1
         y2 = (c * y1) + (s * z1)
         z2 = (-s * y1) + (c * z1)
@@ -700,11 +701,12 @@ class KinMS:
 
     def position_angle_rotation(self, ang, x2, y2, z2):
         """
-        :param ang:
-        :param x2:
-        :param y2:
-        :param z2:
-        :return:
+        Apply the projection as a result of the position angle to the cloudlets
+        :param ang (float): position angle (in degrees)
+        :param x2 (ndarray): x-positions of the cloudlets
+        :param y2 (ndarray): y-positions of the cloudlets
+        :param z2 (ndarray): z-positions of the cloudlets
+        :return: x-, y-, and z-positions of the projected cloudlets
         """
         
         """
@@ -724,9 +726,12 @@ class KinMS:
     #=========================================================================#
 
     def set_cloud_velocities(self):
+        """
+        Find the los velocity and cube position of the clouds
+        If los velocity specified, assume that the clouds have already been projected correctly.
+        :return: arrays with the x-, y-, and z- positions of the cloudlets, and their los velocities
+        """
 
-        # Find the los velocity and cube position of the clouds
-        # If los velocity specified, assume that the clouds have already been projected correctly.
         if len(self.vLOS_clouds):
             los_vel = self.vLOS_clouds
             x3 = self.x_pos
@@ -782,18 +787,15 @@ class KinMS:
 
     def find_clouds_in_cube(self, los_vel, cent, x2, y2, x_size, y_size, v_size):
         """
-        :param los_vel:
-        :param cent:
-        :param x2:
-        :param y2:
-        :param x_size:
-        :param y_size:
-        :param v_size:
-        :return:
-        """
-        
-        """
         Returns the clouds that lie inside the cube.
+        :param los_vel (ndarray): contains the line of sight velocities of each cloudlet, in km/s.
+        :param cent (ndarray of length 2): contains the x and y coordinates of the centre of the object within the cube
+        :param x2 (ndarray): x-positions of the cloudlets within the cube
+        :param y2 (ndarray): y-positions of the cloudlets within the cube
+        :param x_size (int): size of the cube in the x-direction
+        :param y_size (int): size of the cube in the y-direction
+        :param v_size (int): size of the cube in the z-direction
+        :return: arrays with the positions of the cloudlets within the cube, and the indices of these positions
         """
 
         # Centre the clouds in the cube on the centre of the object.
@@ -818,17 +820,14 @@ class KinMS:
 
     def add_fluxes(self, clouds2do, subs, x_size, y_size, v_size):
         """
-        :param clouds2do:
-        :param subs:
-        :param x_size:
-        :param y_size:
-        :param v_size:
-        :return:
-        """
-        
-        """
         If there are clouds to use, and we know the flux of each cloud, add them to the cube.
         If not, bin each position to get a relative flux.
+        :param clouds2do (ndarray): contains the x-, y-, and v-positions of the cloudslets in the cube
+        :param subs (ndarray): the indices of the cloudlets in the cube
+        :param x_size (int): size of the cube in the x-direction
+        :param y_size (int): size of the cube in the y-direction
+        :param v_size (int): size of the cube in the v-direction
+        :return: spectral cube with fluxes added to the cloudlets
         """
 
         nsubs = len(subs)
@@ -868,12 +867,9 @@ class KinMS:
 
     def normalise_cube(self, cube, psf):
         """
-        :param cube:
-        :param psf:
-        """
-        
-        """
         Normalise cube by the known integrated flux.
+        :param cube (3D array): unnormalised spectral cube
+        :param psf (2D array): psf of the mock observations, to convolve the cube with
         """
 
         if self.intFlux > 0:
@@ -891,6 +887,10 @@ class KinMS:
         return cube
 
     def model_cube(self):
+        """
+        Do the actual modelling of the spectral cube
+        :return: ~~the cube~~
+        """
 
         if self.verbose:
             self.print_variables()

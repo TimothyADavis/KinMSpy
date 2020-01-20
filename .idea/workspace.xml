@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="d5a66111-823c-407c-8f56-b966d6130dfb" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KimMS.py" beforeDir="false" afterPath="$PROJECT_DIR$/KimMS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/KinMS_testsuite.py" beforeDir="false" afterPath="$PROJECT_DIR$/KinMS_testsuite.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/KinMS.py" beforeDir="false" afterPath="$PROJECT_DIR$/KinMS.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -12,6 +11,11 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="nikkis_branch" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1SdukRsAXEvPrCbmtyKikcat8HE" />
@@ -21,7 +25,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../KinMSpy" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="PyConsoleOptionsProvider">
