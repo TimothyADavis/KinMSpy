@@ -30,6 +30,11 @@ import warnings; warnings.filterwarnings("ignore")
 import sys; sys.tracebacklimit = 0
 
 class KinMSError(Exception):
+    """
+    :class KinMSError:
+        Instantiates the Exception error 'KinMSError', for warning the user of faults 
+        and exceptions.
+    """
     pass
 
 #=============================================================================#
@@ -257,8 +262,10 @@ class KinMS:
 
     def print_variables(self):
         """
-        If "verbose" 
-        :return:
+        If "verbose", prints a summary of parameters for the user's convenience.
+        
+        :return (string): 
+            formatted display of all parameters used in KinMS() initialisation
         """
 
         print("\n\n*** Hello and welcome to the grand KinMSpy :D ***")
@@ -329,12 +336,24 @@ class KinMS:
 
     def makebeam(self, xpixels, ypixels, beamSize, cellSize=1, cent=None):
         """
-        :param xpixels:
-        :param ypixels:
-        :param beamSize:
-        :param cellSize:
-        :param cent:
-        :return:
+        Creates a psf with which one can convolve their cube based on the beam provided.
+        
+        :param xpixels (float or int):
+                Number of pixels in the x-axis
+        :param ypixels (float or int):
+                Number of pixels in the y-axis
+        :param beamSize (float or int, or list or array of float or int):
+                Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
+                assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
+                and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
+                major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).
+        :param cellSize (float or int):
+                Pixel size required (arcsec/pixel)
+        :param cent (array or list of float or int): Optional, default value is [xpixels / 2, ypixels / 2].
+                Central location of the beam in units of pixels.
+        :return psf or trimmed_psf (float array):
+                psf required for convlution in self.model_cube(). trimmed_psf returned if self.huge_beam=False, 
+                otherwise default return is the untrimmed psf.              
         """
 
         if not cent: cent = [xpixels / 2, ypixels / 2]
@@ -405,12 +424,22 @@ class KinMS:
 
     def kinms_sampleFromArbDist_oneSided(self, sbRad, sbProf, nSamps, diskThick, fixSeed=None):
         """
-        :param sbRad:
-        :param sbProf:
-        :param nSamps:
-        :param diskThick:
-        :param fixSeed:
-        :return:
+        Samples cloudlets from radial profiles provided given that inClouds is not provided in the __init__. 
+        
+        :param sbRad: sbRad (numpy array):
+                Radius vector for surface brightness profile (units of arcseconds).
+        :param sbProf: (numpy array): 
+                Surface brightness profile (arbitrarily scaled) as a function of 'sbrad'.
+        :param nSamps (int): 
+                Number of cloudlets to use to create the model. Large numbers will reduce numerical noise (especially
+                in large cubes), at the cost of increasing runtime.
+        :param diskThick: (numpy array): 
+                The disc scaleheight in arcseconds. If a single value then this is used at all radii. If an array/list
+                then it should have the same length as 'sbrad', and will be the disc thickness as a function of that.
+        :param fixSeed (bool):
+                Whether to use a fixed (or random) seed (list of four integers).
+        :return inClouds (numpy array):
+            3 dimensional array of cloudlet positions within the cube initialised by KinMS().
         """
 
         if self.verbose: 
@@ -470,10 +499,20 @@ class KinMS:
     
     def kinms_create_velField_oneSided(self, velRad, posAng_rad=None, inc_rad=None):
         """
-        :param velRad:
-        :param posAng_rad:
-        :param inc_rad:
-        :return:
+        Creates an array of line-of-sight velocities, accounting for velocity dispersion and projection.
+        
+        :param velRad (numpy array):
+                Radius vector for velocity profile (units of arcseconds).
+        :param posAng_rad (float or int, or array of float or int): Optional, default value is None.
+                Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
+                with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
+                then it should describe how the position angle changes as a function of `velrad` (so this can be used
+                to create position angle warps).
+        :param inc_rad (float or int, or array of float or int): Optional, default value is None.
+                Inclination angle of the gas disc on the sky (degrees). Can input a constant or a vector, giving the
+                inclination as a function of the radius vector 'velrad' (in order to model warps etc).
+        :return los_vel (numpy array):
+                Line-of-sight velocities for projected particles positioned by velRad.
         """
 
         if not self.fixSeed:
@@ -540,9 +579,15 @@ class KinMS:
 
     def save_fits(self, cube, cent):
         """
-        :param cube:
-        :param cent:
+        Outputs a .fits file containing the datacube and relevant header information.
+        
+        :param cube (numpy array):
+                3 dimensional spectral cube required for saving to .fits file
+        :param cent (numpy array of intigers):
+                Location of the central x and y positions (in units of pixels),
+                and index of the central velocity channel.
         :return:
+            None
         """
 
         hdu = fits.PrimaryHDU(cube.T)
@@ -586,12 +631,21 @@ class KinMS:
 
     def gasGravity_velocity(self, x_pos, y_pos, z_pos, massDist, velRad):
         """
-        :param x_pos:
-        :param y_pos:
-        :param z_pos:
-        :param massDist:
-        :param velRad:
-        :return:
+        Calculates an array of line-of-sight velocity alterations, accounting for the effects 
+        of internal gas in the disk.
+        
+        :param x_pos (numpy array):
+            X position of each cloudlet. Units of arcseconds.
+        :param y_pos (numpy array):
+            Y position of each cloudlet. Units of arcseconds.
+        :param z_pos (numpy array):
+            Z position of each cloudlet. Units of arcseconds.
+        :param massDist (numpy array):
+            Array of ([gasmass,distance]) - total gas mass in solar masses, total distance in Mpc.
+        :param velRad (numpy array):
+            Radius vector for cloudlets (in units of pixels).
+        :return add_to_circ_vel (numpy array):
+            Additions to the circular velocity due to the internal mass of the gas, in units of km/s.
         """
 
         if not len(massDist) == 2:
@@ -620,7 +674,11 @@ class KinMS:
 
     def generate_cloudlets(self):
         """
-        Generate cloudlets if inClouds is not defined.
+        A helper function for generating cloudlets by running kinms_sampleFromArbDist_oneSided. Raises
+        a KinMSError if generate_cloudlets is called but sbRad and sbProf are not.
+        
+        :return:
+            None
         """
 
         if not len(self.sbRad) or not len(self.sbProf):
@@ -641,6 +699,9 @@ class KinMS:
         """
         Calculate and return the positions and velocities of the cloudlets in inClouds,
         and the radial distance in the x and y plane.
+        
+        :return:
+            None
         """
 
         self.x_pos = (self.inClouds[:, 0] / self.cellSize)
@@ -655,6 +716,7 @@ class KinMS:
     def create_warp(self, array, r_flat):
         """
         If the array provided has a length > 1, create a warp. If it's a single value, create a flat profile.
+        
         :param array (ndarray): array containing the radial profile
         :param r_flat (ndarray): Radius of each cloudlet from the kinematic centre in the plane of the disc
         (units of pixels)
@@ -679,7 +741,8 @@ class KinMS:
 
     def inclination_projection(self, ang, x1, y1, z1):
         """
-        Apply the projection as a result of inclination to the cloudlets
+        Apply the projection as a result of inclination to the cloudlets.
+        
         :param ang (float): inclination angle (in degrees)
         :param x1 (ndarray): x-positions of the cloudlets
         :param y1 (ndarray): y-positions of the cloudlets
@@ -701,16 +764,13 @@ class KinMS:
 
     def position_angle_rotation(self, ang, x2, y2, z2):
         """
-        Apply the projection as a result of the position angle to the cloudlets
+        Apply the projection as a result of the position angle to the cloudlets.
+        
         :param ang (float): position angle (in degrees)
         :param x2 (ndarray): x-positions of the cloudlets
         :param y2 (ndarray): y-positions of the cloudlets
         :param z2 (ndarray): z-positions of the cloudlets
         :return: x-, y-, and z-positions of the projected cloudlets
-        """
-        
-        """
-        Correct orientation by rotating by position angle.
         """
 
         c = np.cos(np.radians(ang))
@@ -727,9 +787,11 @@ class KinMS:
 
     def set_cloud_velocities(self):
         """
-        Find the los velocity and cube position of the clouds
-        If los velocity specified, assume that the clouds have already been projected correctly.
-        :return: arrays with the x-, y-, and z- positions of the cloudlets, and their los velocities
+        Find the los velocity and cube position of the clouds. If los velocity specified, 
+        assume that the clouds have already been projected correctly.
+        
+        :return: 
+            arrays with the x-, y-, and z- positions of the cloudlets, and their los velocities
         """
 
         if len(self.vLOS_clouds):
@@ -788,6 +850,7 @@ class KinMS:
     def find_clouds_in_cube(self, los_vel, cent, x2, y2, x_size, y_size, v_size):
         """
         Returns the clouds that lie inside the cube.
+        
         :param los_vel (ndarray): contains the line of sight velocities of each cloudlet, in km/s.
         :param cent (ndarray of length 2): contains the x and y coordinates of the centre of the object within the cube
         :param x2 (ndarray): x-positions of the cloudlets within the cube
@@ -822,6 +885,7 @@ class KinMS:
         """
         If there are clouds to use, and we know the flux of each cloud, add them to the cube.
         If not, bin each position to get a relative flux.
+        
         :param clouds2do (ndarray): contains the x-, y-, and v-positions of the cloudslets in the cube
         :param subs (ndarray): the indices of the cloudlets in the cube
         :param x_size (int): size of the cube in the x-direction
@@ -868,6 +932,7 @@ class KinMS:
     def normalise_cube(self, cube, psf):
         """
         Normalise cube by the known integrated flux.
+        
         :param cube (3D array): unnormalised spectral cube
         :param psf (2D array): psf of the mock observations, to convolve the cube with
         """
@@ -889,6 +954,7 @@ class KinMS:
     def model_cube(self):
         """
         Do the actual modelling of the spectral cube
+        
         :return: ~~the cube~~
         """
 
