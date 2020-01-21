@@ -30,7 +30,7 @@ import cProfile as profile
 #/////////////////////////////////////////////////////////////////////////////#
 #=============================================================================#
 
-def expdisk(scalerad=10, inc=45):
+def expdisk(scalerad=10, inc=90):
     """
     A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates how
     to create a simulation of an exponential disk of molecular gas. The user can input values for the scalerad and inc
@@ -41,13 +41,13 @@ def expdisk(scalerad=10, inc=45):
     """
 
     # Set up the cube parameters
-    xsize = 128
-    ysize = 128
+    xsize = 64
+    ysize = 64
     vsize = 1400
     cellsize = 1
     dv = 10
     beamsize = [4, 4, 0]
-    posang = 45
+    posang = 90
 
     # Set up exponential disk SB profile/velocity
     x = np.arange(0, 100, 0.1)
@@ -61,8 +61,10 @@ def expdisk(scalerad=10, inc=45):
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
-    #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='exp_disk',
+    #KinMS_plotter(cube, xsize, ysa.sum(axis=0).Tize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='exp_disk',
     #              pdf=True).makeplots()
+    
+    return cube
 
 
 def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
@@ -110,6 +112,8 @@ def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
     #              pdf=True, title="Without Potential of Gas").makeplots()
     #KinMS_plotter(cube2, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='with_potential',
     #              pdf=True, title="With Potential of Gas").makeplots()
+    
+    return cube1, cube2
 
 def ngc4324():
     """
@@ -141,7 +145,7 @@ def ngc4324():
     voffset = 0
 
     # Create the cube
-    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, posAng=posang,
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, posAng=posang, diskthick=diskthick,
                   intFlux=intflux, phaseCent=phasecen, vOffset=voffset, gasSigma=gassigma, fileName="NGC4234_test").model_cube()
 
     # Read in data
@@ -154,6 +158,8 @@ def ngc4324():
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, overcube=scidata, pvdthick=4).makeplots(xrange=[-28, 28],
     #                 yrange=[-28, 28])
+    
+    return cube
 
 
 def use_inclouds():
@@ -202,6 +208,8 @@ def use_inclouds():
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize).makeplots()
+    
+    return cube
 
 
 def inclouds_spiral():
@@ -252,6 +260,8 @@ def inclouds_spiral():
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, pvdthick=50).makeplots()
+    
+    return cube
 
 
 def infits():
@@ -307,6 +317,8 @@ def infits():
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize).makeplots()
+    
+    return cube
 
 
 def veldisp():
@@ -345,6 +357,8 @@ def veldisp():
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang).makeplots(vrange=[-200, 200])
+    
+    return cube
 
 
 def diskthick():
@@ -385,6 +399,8 @@ def diskthick():
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=90).makeplots(xrange=[-30, 30],
     #          yrange=[-30, 30], vrange=[-250, 250])
+    
+    return cube
 
 
 def warp():
@@ -421,6 +437,8 @@ def warp():
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=270).makeplots(vrange=[-250, 250])
+    
+    return cube
     
 
 def retclouds():
@@ -476,42 +494,43 @@ def retclouds():
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
     #KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang).makeplots()
+    
+    return cube
 
 
 def run_tests():
     print("Test - simulate the gas ring in NGC4324")
     print("[Close plot to continue]")
-    ngc4324()
+    cube = ngc4324()
     print("Test - simulate an exponential disk")
     print("[Close plot to continue]")
-    expdisk()
+    cube = expdisk()
     print("Test - using the INCLOUDS mechanism - unrealistic")
     print("[Close plot to continue]")
-    use_inclouds()
+    cube = use_inclouds()
     print("Test - using the INCLOUDS mechanism - realistic")
     print("[Close plot to continue]")
-    inclouds_spiral()
+    cube = inclouds_spiral()
     print("Test - using a FITS file as input")
     print("[Close plot to continue]")
-    infits()
+    cube = infits()
     print("Test - using variable velocity dispersion")
     print("[Close plot to continue]")
-    veldisp()
+    cube = veldisp()
     print("Test - using variable disk thickness")
     print("[Close plot to continue]")
-    diskthick()
+    cube = diskthick()
     print("Test - simulate a warped exponential disk")
     print("[Close plot to finish]")
-    warp()
+    cube = warp()
     print("Test - using the returnclouds mechanism")
     print("[Close plot to finish]")
-    retclouds()
+    cube = retclouds()
     print("Test - using the gravgas mechanism")
-    expdisk_gasgrav()
-
+    cube1, cube2 = expdisk_gasgrav()
+    del(cube); del(cube1); del(cube2)
 
 #=============================================================================#
 #/// END OF SCRIPT ///////////////////////////////////////////////////////////#
 #=============================================================================#
     
-
