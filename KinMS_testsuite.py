@@ -24,7 +24,6 @@ import numpy as np
 from scipy import interpolate
 from astropy.io import fits
 import warnings; warnings.filterwarnings("ignore")
-import cProfile as profile
 
 #=============================================================================#
 #/////////////////////////////////////////////////////////////////////////////#
