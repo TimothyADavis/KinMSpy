@@ -1,0 +1,427 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>KinMSpy Documentation &#8212; KinMS 2.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="kinmspy-documentation">
+<h1>KinMSpy Documentation<a class="headerlink" href="#kinmspy-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Welcome to the KinMSpy documentation page. Here you will find information regarding
+the ins-and-outs of operating KinMS.</p>
+<span class="target" id="module-KinMS"></span><p>Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
+E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
+Updated versions of the software are available through github:
+<a class="reference external" href="https://github.com/TimothyADavis/KinMSpy">https://github.com/TimothyADavis/KinMSpy</a></p>
+<p>If you have found this software useful for your research,
+I would appreciate an acknowledgment to the use of the
+“KINematic Molecular Simulation (KinMS) routines of Davis et al., (2013)”.
+[MNRAS, Volume 429, Issue 1, p.534-555]</p>
+<p>This software is provided as is without any warranty whatsoever.
+For details of permissions granted please see LICENCE.md</p>
+<dl class="class">
+<dt id="KinMS.KinMS">
+<em class="property">class </em><code class="sig-prename descclassname">KinMS.</code><code class="sig-name descname">KinMS</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">ys</em>, <em class="sig-param">vs</em>, <em class="sig-param">cellSize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamSize</em>, <em class="sig-param">inc</em>, <em class="sig-param">posAng</em>, <em class="sig-param">gasSigma=0</em>, <em class="sig-param">diskThick=0</em>, <em class="sig-param">flux_clouds=0</em>, <em class="sig-param">sbProf=[]</em>, <em class="sig-param">sbRad=[]</em>, <em class="sig-param">velRad=[]</em>, <em class="sig-param">velProf=[]</em>, <em class="sig-param">inClouds=[]</em>, <em class="sig-param">vLOS_clouds=[]</em>, <em class="sig-param">massDist=[]</em>, <em class="sig-param">vRadial=[]</em>, <em class="sig-param">ra=None</em>, <em class="sig-param">dec=None</em>, <em class="sig-param">nSamps=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">intFlux=None</em>, <em class="sig-param">vSys=None</em>, <em class="sig-param">phaseCent=None</em>, <em class="sig-param">vOffset=None</em>, <em class="sig-param">vPosAng=None</em>, <em class="sig-param">vPhaseCent=None</em>, <em class="sig-param">restFreq=None</em>, <em class="sig-param">fileName=''</em>, <em class="sig-param">fixSeed=False</em>, <em class="sig-param">cleanOut=False</em>, <em class="sig-param">returnClouds=False</em>, <em class="sig-param">huge_beam=False</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">toplot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Class KinMS</dt>
+<dd class="field-odd"><p>Main workhorse of KinMSpy, used to gerenate spectral cubes.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="KinMS.KinMS.add_fluxes">
+<code class="sig-name descname">add_fluxes</code><span class="sig-paren">(</span><em class="sig-param">clouds2do</em>, <em class="sig-param">subs</em>, <em class="sig-param">x_size</em>, <em class="sig-param">y_size</em>, <em class="sig-param">v_size</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.add_fluxes" title="Permalink to this definition">¶</a></dt>
+<dd><p>If there are clouds to use, and we know the flux of each cloud, add them to the cube.
+If not, bin each position to get a relative flux.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> (<em>subs</em>) – contains the x-, y-, and v-positions of the cloudslets in the cube</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> – the indices of the cloudlets in the cube</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong> (<em>v_size</em>) – size of the cube in the x-direction</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong> – size of the cube in the y-direction</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong> – size of the cube in the v-direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>spectral cube with fluxes added to the cloudlets</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.create_warp">
+<code class="sig-name descname">create_warp</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">r_flat</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.create_warp" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the array provided has a length &gt; 1, create a warp. If it’s a single value, create a flat profile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> (<em>r_flat</em>) – array containing the radial profile</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> – Radius of each cloudlet from the kinematic centre in the plane of the disc (units of pixels)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>ndarray with the radial profile of the disc</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.find_clouds_in_cube">
+<code class="sig-name descname">find_clouds_in_cube</code><span class="sig-paren">(</span><em class="sig-param">los_vel</em>, <em class="sig-param">cent</em>, <em class="sig-param">x2</em>, <em class="sig-param">y2</em>, <em class="sig-param">x_size</em>, <em class="sig-param">y_size</em>, <em class="sig-param">v_size</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.find_clouds_in_cube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the clouds that lie inside the cube.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> (<em>y2</em>) – contains the line of sight velocities of each cloudlet, in km/s.</p></li>
+<li><p><strong>(</strong><strong>ndarray of length 2</strong><strong>)</strong> (<em>cent</em>) – contains the x and y coordinates of the centre of the object within the cube</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> – x-positions of the cloudlets within the cube</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> – y-positions of the cloudlets within the cube</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong> (<em>v_size</em>) – size of the cube in the x-direction</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong> – size of the cube in the y-direction</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong> – size of the cube in the z-direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>arrays with the positions of the cloudlets within the cube, and the indices of these positions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.gasGravity_velocity">
+<code class="sig-name descname">gasGravity_velocity</code><span class="sig-paren">(</span><em class="sig-param">x_pos</em>, <em class="sig-param">y_pos</em>, <em class="sig-param">z_pos</em>, <em class="sig-param">massDist</em>, <em class="sig-param">velRad</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.gasGravity_velocity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates an array of line-of-sight velocity alterations, accounting for the effects 
+of internal gas in the disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>numpy array</strong><strong>)</strong> (<em>velRad</em>) – X position of each cloudlet. Units of arcseconds.</p></li>
+<li><p><strong>(</strong><strong>numpy array</strong><strong>)</strong> – Y position of each cloudlet. Units of arcseconds.</p></li>
+<li><p><strong>(</strong><strong>numpy array</strong><strong>)</strong> – Z position of each cloudlet. Units of arcseconds.</p></li>
+<li><p><strong>(</strong><strong>numpy array</strong><strong>)</strong> – Array of ([gasmass,distance]) - total gas mass in solar masses, total distance in Mpc.</p></li>
+<li><p><strong>(</strong><strong>numpy array</strong><strong>)</strong> – Radius vector for cloudlets (in units of pixels).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return add_to_circ_vel (numpy array)</dt>
+<dd class="field-even"><p>Additions to the circular velocity due to the internal mass of the gas, in units of km/s.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.generate_cloudlets">
+<code class="sig-name descname">generate_cloudlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.generate_cloudlets" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for generating cloudlets by running kinms_sampleFromArbDist_oneSided. Raises
+a KinMSError if generate_cloudlets is called but sbRad and sbProf are not.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.inclination_projection">
+<code class="sig-name descname">inclination_projection</code><span class="sig-paren">(</span><em class="sig-param">ang</em>, <em class="sig-param">x1</em>, <em class="sig-param">y1</em>, <em class="sig-param">z1</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.inclination_projection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the projection as a result of inclination to the cloudlets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> (<em>ang</em>) – inclination angle (in degrees)</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> (<em>z1</em>) – x-positions of the cloudlets</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> – y-positions of the cloudlets</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> – z-positions of the cloudlets</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>x-, y-, and z-positions of the projected cloudlets</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.kinms_create_velField_oneSided">
+<code class="sig-name descname">kinms_create_velField_oneSided</code><span class="sig-paren">(</span><em class="sig-param">velRad</em>, <em class="sig-param">posAng_rad=None</em>, <em class="sig-param">inc_rad=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.kinms_create_velField_oneSided" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an array of line-of-sight velocities, accounting for velocity dispersion and projection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>numpy array</strong><strong>)</strong> (<em>velRad</em>) – Radius vector for velocity profile (units of arcseconds).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>array of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>inc_rad</em>) – Optional, default value is None.
+Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
+with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
+then it should describe how the position angle changes as a function of <cite>velrad</cite> (so this can be used
+to create position angle warps).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>array of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is None.
+Inclination angle of the gas disc on the sky (degrees). Can input a constant or a vector, giving the
+inclination as a function of the radius vector ‘velrad’ (in order to model warps etc).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return los_vel (numpy array)</dt>
+<dd class="field-even"><p>Line-of-sight velocities for projected particles positioned by velRad.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.kinms_sampleFromArbDist_oneSided">
+<code class="sig-name descname">kinms_sampleFromArbDist_oneSided</code><span class="sig-paren">(</span><em class="sig-param">sbRad</em>, <em class="sig-param">sbProf</em>, <em class="sig-param">nSamps</em>, <em class="sig-param">diskThick</em>, <em class="sig-param">fixSeed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.kinms_sampleFromArbDist_oneSided" title="Permalink to this definition">¶</a></dt>
+<dd><p>Samples cloudlets from radial profiles provided given that inClouds is not provided in the __init__.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sbRad</strong> – sbRad (numpy array):
+Radius vector for surface brightness profile (units of arcseconds).</p></li>
+<li><p><strong>sbProf</strong> – (numpy array): 
+Surface brightness profile (arbitrarily scaled) as a function of ‘sbrad’.</p></li>
+<li><p><strong>(</strong><strong>int</strong><strong>)</strong> (<em>nSamps</em>) – Number of cloudlets to use to create the model. Large numbers will reduce numerical noise (especially
+in large cubes), at the cost of increasing runtime.</p></li>
+<li><p><strong>diskThick</strong> – (numpy array): 
+The disc scaleheight in arcseconds. If a single value then this is used at all radii. If an array/list
+then it should have the same length as ‘sbrad’, and will be the disc thickness as a function of that.</p></li>
+<li><p><strong>(</strong><strong>bool</strong><strong>)</strong> (<em>fixSeed</em>) – Whether to use a fixed (or random) seed (list of four integers).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return inClouds (numpy array)</dt>
+<dd class="field-even"><p>3 dimensional array of cloudlet positions within the cube initialised by KinMS().</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.makebeam">
+<code class="sig-name descname">makebeam</code><span class="sig-paren">(</span><em class="sig-param">xpixels</em>, <em class="sig-param">ypixels</em>, <em class="sig-param">beamSize</em>, <em class="sig-param">cellSize=1</em>, <em class="sig-param">cent=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.makebeam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a psf with which one can convolve their cube based on the beam provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>cellSize</em>) – Number of pixels in the x-axis</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Number of pixels in the y-axis</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>list</strong><strong> or </strong><strong>array of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>beamSize</em>) – Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
+assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
+and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
+major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Pixel size required (arcsec/pixel)</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>cent</em>) – Optional, default value is [xpixels / 2, ypixels / 2].
+Central location of the beam in units of pixels.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return psf or trimmed_psf (float array)</dt>
+<dd class="field-even"><p>psf required for convlution in self.model_cube(). trimmed_psf returned if self.huge_beam=False, 
+otherwise default return is the untrimmed psf.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.model_cube">
+<code class="sig-name descname">model_cube</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.model_cube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the actual modelling of the spectral cube</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>~~the cube~~</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.normalise_cube">
+<code class="sig-name descname">normalise_cube</code><span class="sig-paren">(</span><em class="sig-param">cube</em>, <em class="sig-param">psf</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.normalise_cube" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalise cube by the known integrated flux.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>3D array</strong><strong>)</strong> (<em>cube</em>) – unnormalised spectral cube</p></li>
+<li><p><strong>(</strong><strong>2D array</strong><strong>)</strong> (<em>psf</em>) – psf of the mock observations, to convolve the cube with</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.position_angle_rotation">
+<code class="sig-name descname">position_angle_rotation</code><span class="sig-paren">(</span><em class="sig-param">ang</em>, <em class="sig-param">x2</em>, <em class="sig-param">y2</em>, <em class="sig-param">z2</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.position_angle_rotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the projection as a result of the position angle to the cloudlets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> (<em>ang</em>) – position angle (in degrees)</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> (<em>z2</em>) – x-positions of the cloudlets</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> – y-positions of the cloudlets</p></li>
+<li><p><strong>(</strong><strong>ndarray</strong><strong>)</strong> – z-positions of the cloudlets</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>x-, y-, and z-positions of the projected cloudlets</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.print_variables">
+<code class="sig-name descname">print_variables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.print_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>If “verbose”, prints a summary of parameters for the user’s convenience.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return (string)</dt>
+<dd class="field-odd"><p>formatted display of all parameters used in KinMS() initialisation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.save_fits">
+<code class="sig-name descname">save_fits</code><span class="sig-paren">(</span><em class="sig-param">cube</em>, <em class="sig-param">cent</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.save_fits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Outputs a .fits file containing the datacube and relevant header information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>numpy array</strong><strong>)</strong> (<em>cube</em>) – 3 dimensional spectral cube required for saving to .fits file</p></li>
+<li><p><strong>(</strong><strong>numpy array of intigers</strong><strong>)</strong> (<em>cent</em>) – Location of the central x and y positions (in units of pixels),
+and index of the central velocity channel.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.set_cloud_positions">
+<code class="sig-name descname">set_cloud_positions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.set_cloud_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate and return the positions and velocities of the cloudlets in inClouds,
+and the radial distance in the x and y plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="KinMS.KinMS.set_cloud_velocities">
+<code class="sig-name descname">set_cloud_velocities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.set_cloud_velocities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the los velocity and cube position of the clouds. If los velocity specified, 
+assume that the clouds have already been projected correctly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>arrays with the x-, y-, and z- positions of the cloudlets, and their los velocities</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="KinMS.KinMSError">
+<em class="property">exception </em><code class="sig-prename descclassname">KinMS.</code><code class="sig-name descname">KinMSError</code><a class="headerlink" href="#KinMS.KinMSError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates errors under the flag ‘KinMSError’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Class KinMSError</dt>
+<dd class="field-odd"><p>Instantiates the Exception error ‘KinMSError’, for warning the user of faults 
+and exceptions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">KinMS</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, KinMS_Team.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
