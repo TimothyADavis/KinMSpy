@@ -9,9 +9,9 @@ KinMSpy Documentation
 Welcome to the KinMSpy documentation page. Here you will find information regarding
 the ins-and-outs of operating KinMS.
 
-.. autoclass:: KinMS.KinMSError
-.. autoclass:: KinMS.KinMS
+.. automodule:: KinMS
    :members:
+   
 
 .. toctree::
    :maxdepth: 3
