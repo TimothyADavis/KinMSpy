@@ -31,6 +31,8 @@ import sys; sys.tracebacklimit = 0
 
 class KinMSError(Exception):
     """
+    Generates errors under the flag 'KinMSError'.
+    
     :class KinMSError:
         Instantiates the Exception error 'KinMSError', for warning the user of faults 
         and exceptions.
@@ -43,6 +45,10 @@ class KinMSError(Exception):
 
 class KinMS:
         
+    """
+    :class KinMS:
+        Main workhorse of KinMSpy, used to gerenate spectral cubes.
+    """
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
@@ -54,6 +60,8 @@ class KinMS:
                  cleanOut=False, returnClouds=False, huge_beam=False, verbose=False, toplot=False):
 
         """
+        Initialises all input parameters as self variables.
+        
         :param xs (float or int):
                 x-axis size for resultant cube (in arcseconds)
         :param ys (float or int):
@@ -718,15 +726,14 @@ class KinMS:
         If the array provided has a length > 1, create a warp. If it's a single value, create a flat profile.
         
         :param array (ndarray): array containing the radial profile
-        :param r_flat (ndarray): Radius of each cloudlet from the kinematic centre in the plane of the disc
-        (units of pixels)
-        :return: ndarray with the radial profile of the disc
+        :param r_flat (ndarray): Radius of each cloudlet from the kinematic centre in the plane of the disc (units of pixels)
+        :return: 
+            ndarray with the radial profile of the disc
         """
 
         if len(array) > 1:
             if not len(self.sbRad) == len(self.velRad):
-                raise KinMSError('\n If you want to create a warp, please make sure "sbRad" and "velRad" have the same '
-                                 'length.')
+                raise KinMSError('\n If you want to create a warp, please make sure "sbRad" and "velRad" have the same length.')
             interp_func = interpolate.interp1d(self.velRad, array, kind='linear')
             radial_profile = interp_func(r_flat * self.cellSize)
 
