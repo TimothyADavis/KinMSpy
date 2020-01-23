@@ -11,6 +11,8 @@ the ins-and-outs of operating KinMS.
 
 .. autoclass:: KinMS.KinMS
    :members:
+
+   ..automethod:: __init__
    
 
 .. toctree::
