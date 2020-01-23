@@ -17,7 +17,7 @@ the ins-and-outs of operating KinMS.
 .. autoclass:: KinMS.KinMSError
    :members:
 
-.. autoclass:: KinMS_figures.KinMS_plotter
+.. autoclass:: utils.KinMS_figures.KinMS_plotter
    :members:
    
 
