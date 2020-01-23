@@ -60,110 +60,139 @@ class KinMS:
                  cleanOut=False, returnClouds=False, huge_beam=False, verbose=False, toplot=False):
 
         """       
-        :param xs (float or int):
-            x-axis size for resultant cube (in arcseconds)
-        :param ys (float or int):
-            y-axis size for resultant cube (in arcseconds)
-        :param vs (float or int):
-            Velocity axis size for resultant cube (in km/s)
-        :param cellSize (float or int):
-            Pixel size required (arcsec/pixel)
-        :param dv (float or int):
-            Channel size in velocity direction (km/s/channel)
-        :param beamSize (float or int, or list or array of float or int):
-            Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
+        :param xs:
+            (float or int) x-axis size for resultant cube (in arcseconds)
+        :param ys:
+            (float or int) y-axis size for resultant cube (in arcseconds)
+        :param vs:
+            (float or int) Velocity axis size for resultant cube (in km/s)
+        :param cellSize:
+            (float or int) Pixel size required (arcsec/pixel)
+        :param dv:
+            (float or int) Channel size in velocity direction (km/s/channel)
+        :param beamSize:
+            (float or int, or list or array of float or int) Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
             assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
             and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
             major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).
-        :param inc (float or int, or list or array of float or int):
-            Inclination angle of the gas disc on the sky (degrees). Can input a constant or a vector, giving the
+        :param inc:
+            (float or int, or list or array of float or int) Inclination angle of the gas disc on the sky (degrees). Can input a constant or a vector, giving the
             inclination as a function of the radius vector 'velrad' (in order to model warps etc).
-        :param posAng (float or int, or list or array of float or int):
-            Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
+        :param posAng:
+            (float or int, or list or array of float or int) Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
             with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
             then it should describe how the position angle changes as a function of `velrad` (so this can be used
             to create position angle warps).
-        :param gasSigma (float or int, or array or list of float or int): Optional, default is value 0.
+        :param gasSigma: 
+            (float or int, or array or list of float or int) Optional, default is value 0.
             Velocity dispersion of the gas (units of km/s). If single valued then the velocity dispersion is
             constant throughout the disc. If an array/list is passed then it should describe how the velocity
             dispersion changes as a function of 'velrad'.
-        :param diskThick (float or int, or array or list of float or int): Optional, default value is 0.
+        :param diskThick: 
+            (float or int, or array or list of float or int) Optional, default value is 0.
             The disc scaleheight in arcseconds. If a single value then this is used at all radii. If an array/list
             then it should have the same length as 'sbrad', and will be the disc thickness as a function of that.
-        :param flux_clouds (array or list of float or int): Optional, default value is 0.
+        :param flux_clouds: 
+            (array or list of float or int) Optional, default value is 0.
             This vector can be used to supply the flux of each point in 'inclouds'. If used alone then total flux
             in the model is equal to total(flux_inclouds). If 'intflux' used then this vector denotes the relative
             brightness of the points in 'inclouds'.
-        :param sbProf (array or list of float or int): Optional, default value is [].
+        :param sbProf: 
+            (array or list of float or int) Optional, default value is [].
             Surface brightness profile (arbitrarily scaled) as a function of 'sbrad'.
-        :param sbRad (array or list of float or int): Optional, default value is [].
+        :param sbRad: 
+            (array or list of float or int) Optional, default value is [].
             Radius vector for surface brightness profile (units of arcseconds).
-        :param velRad (array or list of float or int): Optional, defaults to 'sbRad'.
+        :param velRad: 
+            (array or list of float or int) Optional, defaults to 'sbRad'.
             Radius vector for velocity profile (units of arcseconds).
-        :param velProf (array or list of float or int): Optional, default value is [].
+        :param velProf: 
+            (array or list of float or int) Optional, default value is [].
             Circular velocity profile (in km/s) as a function of 'velrad'.
-        :param inClouds (array or list of float or int): Optional, default value is [].
+        :param inClouds: 
+            (array or list of float or int) Optional, default value is [].
             If your required gas distribution is not symmetric, you may input vectors containing the position of the
             clouds you wish to simulate. This 3-vector should contain the x, y and z positions, in units of
             arcseconds from the phase centre. If this variable is used, then 'diskthick', 'sbrad' and 'sbprof' are
             ignored. Example: inclouds = [[0,0,0], [10,-10,2], ..., [xpos, ypos, zpos]].
-        :param vLOS_clouds (array or list of float or int): Optional, default value is [].
+        :param vLOS_clouds: 
+            (array or list of float or int) Optional, default value is [].
             This vector should contain the LOS velocity for each point defined in 'inclouds', in units of km/s. If
             not supplied then 'inclouds' is assumed to be the -face on- distribution and that 'velprof' or 'velrad'
             should be used, and the distribution projected. If this variable is used then 'gassigma' and 'inc'
             are ignored.
-        :param massDist (list of float or int): Optional, default value is [].
+        :param massDist: 
+            (list of float or int) Optional, default value is [].
             List of [gasmass, distance] - total gas mass in solar masses, total distance in Mpc.
-        :param vRadial (float or int, or array or list of float or int): Optional, default value is 0.
+        :param vRadial: 
+            (float or int, or array or list of float or int) Optional, default value is 0.
             Magnitude of inflow/outflowing motions (km/s). Negative numbers are inflow, positive numbers denote
             outflow. These are included in the velocity field using formalism of 'kinemetry' (Krajnović et al.
             2006 MNRAS, 366, 787). Can input a constant or a vector, giving the radial motion as a function of the
             radius vector 'velrad'.
-        :param ra (float): Optional, default value is None.
+        :param ra: 
+            (float) Optional, default value is None.
             RA to use in the header of the output cube (in degrees).
-        :param dec (float): Optional, default value is None.
+        :param dec: 
+            (float) Optional, default value is None.
             Dec to use in the header of the output cube (in degrees).
-        :param nSamps (float or int): Optional, default value is 1e5.
+        :param nSamps: 
+            (float or int) Optional, default value is 1e5.
             Number of cloudlets to use to create the model. Large numbers will reduce numerical noise (especially
             in large cubes), at the cost of increasing runtime.
-        :param seed (array or list of float or int): Optional, default value is [100, 101, 102, 103].
+        :param seed: 
+            (array or list of float or int) Optional, default value is [100, 101, 102, 103].
             List of length 4 containing the seeds for random number generation.
-        :param intFlux (float): Optional, default value is 0.
+        :param intFlux: 
+            (float) Optional, default value is 0.
             Total integrated flux you want the output gas to have. (In Jy/km/s).
-        :param vSys (float): Optional, default value is None.
+        :param vSys: 
+            (float) Optional, default value is None.
             Systemic velocity (km/s).
-        :param phaseCent (list or array of float or int of length 2): Optional, default value is [0, 0].
+        :param phaseCent: 
+            (list or array of float or int of length 2) Optional, default value is [0, 0].
             Specifies the morphological centre of the disc structure you create with respect to the central pixel
             of the generated cube.
-        :param vOffset (float or int): Optional, default value is 0.
+        :param vOffset: 
+            (float or int) Optional, default value is 0.
             Offset from the centre of the velocity axis in km/s.
-        :param vPosAng (float or int, or array or list of float or int): Optional, default value is 0.
+        :param vPosAng: 
+            (float or int, or array or list of float or int) Optional, default value is 0.
             Kinematic position angle of the disc, using the usual astronomical convention. If single valued then the
             disc kinematic major axis is straight. If an array is passed then it should describe how the kinematic
             position angle changes as a function of 'velrad'. Used if the kinematic and morphological position
             angles are not the same.
-        :param vPhaseCent (list of float or int of length 2): Optional, default value is [0, 0].
+        :param vPhaseCent: 
+            (list of float or int of length 2) Optional, default value is [0, 0].
             Kinematic centre of the rotation in the x-y plane. Units of pixels. Used if the kinematic and
             morphological centres are not the same.
-        :param restFreq (float): Optional, default value = 115.271e9 (12CO(1-0)).
+        :param restFreq: 
+            (float) Optional, default value = 115.271e9 (12CO(1-0)).
             Rest frequency of spectral line of choice (in Hz). Only matters if you are outputting a FITS file.
-        :param fileName (str): Optional, default value is ''.
+        :param fileName: 
+            (str) Optional, default value is ''.
             If you wish to save the resulting model to a fits file, set this variable. The output filename will
             be 'filename'_simcube.fits
-        :param fixSeed (bool):
-            Whether to use a fixed (or random) seed (list of four integers).
-        :param cleanOut (bool): Optional, default value is False.
+        :param fixSeed:
+            (bool) Whether to use a fixed (or random) seed (list of four integers).
+        :param cleanOut: 
+            (bool) Optional, default value is False.
             If True then do not convolve with the beam, and output the "clean components". Useful to create
             input for other simulation tools (e.g sim_observe in CASA).
-        :param returnClouds (bool): Optional, default value is False.
+        :param returnClouds: 
+            (bool) Optional, default value is False.
             If set True then KinMS returns the created 'inclouds' and 'vlos_clouds' in addition to the cube.
-        :param huge_beam (bool): Optional, default is False.
+        :param huge_beam: 
+            (bool) Optional, default is False.
             If True then astropy's convolve_fft is used instead of convolve, which is faster for very large beams.
-        :param pool (bool): Optional, default is False.
+        :param pool: 
+            (bool) Optional, default is False.
             If True then the convolution is performed parallelly to speed up the code.
-        :param verbose (bool): Optional, default is False.
+        :param verbose: 
+            (bool) Optional, default is False.
             If True, messages are printed throughout the code.
-        :param toplot (bool): Optional, default if False.
+        :param toplot: 
+            (bool) Optional, default if False.
             If True, moment 0 and 1 maps, and a PVD and spectrum of the output cube are plotted.
         """
 
@@ -270,8 +299,8 @@ class KinMS:
         """
         If "verbose", prints a summary of parameters for the user's convenience.
         
-        :return (string): 
-            formatted display of all parameters used in KinMS() initialisation
+        :return: 
+            (string) formatted display of all parameters used in KinMS() initialisation
         """
 
         print("\n\n*** Hello and welcome to the grand KinMSpy :D ***")
@@ -344,21 +373,22 @@ class KinMS:
         """
         Creates a psf with which one can convolve their cube based on the beam provided.
         
-        :param xpixels (float or int):
-                Number of pixels in the x-axis
-        :param ypixels (float or int):
-                Number of pixels in the y-axis
-        :param beamSize (float or int, or list or array of float or int):
-                Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
+        :param xpixels:
+                (float or int) Number of pixels in the x-axis
+        :param ypixels:
+                (float or int) Number of pixels in the y-axis
+        :param beamSize:
+                (float or int, or list or array of float or int) Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
                 assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
                 and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
                 major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).
-        :param cellSize (float or int):
-                Pixel size required (arcsec/pixel)
-        :param cent (array or list of float or int): Optional, default value is [xpixels / 2, ypixels / 2].
+        :param cellSize:
+                (float or int) Pixel size required (arcsec/pixel)
+        :param cent: 
+            (array or list of float or int) Optional, default value is [xpixels / 2, ypixels / 2].
                 Central location of the beam in units of pixels.
-        :return psf or trimmed_psf (float array):
-                psf required for convlution in self.model_cube(). trimmed_psf returned if self.huge_beam=False, 
+        :return psf or trimmed_psf:
+                (float array) psf required for convlution in self.model_cube(). trimmed_psf returned if self.huge_beam=False, 
                 otherwise default return is the untrimmed psf.              
         """
 
@@ -432,20 +462,20 @@ class KinMS:
         """
         Samples cloudlets from radial profiles provided given that inClouds is not provided in the __init__. 
         
-        :param sbRad: sbRad (numpy array):
-                Radius vector for surface brightness profile (units of arcseconds).
-        :param sbProf: (numpy array): 
-                Surface brightness profile (arbitrarily scaled) as a function of 'sbrad'.
-        :param nSamps (int): 
-                Number of cloudlets to use to create the model. Large numbers will reduce numerical noise (especially
+        :param sbRad:
+                (numpy array) Radius vector for surface brightness profile (units of arcseconds).
+        :param sbProf: 
+                (numpy array) Surface brightness profile (arbitrarily scaled) as a function of 'sbrad'.
+        :param nSamps: 
+                (int) Number of cloudlets to use to create the model. Large numbers will reduce numerical noise (especially
                 in large cubes), at the cost of increasing runtime.
-        :param diskThick: (numpy array): 
-                The disc scaleheight in arcseconds. If a single value then this is used at all radii. If an array/list
+        :param diskThick: 
+                (numpy array) The disc scaleheight in arcseconds. If a single value then this is used at all radii. If an array/list
                 then it should have the same length as 'sbrad', and will be the disc thickness as a function of that.
-        :param fixSeed (bool):
-                Whether to use a fixed (or random) seed (list of four integers).
-        :return inClouds (numpy array):
-            3 dimensional array of cloudlet positions within the cube initialised by KinMS().
+        :param fixSeed:
+                (bool) Whether to use a fixed (or random) seed (list of four integers).
+        :return inClouds:
+            (numpy array) 3 dimensional array of cloudlet positions within the cube initialised by KinMS().
         """
 
         if self.verbose: 
@@ -507,18 +537,20 @@ class KinMS:
         """
         Creates an array of line-of-sight velocities, accounting for velocity dispersion and projection.
         
-        :param velRad (numpy array):
-                Radius vector for velocity profile (units of arcseconds).
-        :param posAng_rad (float or int, or array of float or int): Optional, default value is None.
-                Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
-                with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
-                then it should describe how the position angle changes as a function of `velrad` (so this can be used
-                to create position angle warps).
-        :param inc_rad (float or int, or array of float or int): Optional, default value is None.
-                Inclination angle of the gas disc on the sky (degrees). Can input a constant or a vector, giving the
-                inclination as a function of the radius vector 'velrad' (in order to model warps etc).
-        :return los_vel (numpy array):
-                Line-of-sight velocities for projected particles positioned by velRad.
+        :param velRad:
+            (numpy array) Radius vector for velocity profile (units of arcseconds).
+        :param posAng_rad: 
+            (float or int, or array of float or int) Optional, default value is None.
+            Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
+            with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
+            then it should describe how the position angle changes as a function of `velrad` (so this can be used
+            to create position angle warps).
+        :param inc_rad: 
+            (float or int, or array of float or int) Optional, default value is None.
+            Inclination angle of the gas disc on the sky (degrees). Can input a constant or a vector, giving the
+            inclination as a function of the radius vector 'velrad' (in order to model warps etc).
+        :return los_vel:
+            (numpy array) Line-of-sight velocities for projected particles positioned by velRad.
         """
 
         if not self.fixSeed:
@@ -587,11 +619,11 @@ class KinMS:
         """
         Outputs a .fits file containing the datacube and relevant header information.
         
-        :param cube (numpy array):
-                3 dimensional spectral cube required for saving to .fits file
-        :param cent (numpy array of intigers):
-                Location of the central x and y positions (in units of pixels),
-                and index of the central velocity channel.
+        :param cube:
+            (numpy array) 3 dimensional spectral cube required for saving to .fits file
+        :param cent:
+            (numpy array of intigers) Location of the central x and y positions (in units of pixels),
+            and index of the central velocity channel.
         :return:
             None
         """
@@ -640,18 +672,18 @@ class KinMS:
         Calculates an array of line-of-sight velocity alterations, accounting for the effects 
         of internal gas in the disk.
         
-        :param x_pos (numpy array):
-            X position of each cloudlet. Units of arcseconds.
-        :param y_pos (numpy array):
-            Y position of each cloudlet. Units of arcseconds.
-        :param z_pos (numpy array):
-            Z position of each cloudlet. Units of arcseconds.
-        :param massDist (numpy array):
-            Array of ([gasmass,distance]) - total gas mass in solar masses, total distance in Mpc.
-        :param velRad (numpy array):
-            Radius vector for cloudlets (in units of pixels).
-        :return add_to_circ_vel (numpy array):
-            Additions to the circular velocity due to the internal mass of the gas, in units of km/s.
+        :param x_pos:
+            (numpy array) X position of each cloudlet. Units of arcseconds.
+        :param y_pos:
+            (numpy array) Y position of each cloudlet. Units of arcseconds.
+        :param z_pos:
+            (numpy array) Z position of each cloudlet. Units of arcseconds.
+        :param massDist:
+            (numpy array) Array of ([gasmass,distance]) - total gas mass in solar masses, total distance in Mpc.
+        :param velRad:
+            (numpy array) Radius vector for cloudlets (in units of pixels).
+        :return add_to_circ_vel:
+            (numpy array) Additions to the circular velocity due to the internal mass of the gas, in units of km/s.
         """
 
         if not len(massDist) == 2:
@@ -723,8 +755,10 @@ class KinMS:
         """
         If the array provided has a length > 1, create a warp. If it's a single value, create a flat profile.
         
-        :param array (ndarray): array containing the radial profile
-        :param r_flat (ndarray): Radius of each cloudlet from the kinematic centre in the plane of the disc (units of pixels)
+        :param array: 
+            (ndarray) array containing the radial profile
+        :param r_flat: 
+            (ndarray) Radius of each cloudlet from the kinematic centre in the plane of the disc (units of pixels)
         :return: 
             ndarray with the radial profile of the disc
         """
@@ -748,11 +782,16 @@ class KinMS:
         """
         Apply the projection as a result of inclination to the cloudlets.
         
-        :param ang (float): inclination angle (in degrees)
-        :param x1 (ndarray): x-positions of the cloudlets
-        :param y1 (ndarray): y-positions of the cloudlets
-        :param z1 (ndarray): z-positions of the cloudlets
-        :return: x-, y-, and z-positions of the projected cloudlets
+        :param ang: 
+            (float) inclination angle (in degrees)
+        :param x1: 
+            (ndarray) x-positions of the cloudlets
+        :param y1: 
+            (ndarray) y-positions of the cloudlets
+        :param z1: 
+            (ndarray) z-positions of the cloudlets
+        :return: 
+            x-, y-, and z-positions of the projected cloudlets
         """
 
         c = np.cos(np.radians(ang))
@@ -771,11 +810,16 @@ class KinMS:
         """
         Apply the projection as a result of the position angle to the cloudlets.
         
-        :param ang (float): position angle (in degrees)
-        :param x2 (ndarray): x-positions of the cloudlets
-        :param y2 (ndarray): y-positions of the cloudlets
-        :param z2 (ndarray): z-positions of the cloudlets
-        :return: x-, y-, and z-positions of the projected cloudlets
+        :param ang: 
+            (float) position angle (in degrees)
+        :param x2: 
+            (ndarray) x-positions of the cloudlets
+        :param y2: 
+            (ndarray) y-positions of the cloudlets
+        :param z2: 
+            (ndarray) z-positions of the cloudlets
+        :return: 
+            x-, y-, and z-positions of the projected cloudlets
         """
 
         c = np.cos(np.radians(ang))
@@ -856,14 +900,22 @@ class KinMS:
         """
         Returns the clouds that lie inside the cube.
         
-        :param los_vel (ndarray): contains the line of sight velocities of each cloudlet, in km/s.
-        :param cent (ndarray of length 2): contains the x and y coordinates of the centre of the object within the cube
-        :param x2 (ndarray): x-positions of the cloudlets within the cube
-        :param y2 (ndarray): y-positions of the cloudlets within the cube
-        :param x_size (int): size of the cube in the x-direction
-        :param y_size (int): size of the cube in the y-direction
-        :param v_size (int): size of the cube in the z-direction
-        :return: arrays with the positions of the cloudlets within the cube, and the indices of these positions
+        :param los_vel: 
+            (ndarray) contains the line of sight velocities of each cloudlet, in km/s.
+        :param cent: 
+            (ndarray of length 2) contains the x and y coordinates of the centre of the object within the cube
+        :param x2: 
+            (ndarray) x-positions of the cloudlets within the cube
+        :param y2: 
+            (ndarray) y-positions of the cloudlets within the cube
+        :param x_size: 
+            (int) size of the cube in the x-direction
+        :param y_size: 
+            (int) size of the cube in the y-direction
+        :param v_size: 
+            (int) size of the cube in the z-direction
+        :return: 
+            arrays with the positions of the cloudlets within the cube, and the indices of these positions
         """
 
         # Centre the clouds in the cube on the centre of the object.
@@ -891,12 +943,18 @@ class KinMS:
         If there are clouds to use, and we know the flux of each cloud, add them to the cube.
         If not, bin each position to get a relative flux.
         
-        :param clouds2do (ndarray): contains the x-, y-, and v-positions of the cloudslets in the cube
-        :param subs (ndarray): the indices of the cloudlets in the cube
-        :param x_size (int): size of the cube in the x-direction
-        :param y_size (int): size of the cube in the y-direction
-        :param v_size (int): size of the cube in the v-direction
-        :return: spectral cube with fluxes added to the cloudlets
+        :param clouds2do: 
+            (ndarray) contains the x-, y-, and v-positions of the cloudslets in the cube
+        :param subs: 
+            (ndarray) the indices of the cloudlets in the cube
+        :param x_size: 
+            (int) size of the cube in the x-direction
+        :param y_size: 
+            (int) size of the cube in the y-direction
+        :param v_size: 
+            (int) size of the cube in the v-direction
+        :return: 
+            spectral cube with fluxes added to the cloudlets
         """
 
         nsubs = len(subs)
@@ -938,8 +996,10 @@ class KinMS:
         """
         Normalise cube by the known integrated flux.
         
-        :param cube (3D array): unnormalised spectral cube
-        :param psf (2D array): psf of the mock observations, to convolve the cube with
+        :param cube: 
+            (3D array) unnormalised spectral cube
+        :param psf: 
+            (2D array) psf of the mock observations, to convolve the cube with
         """
 
         if self.intFlux > 0:
@@ -960,7 +1020,8 @@ class KinMS:
         """
         Do the actual modelling of the spectral cube
         
-        :return: ~~the cube~~
+        :return: 
+            ~~the cube~~
         """
 
         if self.verbose:
