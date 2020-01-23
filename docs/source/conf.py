@@ -56,6 +56,8 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_theme_options = {
-        'logo_only':True
+        'logo_only':True,
+        'style_nav_header_background': 'white'
         }
 html_logo = '../../logo_files/Logo.png'
+html_favicon = '../../logo_files/tab.ico'
