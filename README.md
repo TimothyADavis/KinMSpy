@@ -1,4 +1,4 @@
-<img style="float:top,right" src="logo_files/Logo.png" width="400">
+<img style="float:top,right" src="utils/logo_files/Logo.png" width="400">
 
 [![Documentation Status](https://readthedocs.org/projects/kinmspy/badge/?version=latest)](https://kinmspy.readthedocs.io/en/latest/?badge=latest)
 
