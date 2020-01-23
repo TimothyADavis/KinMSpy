@@ -23,7 +23,7 @@ copyright = '2020, KinMS_Team'
 author = 'KinMS_Team'
 
 # The full version, including alpha/beta/rc tags
-release = '2.0'
+release = '2.0.0'
 
 
 # -- General configuration ---------------------------------------------------
