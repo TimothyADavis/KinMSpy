@@ -23,7 +23,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from scipy import ndimage
 from astropy.nddata.utils import Cutout2D
-from sauron_colormap import sauron
+from utils.sauron_colormap import sauron
 import warnings; warnings.filterwarnings("ignore", module="matplotlib")
 plt.close('all')
 
@@ -33,7 +33,7 @@ plt.close('all')
 
 class KinMS_plotter:
 
-    def __init__(self, f, xsize, ysize, vsize, cellsize, dv, beamsize, posang=None, pvdthick=None, nconts=None,
+    def __init__(self, f, xsize, ysize, vsize, cellsize, dv, beamsize, posang=None, pvdthick=None,
                  savepath=None, savename=None, pdf=True, overcube=False, title=False):
         
         """
@@ -48,6 +48,10 @@ class KinMS_plotter:
             (float or int) y-axis size for resultant cube (in arcseconds)
         :param vsize:
             (float or int) Velocity axis size for resultant cube (in km/s)
+        :param cellSize:
+            (float or int) Pixel size required (arcsec/pixel)
+        :param dv:
+            (float or int) Channel size in velocity direction (km/s/channel)
         :param beamSize:
             (float or int, or list or array of float or int) Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
             assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
@@ -58,6 +62,20 @@ class KinMS_plotter:
             with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
             then it should describe how the position angle changes as a function of `velrad` (so this can be used
             to create position angle warps).
+        :param pvdthick:
+            UNDER CONSTRUCTION
+        :param savepath:
+            (string) path to directory in which the plots are saved to
+        :param savename:
+            (string) a filename assigned to the plots when saved
+        :param pdf:
+            (bool) Optional, default value is True.
+            saves the plots as a .pdf file
+        :param overcube:
+            (bool) UNDER CONSTRUCTION
+        :param title:
+            (bool) Optional, default value is False.
+            assigns a title to the plots
         """
 
         self.f = f
@@ -69,7 +87,6 @@ class KinMS_plotter:
         self.beamsize = beamsize
         self.posang = posang or 0  
         self.pvdthick = pvdthick or 2
-        self.nconts = nconts or 11
         self.savepath = savepath or None
         self.savename = savename or None
         self.pdf = pdf

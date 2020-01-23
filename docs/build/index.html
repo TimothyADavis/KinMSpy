@@ -562,7 +562,7 @@ and exceptions.</p>
 
 <dl class="class">
 <dt id="KinMS_figures.KinMS_plotter">
-<em class="property">class </em><code class="sig-prename descclassname">KinMS_figures.</code><code class="sig-name descname">KinMS_plotter</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">xsize</em>, <em class="sig-param">ysize</em>, <em class="sig-param">vsize</em>, <em class="sig-param">cellsize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamsize</em>, <em class="sig-param">posang=None</em>, <em class="sig-param">pvdthick=None</em>, <em class="sig-param">nconts=None</em>, <em class="sig-param">savepath=None</em>, <em class="sig-param">savename=None</em>, <em class="sig-param">pdf=True</em>, <em class="sig-param">overcube=False</em>, <em class="sig-param">title=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS_figures.KinMS_plotter" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">KinMS_figures.</code><code class="sig-name descname">KinMS_plotter</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">xsize</em>, <em class="sig-param">ysize</em>, <em class="sig-param">vsize</em>, <em class="sig-param">cellsize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamsize</em>, <em class="sig-param">posang=None</em>, <em class="sig-param">pvdthick=None</em>, <em class="sig-param">savepath=None</em>, <em class="sig-param">savename=None</em>, <em class="sig-param">pdf=True</em>, <em class="sig-param">overcube=False</em>, <em class="sig-param">title=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS_figures.KinMS_plotter" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Class KinMS_plotter</dt>
 <dd class="field-odd"><p>Generates moment maps and position velocity diagrams for input spectral cubes</p>
@@ -573,6 +573,8 @@ and exceptions.</p>
 <li><p><strong>xsize</strong> – (float or int) x-axis size for resultant cube (in arcseconds)</p></li>
 <li><p><strong>ysize</strong> – (float or int) y-axis size for resultant cube (in arcseconds)</p></li>
 <li><p><strong>vsize</strong> – (float or int) Velocity axis size for resultant cube (in km/s)</p></li>
+<li><p><strong>cellSize</strong> – (float or int) Pixel size required (arcsec/pixel)</p></li>
+<li><p><strong>dv</strong> – (float or int) Channel size in velocity direction (km/s/channel)</p></li>
 <li><p><strong>beamSize</strong> – (float or int, or list or array of float or int) Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
 assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
 and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
@@ -581,6 +583,14 @@ major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, b
 with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
 then it should describe how the position angle changes as a function of <cite>velrad</cite> (so this can be used
 to create position angle warps).</p></li>
+<li><p><strong>pvdthick</strong> – UNDER CONSTRUCTION</p></li>
+<li><p><strong>savepath</strong> – (string) path to directory in which the plots are saved to</p></li>
+<li><p><strong>savename</strong> – (string) a filename assigned to the plots when saved</p></li>
+<li><p><strong>pdf</strong> – (bool) Optional, default value is True.
+saves the plots as a .pdf file</p></li>
+<li><p><strong>overcube</strong> – (bool) UNDER CONSTRUCTION</p></li>
+<li><p><strong>title</strong> – (bool) Optional, default value is False.
+assigns a title to the plots</p></li>
 </ul>
 </dd>
 </dl>

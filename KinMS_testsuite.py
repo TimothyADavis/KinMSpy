@@ -148,7 +148,7 @@ def ngc4324():
                   intFlux=intflux, phaseCent=phasecen, vOffset=voffset, gasSigma=gassigma, fileName="NGC4234_test").model_cube()
 
     # Read in data
-    hdulist = fits.open('test_suite/NGC4324.fits')
+    hdulist = fits.open('utils/NGC4324.fits')
     scidata = hdulist[0].data.T
     scidata = scidata[:, :, :, 0]
     scidata[scidata < np.std(scidata[:, :, 0]) * 4] = 0
