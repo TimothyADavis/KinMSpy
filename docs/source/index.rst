@@ -9,7 +9,7 @@ KinMSpy Documentation
 Welcome to the KinMSpy documentation page. Here you will find information regarding
 the ins-and-outs of operating KinMS.
 
-.. automodule:: KinMS
+.. autoclass:: KinMS.KinMS
    :members:
    
 

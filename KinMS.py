@@ -59,9 +59,7 @@ class KinMS:
                  vPosAng=None, vPhaseCent=None, restFreq=None, fileName='', fixSeed=False,
                  cleanOut=False, returnClouds=False, huge_beam=False, verbose=False, toplot=False):
 
-        """
-        Initialises all input parameters as self variables.
-        
+        """       
         :param xs (float or int):
                 x-axis size for resultant cube (in arcseconds)
         :param ys (float or int):
