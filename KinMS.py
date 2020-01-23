@@ -25,7 +25,7 @@ from astropy.io import fits
 from astropy.nddata.utils import Cutout2D
 from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
-from KinMS_figures import KinMS_plotter
+from utils.KinMS_figures import KinMS_plotter
 import warnings; warnings.filterwarnings("ignore")
 import sys; sys.tracebacklimit = 0
 

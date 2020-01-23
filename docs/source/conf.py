@@ -59,5 +59,5 @@ html_theme_options = {
         'logo_only':True,
         'style_nav_header_background': 'white'
         }
-html_logo = '../../logo_files/Logo.png'
-html_favicon = '../../logo_files/tab.ico'
+html_logo = '../../utils/logo_files/Logo.png'
+html_favicon = '../../utils/logo_files/tab.ico'
