@@ -35,6 +35,30 @@ class KinMS_plotter:
 
     def __init__(self, f, xsize, ysize, vsize, cellsize, dv, beamsize, posang=None, pvdthick=None, nconts=None,
                  savepath=None, savename=None, pdf=True, overcube=False, title=False):
+        
+        """
+        :class KinMS_plotter:
+            Generates moment maps and position velocity diagrams for input spectral cubes
+        
+        :param f (numpy array):
+            Spectral cube used to generate plots
+        :param xsize (float or int):
+            x-axis size for resultant cube (in arcseconds)
+        :param ysize (float or int):
+            y-axis size for resultant cube (in arcseconds)
+        :param vsize (float or int):
+            Velocity axis size for resultant cube (in km/s)
+        :param beamSize (float or int, or list or array of float or int):
+            Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
+            assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
+            and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
+            major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).
+        :param posAng (float or int):
+            Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
+            with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
+            then it should describe how the position angle changes as a function of `velrad` (so this can be used
+            to create position angle warps).
+        """
 
         self.f = f
         self.xsize = xsize
@@ -43,7 +67,7 @@ class KinMS_plotter:
         self.cellsize = cellsize
         self.dv = dv
         self.beamsize = beamsize
-        self.posang = posang or 0  # for some reason this is defined differently in KinMS
+        self.posang = posang or 0  
         self.pvdthick = pvdthick or 2
         self.nconts = nconts or 11
         self.savepath = savepath or None
