@@ -34,7 +34,7 @@ release = '2.0'
 extensions = ['sphinx.ext.autodoc']
 
 master_doc = 'index'
-
+autoclass_content = 'both'
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

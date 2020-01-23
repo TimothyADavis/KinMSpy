@@ -34,22 +34,112 @@
 <h1>KinMSpy Documentation<a class="headerlink" href="#kinmspy-documentation" title="Permalink to this headline">¶</a></h1>
 <p>Welcome to the KinMSpy documentation page. Here you will find information regarding
 the ins-and-outs of operating KinMS.</p>
-<span class="target" id="module-KinMS"></span><p>Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
-E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
-Updated versions of the software are available through github:
-<a class="reference external" href="https://github.com/TimothyADavis/KinMSpy">https://github.com/TimothyADavis/KinMSpy</a></p>
-<p>If you have found this software useful for your research,
-I would appreciate an acknowledgment to the use of the
-“KINematic Molecular Simulation (KinMS) routines of Davis et al., (2013)”.
-[MNRAS, Volume 429, Issue 1, p.534-555]</p>
-<p>This software is provided as is without any warranty whatsoever.
-For details of permissions granted please see LICENCE.md</p>
 <dl class="class">
 <dt id="KinMS.KinMS">
 <em class="property">class </em><code class="sig-prename descclassname">KinMS.</code><code class="sig-name descname">KinMS</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">ys</em>, <em class="sig-param">vs</em>, <em class="sig-param">cellSize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamSize</em>, <em class="sig-param">inc</em>, <em class="sig-param">posAng</em>, <em class="sig-param">gasSigma=0</em>, <em class="sig-param">diskThick=0</em>, <em class="sig-param">flux_clouds=0</em>, <em class="sig-param">sbProf=[]</em>, <em class="sig-param">sbRad=[]</em>, <em class="sig-param">velRad=[]</em>, <em class="sig-param">velProf=[]</em>, <em class="sig-param">inClouds=[]</em>, <em class="sig-param">vLOS_clouds=[]</em>, <em class="sig-param">massDist=[]</em>, <em class="sig-param">vRadial=[]</em>, <em class="sig-param">ra=None</em>, <em class="sig-param">dec=None</em>, <em class="sig-param">nSamps=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">intFlux=None</em>, <em class="sig-param">vSys=None</em>, <em class="sig-param">phaseCent=None</em>, <em class="sig-param">vOffset=None</em>, <em class="sig-param">vPosAng=None</em>, <em class="sig-param">vPhaseCent=None</em>, <em class="sig-param">restFreq=None</em>, <em class="sig-param">fileName=''</em>, <em class="sig-param">fixSeed=False</em>, <em class="sig-param">cleanOut=False</em>, <em class="sig-param">returnClouds=False</em>, <em class="sig-param">huge_beam=False</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">toplot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Class KinMS</dt>
 <dd class="field-odd"><p>Main workhorse of KinMSpy, used to gerenate spectral cubes.</p>
+</dd>
+<dt class="field-even">Parameters</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>vOffset</em>) – x-axis size for resultant cube (in arcseconds)</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – y-axis size for resultant cube (in arcseconds)</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Velocity axis size for resultant cube (in km/s)</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Pixel size required (arcsec/pixel)</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Channel size in velocity direction (km/s/channel)</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>list</strong><strong> or </strong><strong>array of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>posAng</em>) – Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
+assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
+and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
+major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>list</strong><strong> or </strong><strong>array of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Inclination angle of the gas disc on the sky (degrees). Can input a constant or a vector, giving the
+inclination as a function of the radius vector ‘velrad’ (in order to model warps etc).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>list</strong><strong> or </strong><strong>array of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
+with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
+then it should describe how the position angle changes as a function of <cite>velrad</cite> (so this can be used
+to create position angle warps).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>vPosAng</em>) – Optional, default is value 0.
+Velocity dispersion of the gas (units of km/s). If single valued then the velocity dispersion is
+constant throughout the disc. If an array/list is passed then it should describe how the velocity
+dispersion changes as a function of ‘velrad’.</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is 0.
+The disc scaleheight in arcseconds. If a single value then this is used at all radii. If an array/list
+then it should have the same length as ‘sbrad’, and will be the disc thickness as a function of that.</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>seed</em>) – Optional, default value is 0.
+This vector can be used to supply the flux of each point in ‘inclouds’. If used alone then total flux
+in the model is equal to total(flux_inclouds). If ‘intflux’ used then this vector denotes the relative
+brightness of the points in ‘inclouds’.</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is [].
+Surface brightness profile (arbitrarily scaled) as a function of ‘sbrad’.</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is [].
+Radius vector for surface brightness profile (units of arcseconds).</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, defaults to ‘sbRad’.
+Radius vector for velocity profile (units of arcseconds).</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is [].
+Circular velocity profile (in km/s) as a function of ‘velrad’.</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is [].
+If your required gas distribution is not symmetric, you may input vectors containing the position of the
+clouds you wish to simulate. This 3-vector should contain the x, y and z positions, in units of
+arcseconds from the phase centre. If this variable is used, then ‘diskthick’, ‘sbrad’ and ‘sbprof’ are
+ignored. Example: inclouds = [[0,0,0], [10,-10,2], …, [xpos, ypos, zpos]].</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is [].
+This vector should contain the LOS velocity for each point defined in ‘inclouds’, in units of km/s. If
+not supplied then ‘inclouds’ is assumed to be the -face on- distribution and that ‘velprof’ or ‘velrad’
+should be used, and the distribution projected. If this variable is used then ‘gassigma’ and ‘inc’
+are ignored.</p></li>
+<li><p><strong>(</strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> (<em>massDist</em>) – Optional, default value is [].
+List of [gasmass, distance] - total gas mass in solar masses, total distance in Mpc.</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is 0.
+Magnitude of inflow/outflowing motions (km/s). Negative numbers are inflow, positive numbers denote
+outflow. These are included in the velocity field using formalism of ‘kinemetry’ (Krajnović et al.
+2006 MNRAS, 366, 787). Can input a constant or a vector, giving the radial motion as a function of the
+radius vector ‘velrad’.</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> (<em>restFreq</em>) – Optional, default value is None.
+RA to use in the header of the output cube (in degrees).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> – Optional, default value is None.
+Dec to use in the header of the output cube (in degrees).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is 1e5.
+Number of cloudlets to use to create the model. Large numbers will reduce numerical noise (especially
+in large cubes), at the cost of increasing runtime.</p></li>
+<li><p><strong>(</strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is [100, 101, 102, 103].
+List of length 4 containing the seeds for random number generation.</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> – Optional, default value is 0.
+Total integrated flux you want the output gas to have. (In Jy/km/s).</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> – Optional, default value is None.
+Systemic velocity (km/s).</p></li>
+<li><p><strong>(</strong><strong>list</strong><strong> or </strong><strong>array of float</strong><strong> or </strong><strong>int of length 2</strong><strong>)</strong> (<em>phaseCent</em>) – Optional, default value is [0, 0].
+Specifies the morphological centre of the disc structure you create with respect to the central pixel
+of the generated cube.</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is 0.
+Offset from the centre of the velocity axis in km/s.</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong> or </strong><strong>int</strong><strong>, or </strong><strong>array</strong><strong> or </strong><strong>list of float</strong><strong> or </strong><strong>int</strong><strong>)</strong> – Optional, default value is 0.
+Kinematic position angle of the disc, using the usual astronomical convention. If single valued then the
+disc kinematic major axis is straight. If an array is passed then it should describe how the kinematic
+position angle changes as a function of ‘velrad’. Used if the kinematic and morphological position
+angles are not the same.</p></li>
+<li><p><strong>(</strong><strong>list of float</strong><strong> or </strong><strong>int of length 2</strong><strong>)</strong> (<em>vPhaseCent</em>) – Optional, default value is [0, 0].
+Kinematic centre of the rotation in the x-y plane. Units of pixels. Used if the kinematic and
+morphological centres are not the same.</p></li>
+<li><p><strong>(</strong><strong>float</strong><strong>)</strong> – Optional, default value = 115.271e9 (12CO(1-0)).
+Rest frequency of spectral line of choice (in Hz). Only matters if you are outputting a FITS file.</p></li>
+<li><p><strong>(</strong><strong>str</strong><strong>)</strong> (<em>fileName</em>) – Optional, default value is ‘’.
+If you wish to save the resulting model to a fits file, set this variable. The output filename will
+be ‘filename’_simcube.fits</p></li>
+<li><p><strong>(</strong><strong>bool</strong><strong>)</strong> (<em>toplot</em>) – Whether to use a fixed (or random) seed (list of four integers).</p></li>
+<li><p><strong>(</strong><strong>bool</strong><strong>)</strong> – Optional, default value is False.
+If True then do not convolve with the beam, and output the “clean components”. Useful to create
+input for other simulation tools (e.g sim_observe in CASA).</p></li>
+<li><p><strong>(</strong><strong>bool</strong><strong>)</strong> – Optional, default value is False.
+If set True then KinMS returns the created ‘inclouds’ and ‘vlos_clouds’ in addition to the cube.</p></li>
+<li><p><strong>(</strong><strong>bool</strong><strong>)</strong> – Optional, default is False.
+If True then astropy’s convolve_fft is used instead of convolve, which is faster for very large beams.</p></li>
+<li><p><strong>(</strong><strong>bool</strong><strong>)</strong> – Optional, default is False.
+If True then the convolution is performed parallelly to speed up the code.</p></li>
+<li><p><strong>(</strong><strong>bool</strong><strong>)</strong> – Optional, default is False.
+If True, messages are printed throughout the code.</p></li>
+<li><p><strong>(</strong><strong>bool</strong><strong>)</strong> – Optional, default if False.
+If True, moment 0 and 1 maps, and a PVD and spectrum of the output cube are plotted.</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="method">
@@ -337,9 +427,9 @@ assume that the clouds have already been projected correctly.</p>
 
 </dd></dl>
 
-<dl class="exception">
+<dl class="class">
 <dt id="KinMS.KinMSError">
-<em class="property">exception </em><code class="sig-prename descclassname">KinMS.</code><code class="sig-name descname">KinMSError</code><a class="headerlink" href="#KinMS.KinMSError" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">KinMS.</code><code class="sig-name descname">KinMSError</code><a class="headerlink" href="#KinMS.KinMSError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates errors under the flag ‘KinMSError’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Class KinMSError</dt>
@@ -348,6 +438,11 @@ and exceptions.</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="class">
+<dt id="KinMS_figures.KinMS_plotter">
+<em class="property">class </em><code class="sig-prename descclassname">KinMS_figures.</code><code class="sig-name descname">KinMS_plotter</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">xsize</em>, <em class="sig-param">ysize</em>, <em class="sig-param">vsize</em>, <em class="sig-param">cellsize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamsize</em>, <em class="sig-param">posang=None</em>, <em class="sig-param">pvdthick=None</em>, <em class="sig-param">nconts=None</em>, <em class="sig-param">savepath=None</em>, <em class="sig-param">savename=None</em>, <em class="sig-param">pdf=True</em>, <em class="sig-param">overcube=False</em>, <em class="sig-param">title=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS_figures.KinMS_plotter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <div class="toctree-wrapper compound">
 </div>

@@ -12,7 +12,11 @@ the ins-and-outs of operating KinMS.
 .. autoclass:: KinMS.KinMS
    :members:
 
-   ..automethod:: __init__
+.. autoclass:: KinMS.KinMSError
+   :members:
+
+.. autoclass:: KinMS_figures.KinMS_plotter
+   :members:
    
 
 .. toctree::
