@@ -1,5 +1,5 @@
 # coding: utf-8
-'''
+"""
 Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
 E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
 Updated versions of the software are available through github:
@@ -12,7 +12,7 @@ I would appreciate an acknowledgment to the use of the
 
 This software is provided as is without any warranty whatsoever.
 For details of permissions granted please see LICENCE.md
-'''
+"""
 
 #=============================================================================#
 #/// IMPORT PACKAGES /////////////////////////////////////////////////////////#
@@ -23,9 +23,8 @@ import matplotlib
 from matplotlib import pyplot as plt
 from scipy import ndimage
 from astropy.nddata.utils import Cutout2D
-from utils.sauron_colormap import sauron
+from sauron_colormap import sauron
 import warnings; warnings.filterwarnings("ignore", module="matplotlib")
-plt.close('all')
 
 #=============================================================================#
 #/// START OF CLASS //////////////////////////////////////////////////////////#

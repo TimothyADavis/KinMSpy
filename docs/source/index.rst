@@ -3,19 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-KinMSpy Documentation
+KinMSpy   version |release|
 =================================
 
 Welcome to the KinMSpy documentation page. Here you will find information regarding
-the ins-and-outs of operating KinMS.
-
-:Version: |release| 
-
-.. autoclass:: KinMS.KinMS
-   :members:
+the ins-and-outs of operating KinMS. 
 
 .. autoclass:: KinMS.KinMSError
    :members:
+
+.. autoclass:: KinMS.KinMS
 
 .. autoclass:: utils.KinMS_figures.KinMS_plotter
    :members:
