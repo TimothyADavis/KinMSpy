@@ -1,0 +1,6 @@
+README.md
+setup.py
+kinmspytest.egg-info/PKG-INFO
+kinmspytest.egg-info/SOURCES.txt
+kinmspytest.egg-info/dependency_links.txt
+kinmspytest.egg-info/top_level.txt
