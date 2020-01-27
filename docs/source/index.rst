@@ -3,11 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-KinMSpy   version |release|
+KinMSpy  
 =================================
 
-Welcome to the KinMSpy documentation page. Here you will find information regarding
-the ins-and-outs of operating KinMS. 
+Version |release|
+
+Welcome to the KinMSpy documentation. Here you will find information regarding
+the ins-and-outs of operating KinMSpy. 
+
+If you have found this software useful for your research,
+We would appreciate an acknowledgment to the use of the
+"KINematic Molecular Simulation (KinMS) routines of Davis et al., (2013)".
+Test hyperlink: `[MNRAS, Volume 429, Issue 1, p.534-555] <https://academic.oup.com/mnras/article/429/1/534/1022845>`_.
+
+This software is provided as is without any warranty whatsoever. For details of permissions granted please see LICENCE.md
 
 .. autoclass:: KinMS.KinMSError
    :members:
