@@ -6,7 +6,7 @@
 KinMSpy  
 =================================
 
-Version |release|
+.. note:: Current version: |release|
 
 Welcome to the KinMSpy documentation. Here you will find information regarding
 the ins-and-outs of operating KinMSpy. 
@@ -17,6 +17,8 @@ We would appreciate an acknowledgment to the use of the
 Test hyperlink: `[MNRAS, Volume 429, Issue 1, p.534-555] <https://academic.oup.com/mnras/article/429/1/534/1022845>`_.
 
 This software is provided as is without any warranty whatsoever. For details of permissions granted please see LICENCE.md
+
+----
 
 .. autoclass:: KinMS.KinMSError
    :members:
