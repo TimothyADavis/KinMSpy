@@ -14,9 +14,9 @@ the ins-and-outs of operating KinMSpy.
 If you have found this software useful for your research,
 We would appreciate an acknowledgment to the use of the
 "KINematic Molecular Simulation (KinMS) routines of Davis et al., (2013)".
-Test hyperlink: `[MNRAS, Volume 429, Issue 1, p.534-555] <https://academic.oup.com/mnras/article/429/1/534/1022845>`_.
+`MNRAS, Volume 429, Issue 1, p.534-555 <https://academic.oup.com/mnras/article/429/1/534/1022845>`_.
 
-This software is provided as is without any warranty whatsoever. For details of permissions granted please see LICENCE.md
+This software is provided as is without any warranty whatsoever. For details of permissions granted please see the `official license <https://github.com/TimothyADavis/KinMSpy/blob/dev/LICENSE>`_.
 
 ----
 
