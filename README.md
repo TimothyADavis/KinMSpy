@@ -23,7 +23,7 @@ Cardiff, UK
 
 ## Python First    
 
-KinMSpy is designed with Python users in mind. Lots of work has gone into making it lightweight and fast. You can use it in the same way that you would use [NumPy](https://numpy.org/) or [Astropy](https://www.astropy.org/) et. You can even pip install KinMS for an easier time getting started. 
+KinMSpy is designed with Python users in mind. Lots of work has gone into making it lightweight and fast. You can use it in the same way that you would use [NumPy](https://numpy.org/) or [Astropy](https://www.astropy.org/) etc. You can even pip install KinMS for an easier time getting started. 
 
 ## Fast and Lightweight
 
