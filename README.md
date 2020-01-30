@@ -21,3 +21,23 @@ Many thanks,
 Dr Timothy A. Davis, Nikki Zabel, and James M. Dawson
 
 Cardiff, UK
+
+## Python First
+
+KinMSpy is designed with Python users in mind. Lots of work has gone into making it lightweight and fast. You can use it in the same way that you would use [NumPy](https://numpy.org/) or [Astropy](https://www.astropy.org/) et. You can even pip install KinMS for an easier time getting started. 
+
+## Fast and Lightweight
+
+KinMSpy has been optimised with both speed and legibility in mind. As such, the only requirements for using KinMSpy are:
+
+- numpy 
+- scipy 
+- astropy 
+- matplotlib 
+
+With sensible checks throughout and constant maintenance, you can be assured that KinMSpy 2.0.0 is the fastest yet.  
+
+## Extensions 
+
+Unlike previous generations of KinMS, KinMSpy uses Python classes for a more modular and adjustable experience. Plotting routines can be changed and cube modelling can be probed at different stages if required. 
+
