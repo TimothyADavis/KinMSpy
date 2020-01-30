@@ -21,12 +21,12 @@ Dr Timothy A. Davis, Nikki Zabel, and James M. Dawson
 Cardiff, UK
 
 ### Python First
----
+----------------
 
 KinMSpy is designed with Python users in mind. Lots of work has gone into making it lightweight and fast. You can use it in the same way that you would use [NumPy](https://numpy.org/) or [Astropy](https://www.astropy.org/) et. You can even pip install KinMS for an easier time getting started. 
 
 ### Fast and Lightweight
----
+------------------------
 
 KinMSpy has been optimised with both speed and legibility in mind. As such, the only requirements for using KinMSpy are:
 
