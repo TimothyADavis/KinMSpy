@@ -1066,7 +1066,6 @@ class KinMS:
                     if np.sum(cube[:, :, i]) > 0:
                         cube[:, :, i] = convolve(cube[:, :, i], psf) 
 
-             
             else:
                     
                 for i in range(cube.shape[2]):
@@ -1082,16 +1081,16 @@ class KinMS:
 
         # Plot the results if so desired
         if self.toplot:
-            if len(self.posAng)>1:
-                posAng_plotting = float(np.median(self.posAng)-180)
-                if self.verbose == True:
+            if len(self.posAng) > 1:
+                posang_plotting = float(np.median(self.posAng) - 180)
+                if self.verbose:
                     print('_' * 37 + '\n\n *** WARNING! posAng warp detected: Using the average posAng for plotting the pvd, calculated as: %.2f' \
-                          % posAng_plotting, 'degrees *** \n\n' + '_' * 37)
+                          % posang_plotting, 'degrees *** \n\n' + '_' * 37)
             else:
-                posAng_plotting = float(self.posAng)
+                posang_plotting = float(self.posAng - 180)
                       
             KinMS_plotter(cube, self.xs, self.ys, self.vs, self.cellSize, self.dv, self.beamSize,
-                          posang = posAng_plotting).makeplots()
+                          posang = posang_plotting).makeplots()
 
         # Output the final cube
         if self.returnClouds:

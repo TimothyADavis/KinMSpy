@@ -98,7 +98,7 @@ class KinMS_plotter:
         self.dv = dv
         self.beamsize = beamsize
         self.posang = posang or 0
-        self.phasecent = np.array(phasecent)
+        self.phasecent = np.array([phasecent])
         self.pvdthick = pvdthick or 2
         self.savepath = savepath or None
         self.savename = savename or None
@@ -215,7 +215,7 @@ class KinMS_plotter:
                 if mom0rot[i, j] > 0.1 * np.max(mom0rot):
                     mom1[i, j] = (v1 * self.f[i, j, :]).sum() / self.f[i, j, :].sum()
 
-        if len(self.phasecent == 2):
+        if len(self.phasecent) == 2:
             if self.phasecent[0] > 0:
                 temp = np.zeros((self.f.shape[0], self.f.shape[1] + self.phasecent[0], self.f.shape[2]))
                 temp[:, :-self.phasecent[0], :] = self.f
@@ -236,12 +236,13 @@ class KinMS_plotter:
                 pvdcube[:-self.phasecent[1], :, :] = temp
             else:
                 pvdcube = temp
-        elif len(self.phasecent == 1) and self.phasecent[0]:
-                raise KinMSError('Please provide a list or array of length 2 for "phasecent".')
-        elif len(self.phasecent > 2):
+        elif len(self.phasecent) == 1 and self.phasecent[0]:
+            raise KinMSError('Please provide a list or array of length 2 for "phasecent".')
+        elif len(self.phasecent) > 2:
             raise KinMSError('Please provide a list or array of length 2 for "phasecent".')
         else:
             pvdcube = self.f
+            x1_pvd = x1
 
         pvdcube = ndimage.interpolation.rotate(pvdcube, self.posang, axes=(1, 0), reshape=True)
 
