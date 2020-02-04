@@ -144,7 +144,7 @@ def ngc4324():
     voffset = 0
 
     # Create the cube
-    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, posAng=posang, diskthick=diskthick,
+    cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, posAng=posang, diskThick=diskthick,
                   intFlux=intflux, phaseCent=phasecen, vOffset=voffset, gasSigma=gassigma, fileName="NGC4234_test").model_cube()
 
     # Read in data
@@ -288,7 +288,7 @@ def infits():
     # Read in the FITS file and create the "inclouds" variables based on it
     phasecent = [88, 61]
 
-    hdulist = fits.open('test_suite/NGC1437A_FUV.fits')
+    hdulist = fits.open('utils/example_cubes/NGC1437A_FUV.fits')
     fin = hdulist[0].data.T
     s = fin.shape
 
@@ -392,7 +392,7 @@ def diskthick():
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=intflux,
-                     diskThick = diskthick, posAng=posang).model_cube()
+                     diskThick=diskthick, posAng=posang).model_cube()
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
