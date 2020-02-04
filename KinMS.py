@@ -27,7 +27,7 @@ from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 from utils.KinMS_figures import KinMS_plotter
 import warnings; warnings.filterwarnings("ignore")
-import sys; sys.tracebacklimit = 0
+#import sys; sys.tracebacklimit = 0
 
 class KinMSError(Exception):
     """
