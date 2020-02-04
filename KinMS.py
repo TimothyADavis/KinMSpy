@@ -27,7 +27,7 @@ from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 from utils.KinMS_figures import KinMS_plotter
 import warnings; warnings.filterwarnings("ignore")
-import sys; sys.tracebacklimit = 0
+#import sys; sys.tracebacklimit = 0
 
 class KinMSError(Exception):
     """
@@ -980,8 +980,8 @@ class KinMS:
                 cube[(x, y, z)] = self.flux_clouds
 
             else:
-                cube, edges = np.histogramdd(clouds2do, bins=(x_size, y_size, v_size),
-                                             range=((0, x_size), (0, y_size), (0, v_size)))
+                cube, edges = np.histogramdd(clouds2do, bins=(int(x_size), int(y_size), int(v_size)),
+                                             range=((int(0), int(x_size)), (int(0), int(y_size)), (int(0), int(v_size))))
 
         else:
             cube = np.zeros((np.int(x_size), np.int(y_size), np.int(v_size)))

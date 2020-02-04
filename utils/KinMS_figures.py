@@ -30,9 +30,19 @@ import warnings; warnings.filterwarnings("ignore", module="matplotlib")
 #/// START OF CLASS //////////////////////////////////////////////////////////#
 #=============================================================================#
 
+class KinMSError(Exception):
+    """
+    Generates errors under the flag 'KinMSError'.
+
+    :class KinMSError:
+        Instantiates the Exception error 'KinMSError', for warning the user of faults
+        and exceptions.
+    """
+    pass
+
 class KinMS_plotter:
 
-    def __init__(self, f, xsize, ysize, vsize, cellsize, dv, beamsize, posang=None, pvdthick=None,
+    def __init__(self, f, xsize, ysize, vsize, cellsize, dv, beamsize, posang=None, phasecent=None, pvdthick=None,
                  savepath=None, savename=None, pdf=True, overcube=False, title=False):
         
         """
@@ -56,11 +66,14 @@ class KinMS_plotter:
             assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
             and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
             major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).
-        :param posAng:
+        :param posang:
             (float or int) Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
             with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
             then it should describe how the position angle changes as a function of `velrad` (so this can be used
             to create position angle warps).
+        :param phasecent:
+            (list or ndarray of length 2) offset between the morphological centre of the emission and the centre of the
+            image. Positive [x, y] means that the morphological centre is to the right and top of the image centre.
         :param pvdthick:
             UNDER CONSTRUCTION
         :param savepath:
@@ -84,7 +97,8 @@ class KinMS_plotter:
         self.cellsize = cellsize
         self.dv = dv
         self.beamsize = beamsize
-        self.posang = posang or 0  
+        self.posang = posang or 0
+        self.phasecent = np.array(phasecent)
         self.pvdthick = pvdthick or 2
         self.savepath = savepath or None
         self.savename = savename or None
@@ -182,7 +196,6 @@ class KinMS_plotter:
 
         return trimmed_psf
 
-
     def makeplots(self, **kwargs):
 
         # Create plot data from the cube
@@ -202,12 +215,38 @@ class KinMS_plotter:
                 if mom0rot[i, j] > 0.1 * np.max(mom0rot):
                     mom1[i, j] = (v1 * self.f[i, j, :]).sum() / self.f[i, j, :].sum()
 
-        pvdcube = self.f
+        if len(self.phasecent == 2):
+            if self.phasecent[0] > 0:
+                temp = np.zeros((self.f.shape[0], self.f.shape[1] + self.phasecent[0], self.f.shape[2]))
+                temp[:, :-self.phasecent[0], :] = self.f
+                x1_pvd = np.arange(-self.xsize / 2 - self.phasecent[0] / 2, self.xsize / 2 + self.phasecent[0] / 2, self.cellsize)
+            elif self.phasecent[0] < 0:
+                temp = np.zeros((self.f.shape[0], self.f.shape[1] + self.phasecent[0], self.f.shape[2]))
+                temp[:, self.phasecent[0]:, :] = self.f
+                x1_pvd = np.arange(-self.xsize / 2 - self.phasecent[0] / 2, self.xsize / 2 + self.phasecent[0] / 2,
+                               self.cellsize)
+            else:
+                temp = self.f
+                x1_pvd = x1
+            if self.phasecent[1] > 0:
+                pvdcube = np.zeros((temp.shape[0] + self.phasecent[1], temp.shape[1], temp.shape[2]))
+                pvdcube[self.phasecent[1]:, :, :] = temp
+            elif self.phasecent[1] < 0:
+                pvdcube = np.zeros((temp.shape[0] + self.phasecent[1], temp.shape[1], temp.shape[2]))
+                pvdcube[:-self.phasecent[1], :, :] = temp
+            else:
+                pvdcube = temp
+        elif len(self.phasecent == 1) and self.phasecent[0]:
+                raise KinMSError('Please provide a list or array of length 2 for "phasecent".')
+        elif len(self.phasecent > 2):
+            raise KinMSError('Please provide a list or array of length 2 for "phasecent".')
+        else:
+            pvdcube = self.f
 
-        pvdcube = ndimage.interpolation.rotate(self.f, self.posang, axes=(1, 0), reshape=False)
+        pvdcube = ndimage.interpolation.rotate(pvdcube, self.posang, axes=(1, 0), reshape=True)
 
         if np.any(self.overcube):
-            pvdcubeover = ndimage.interpolation.rotate(self.overcube, self.posang, axes=(1, 0), reshape=False)
+            pvdcubeover = ndimage.interpolation.rotate(self.overcube, self.posang, axes=(1, 0), reshape=True)
 
         pvd = pvdcube[:, np.int((self.ysize / (self.cellsize * 2)) - self.pvdthick):
                          np.int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
@@ -233,7 +272,7 @@ class KinMS_plotter:
         ax1.contourf(x1, y1, mom0rot, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(mom0rot),
                      cmap="YlOrBr")
         if np.any(self.overcube):
-            ax1.contour(x1, y1, mom0over, colors=('black'), levels=np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
+            ax1.contour(x1, y1, mom0over, colors='black', levels=np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
 
         if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
         if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
@@ -252,7 +291,7 @@ class KinMS_plotter:
         # Plot PVD
         ax3 = fig.add_subplot(223)
 
-        ax3.contourf(x1, v1, pvd.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(pvd),
+        ax3.contourf(x1_pvd, v1, pvd.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(pvd),
                      cmap="YlOrBr", aspect='auto')
         if np.any(self.overcube):
             ax3.contour(x1, v1, pvdover.T, colors='black', levels=np.arange(0.1, 1.1, 0.1) * np.max(pvdover))
