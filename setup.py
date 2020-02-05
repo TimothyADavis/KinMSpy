@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kinmspytest", 
-    version="2.0.1",
+    version="2.0.8",
     author="KinMS_Team",
     author_email="dawsonj5@cardiff.ac.uk",
     description="Kinematic molecular simulation tool for astronomers",
