@@ -201,7 +201,7 @@ class KinMS:
         self.vs = vs
         self.cellSize = cellSize
         self.dv = dv
-        self.beamSize = beamSize
+        self.beamSize = np.array(beamSize)
         self.inClouds = np.array(inClouds); self.inClouds_given = True
         self.vLOS_clouds = np.array(vLOS_clouds) 
         self.massDist = np.array(massDist)
@@ -369,53 +369,38 @@ class KinMS:
     #/////////////////////////////////////////////////////////////////////////#
     #=========================================================================#
 
-    def makebeam(self, xpixels, ypixels, beamSize, cellSize=1, cent=None):
+    def makebeam(self):
         """
         Creates a psf with which one can convolve their cube based on the beam provided.
-        
-        :param xpixels:
-                (float or int) Number of pixels in the x-axis
-        :param ypixels:
-                (float or int) Number of pixels in the y-axis
-        :param beamSize:
-                (float or int, or list or array of float or int) Scalar or three element list for size of convolving beam (in arcseconds). If a scalar then beam is
-                assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
-                and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
-                major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).
-        :param cellSize:
-                (float or int) Pixel size required (arcsec/pixel)
-        :param cent: 
-            (array or list of float or int) Optional, default value is [xpixels / 2, ypixels / 2].
-                Central location of the beam in units of pixels.
+
         :return psf or trimmed_psf:
                 (float array) psf required for convlution in self.model_cube(). trimmed_psf returned if self.huge_beam=False, 
                 otherwise default return is the untrimmed psf.              
         """
 
-        if not cent: cent = [xpixels / 2, ypixels / 2]
-
-        beamSize = np.array(beamSize)
+        cent = [self.xs / 2 + self.phaseCent[0], self.ys / 2 + self.phaseCent[1]]
+        beamsize = self.beamSize.copy()
 
         try:
-            if len(beamSize) == 2:
-                beamSize = np.append(beamSize, 0)
-            if beamSize[1] > beamSize[0]:
-                beamSize[1], beamSize[0] = beamSize[0], beamSize[1]
-            if beamSize[2] >= 180:
-                beamSize[2] -= 180
+            if len(beamsize) == 2:
+                beamsize = np.append(beamsize, 0)
+            if beamsize[1] > beamsize[0]:
+                beamsize[1], beamsize[0] = beamsize[0], beamsize[1]
+            if beamsize[2] >= 180:
+                beamsize[2] -= 180
         except:
-            beamSize = np.array([beamSize, beamSize, 0])
+            beamsize = np.array([beamsize, beamsize, 0])
 
-        st_dev = beamSize[0:2] / cellSize / 2.355
+        st_dev = beamsize[0:2] / self.cellSize / 2.355
 
-        rot = beamSize[2]
+        rot = beamsize[2]
 
         if np.tan(np.radians(rot)) == 0:
             dirfac = 1
         else:
             dirfac = np.sign(np.tan(np.radians(rot)))
 
-        x, y = np.indices((int(xpixels), int(ypixels)), dtype='float')
+        x, y = np.indices((int(self.xs), int(self.ys)), dtype=float)
 
         x -= cent[0]
         y -= cent[1]
@@ -436,7 +421,7 @@ class KinMS:
         psf[psf < 1e-5] = 0  # set all kernel values that are very low to zero
 
         # sum the psf in the beam major axis
-        if 45 < beamSize[2] < 135:
+        if 45 < beamsize[2] < 135:
             flat = np.sum(psf, axis=1)
         else:
             flat = np.sum(psf, axis=0)
@@ -1058,7 +1043,7 @@ class KinMS:
         # Convolve with the beam point spread function to obtain a dirty cube
         if not self.cleanOut:
 
-            psf = self.makebeam(x_size, y_size, self.beamSize)
+            psf = self.makebeam()
 
             if not self.huge_beam:  # For very large beams convolve_fft is faster
                     
