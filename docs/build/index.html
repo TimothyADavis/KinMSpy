@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>KinMSpy &mdash; kinmspytest 2.0.0 documentation</title>
+  <title>KinMSpy &mdash; kinmspytest 2.0.8 documentation</title>
   
 
   
@@ -155,7 +155,7 @@
 <h1>KinMSpy<a class="headerlink" href="#kinmspy" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Current version: 2.0.0</p>
+<p>Current version: 2.0.8</p>
 </div>
 <p>Welcome to the KinMSpy documentation. Here you will find information regarding
 the ins-and-outs of operating KinMSpy.</p>
@@ -166,8 +166,8 @@ We would appreciate an acknowledgment to the use of the
 <p>This software is provided as is without any warranty whatsoever. For details of permissions granted please see the <a class="reference external" href="https://github.com/TimothyADavis/KinMSpy/blob/dev/LICENSE">official license</a>.</p>
 <hr class="docutils" />
 <dl class="class">
-<dt id="KinMS.KinMSError">
-<em class="property">class </em><code class="sig-prename descclassname">KinMS.</code><code class="sig-name descname">KinMSError</code><a class="headerlink" href="#KinMS.KinMSError" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS.KinMSError">
+<em class="property">class </em><code class="sig-prename descclassname">KinMS.KinMS.</code><code class="sig-name descname">KinMSError</code><a class="headerlink" href="#KinMS.KinMS.KinMSError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates errors under the flag ‘KinMSError’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Class KinMSError</dt>
@@ -178,8 +178,8 @@ and exceptions.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="KinMS.KinMS">
-<em class="property">class </em><code class="sig-prename descclassname">KinMS.</code><code class="sig-name descname">KinMS</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">ys</em>, <em class="sig-param">vs</em>, <em class="sig-param">cellSize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamSize</em>, <em class="sig-param">inc</em>, <em class="sig-param">posAng</em>, <em class="sig-param">gasSigma=0</em>, <em class="sig-param">diskThick=0</em>, <em class="sig-param">flux_clouds=0</em>, <em class="sig-param">sbProf=[]</em>, <em class="sig-param">sbRad=[]</em>, <em class="sig-param">velRad=[]</em>, <em class="sig-param">velProf=[]</em>, <em class="sig-param">inClouds=[]</em>, <em class="sig-param">vLOS_clouds=[]</em>, <em class="sig-param">massDist=[]</em>, <em class="sig-param">vRadial=[]</em>, <em class="sig-param">ra=None</em>, <em class="sig-param">dec=None</em>, <em class="sig-param">nSamps=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">intFlux=None</em>, <em class="sig-param">vSys=None</em>, <em class="sig-param">phaseCent=None</em>, <em class="sig-param">vOffset=None</em>, <em class="sig-param">vPosAng=None</em>, <em class="sig-param">vPhaseCent=None</em>, <em class="sig-param">restFreq=None</em>, <em class="sig-param">fileName=''</em>, <em class="sig-param">fixSeed=False</em>, <em class="sig-param">cleanOut=False</em>, <em class="sig-param">returnClouds=False</em>, <em class="sig-param">huge_beam=False</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">toplot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS.KinMS">
+<em class="property">class </em><code class="sig-prename descclassname">KinMS.KinMS.</code><code class="sig-name descname">KinMS</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">ys</em>, <em class="sig-param">vs</em>, <em class="sig-param">cellSize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamSize</em>, <em class="sig-param">inc</em>, <em class="sig-param">posAng</em>, <em class="sig-param">gasSigma=0</em>, <em class="sig-param">diskThick=0</em>, <em class="sig-param">flux_clouds=0</em>, <em class="sig-param">sbProf=[]</em>, <em class="sig-param">sbRad=[]</em>, <em class="sig-param">velRad=[]</em>, <em class="sig-param">velProf=[]</em>, <em class="sig-param">inClouds=[]</em>, <em class="sig-param">vLOS_clouds=[]</em>, <em class="sig-param">massDist=[]</em>, <em class="sig-param">vRadial=[]</em>, <em class="sig-param">ra=None</em>, <em class="sig-param">dec=None</em>, <em class="sig-param">nSamps=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">intFlux=None</em>, <em class="sig-param">vSys=None</em>, <em class="sig-param">phaseCent=None</em>, <em class="sig-param">vOffset=None</em>, <em class="sig-param">vPosAng=None</em>, <em class="sig-param">vPhaseCent=None</em>, <em class="sig-param">restFreq=None</em>, <em class="sig-param">fileName=''</em>, <em class="sig-param">fixSeed=False</em>, <em class="sig-param">cleanOut=False</em>, <em class="sig-param">returnClouds=False</em>, <em class="sig-param">huge_beam=False</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">toplot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Class KinMS</dt>
 <dd class="field-odd"><p>Main workhorse of KinMSpy, used to gerenate spectral cubes.</p>
@@ -288,8 +288,8 @@ If True, moment 0 and 1 maps, and a PVD and spectrum of the output cube are plot
 </dd></dl>
 
 <dl class="class">
-<dt id="utils.KinMS_figures.KinMS_plotter">
-<em class="property">class </em><code class="sig-prename descclassname">utils.KinMS_figures.</code><code class="sig-name descname">KinMS_plotter</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">xsize</em>, <em class="sig-param">ysize</em>, <em class="sig-param">vsize</em>, <em class="sig-param">cellsize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamsize</em>, <em class="sig-param">posang=None</em>, <em class="sig-param">pvdthick=None</em>, <em class="sig-param">savepath=None</em>, <em class="sig-param">savename=None</em>, <em class="sig-param">pdf=True</em>, <em class="sig-param">overcube=False</em>, <em class="sig-param">title=False</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.KinMS_figures.KinMS_plotter" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.utils.KinMS_figures.KinMS_plotter">
+<em class="property">class </em><code class="sig-prename descclassname">KinMS.utils.KinMS_figures.</code><code class="sig-name descname">KinMS_plotter</code><span class="sig-paren">(</span><em class="sig-param">f</em>, <em class="sig-param">xsize</em>, <em class="sig-param">ysize</em>, <em class="sig-param">vsize</em>, <em class="sig-param">cellsize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamsize</em>, <em class="sig-param">posang=None</em>, <em class="sig-param">phasecent=None</em>, <em class="sig-param">pvdthick=None</em>, <em class="sig-param">savepath=None</em>, <em class="sig-param">savename=None</em>, <em class="sig-param">pdf=True</em>, <em class="sig-param">overcube=False</em>, <em class="sig-param">title=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.utils.KinMS_figures.KinMS_plotter" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Class KinMS_plotter</dt>
 <dd class="field-odd"><p>Generates moment maps and position velocity diagrams for input spectral cubes</p>
@@ -306,10 +306,12 @@ If True, moment 0 and 1 maps, and a PVD and spectrum of the output cube are plot
 assumed to be circular. If a list/array of length two. these are the sizes of the major and minor axes,
 and the position angle is assumed to be 0. If a list/array of length 3, the first 2 elements are the
 major and minor beam sizes, and the last the position angle (i.e. [bmaj, bmin, bpa]).</p></li>
-<li><p><strong>posAng</strong> – (float or int) Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
+<li><p><strong>posang</strong> – (float or int) Position angle (PA) of the disc (a PA of zero means that the redshifted part of the cube is aligned
 with the positive y-axis). If single valued then the disc major axis is straight. If an array is passed
 then it should describe how the position angle changes as a function of <cite>velrad</cite> (so this can be used
 to create position angle warps).</p></li>
+<li><p><strong>phasecent</strong> – (list or ndarray of length 2) offset between the morphological centre of the emission and the centre of the
+image. Positive [x, y] means that the morphological centre is to the right and top of the image centre.</p></li>
 <li><p><strong>pvdthick</strong> – UNDER CONSTRUCTION</p></li>
 <li><p><strong>savepath</strong> – (string) path to directory in which the plots are saved to</p></li>
 <li><p><strong>savename</strong> – (string) a filename assigned to the plots when saved</p></li>
@@ -321,6 +323,18 @@ assigns a title to the plots</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="method">
+<dt id="KinMS.utils.KinMS_figures.KinMS_plotter.makebeam">
+<code class="sig-name descname">makebeam</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.utils.KinMS_figures.KinMS_plotter.makebeam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a psf with which one can convolve their cube based on the beam provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return psf or trimmed_psf</dt>
+<dd class="field-odd"><p>(float array) psf required for convlution in self.model_cube(). trimmed_psf returned if self.huge_beam=False,
+otherwise default return is the untrimmed psf.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <div class="toctree-wrapper compound">
