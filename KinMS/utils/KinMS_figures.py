@@ -132,32 +132,38 @@ class KinMS_plotter:
     def gaussian(self, x, x0, sigma):
         return np.exp(-np.power((x - x0) / (sigma), 2) / 2)
 
-    def makebeam(self, xpixels, ypixels, beamSize, cellSize=1, cent=None):
+    def makebeam(self):
+        """
+        Creates a psf with which one can convolve their cube based on the beam provided.
 
-        if not cent: cent = [xpixels / 2, ypixels / 2]
+        :return psf or trimmed_psf:
+                (float array) psf required for convlution in self.model_cube(). trimmed_psf returned if self.huge_beam=False,
+                otherwise default return is the untrimmed psf.
+        """
 
-        beamSize = np.array(beamSize)
+        cent = [self.xs / 2 + self.phaseCent[0], self.ys / 2 + self.phaseCent[1]]
+        beamsize = self.beamSize.copy()
 
         try:
-            if len(beamSize) == 2:
-                beamSize = np.append(beamSize, 0)
-            if beamSize[1] > beamSize[0]:
-                beamSize[1], beamSize[0] = beamSize[0], beamSize[1]
-            if beamSize[2] >= 180:
-                beamSize[2] -= 180
+            if len(beamsize) == 2:
+                beamsize = np.append(beamsize, 0)
+            if beamsize[1] > beamsize[0]:
+                beamsize[1], beamsize[0] = beamsize[0], beamsize[1]
+            if beamsize[2] >= 180:
+                beamsize[2] -= 180
         except:
-            beamSize = np.array([beamSize, beamSize, 0])
+            beamsize = np.array([beamsize, beamsize, 0])
 
-        st_dev = beamSize[0:2] / cellSize / 2.355
+        st_dev = beamsize[0:2] / self.cellSize / 2.355
 
-        rot = beamSize[2]
+        rot = beamsize[2]
 
         if np.tan(np.radians(rot)) == 0:
             dirfac = 1
         else:
             dirfac = np.sign(np.tan(np.radians(rot)))
 
-        x, y = np.indices((int(xpixels), int(ypixels)), dtype='float')
+        x, y = np.indices((int(self.xs), int(self.ys)), dtype=float)
 
         x -= cent[0]
         y -= cent[1]
@@ -178,7 +184,7 @@ class KinMS_plotter:
         psf[psf < 1e-5] = 0  # set all kernel values that are very low to zero
 
         # sum the psf in the beam major axis
-        if 45 < beamSize[2] < 135:
+        if 45 < beamsize[2] < 135:
             flat = np.sum(psf, axis=1)
         else:
             flat = np.sum(psf, axis=0)
@@ -256,7 +262,7 @@ class KinMS_plotter:
                       np.int((self.ysize / (self.cellsize * 2)) - self.pvdthick):
                       np.int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
 
-        beamtot = self.makebeam(self.xsize, self.ysize, self.beamsize).sum()
+        beamtot = self.makebeam().sum()
 
         spec = self.f.sum(axis=0).sum(axis=0) / beamtot
 
@@ -316,6 +322,7 @@ class KinMS_plotter:
         plt.xlabel(r'Velocity (km s$^{-1}$)')
 
         plt.tight_layout()
+        plt.show()
 
         if self.savepath:
             if self.savename:
