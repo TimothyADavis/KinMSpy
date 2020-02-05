@@ -23,7 +23,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from scipy import ndimage
 from astropy.nddata.utils import Cutout2D
-from utils.sauron_colormap import sauron
+from .sauron_colormap import sauron
 import warnings; warnings.filterwarnings("ignore", module="matplotlib")
 
 #=============================================================================#
