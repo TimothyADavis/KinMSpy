@@ -24,6 +24,7 @@ This software is provided as is without any warranty whatsoever. For details of 
    :members:
 
 .. autoclass:: KinMS.KinMS.KinMS
+   :members:
 
 .. autoclass:: KinMS.utils.KinMS_figures.KinMS_plotter
    :members:
