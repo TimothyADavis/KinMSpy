@@ -1,4 +1,4 @@
-<img style="float:top,right" src="utils/logo_files/Logo.png" width="400">
+<img style="float:top,right" src="KinMS/utils/logo_files/Logo.png" width="400">
 
 [![Documentation Status](https://readthedocs.org/projects/kinmspydocs/badge/?version=latest)](https://kinmspydocs.readthedocs.io/en/latest/?badge=latest) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PyPI version](https://badge.fury.io/py/kinmspytest.svg)](https://badge.fury.io/py/kinmspytest) 
 
