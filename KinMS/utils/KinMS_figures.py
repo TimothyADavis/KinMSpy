@@ -141,7 +141,7 @@ class KinMS_plotter:
                 otherwise default return is the untrimmed psf.
         """
 
-        cent = [self.xs / 2 + self.phaseCent[0], self.ys / 2 + self.phaseCent[1]]
+        cent = [self.xs / 2, self.ys / 2]
         beamsize = self.beamSize.copy()
 
         try:
