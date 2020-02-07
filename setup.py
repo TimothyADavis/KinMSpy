@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kinmspytest", 
-    version="2.0.8",
+    version="2.0.9",
     author="KinMS_Team",
     author_email="dawsonj5@cardiff.ac.uk",
     description="Kinematic molecular simulation tool for astronomers",
@@ -18,5 +18,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.5',
 )
