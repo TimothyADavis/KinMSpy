@@ -227,9 +227,9 @@ class KinMS_plotter:
                 temp[:, :-self.phasecent[0], :] = self.f
                 x1_pvd = np.arange(-self.xsize / 2 - self.phasecent[0] / 2, self.xsize / 2 + self.phasecent[0] / 2, self.cellsize)
             elif self.phasecent[0] < 0:
-                temp = np.zeros((self.f.shape[0], self.f.shape[1] + self.phasecent[0], self.f.shape[2]))
-                temp[:, self.phasecent[0]:, :] = self.f
-                x1_pvd = np.arange(-self.xsize / 2 - self.phasecent[0] / 2, self.xsize / 2 + self.phasecent[0] / 2,
+                temp = np.zeros((self.f.shape[0], self.f.shape[1] + abs(self.phasecent[0]), self.f.shape[2]))
+                temp[:, abs(self.phasecent[0]):, :] = self.f
+                x1_pvd = np.arange(-self.xsize / 2 - abs(self.phasecent[0]) / 2, self.xsize / 2 + abs(self.phasecent[0]) / 2,
                                self.cellsize)
             else:
                 temp = self.f
@@ -238,8 +238,8 @@ class KinMS_plotter:
                 pvdcube = np.zeros((temp.shape[0] + self.phasecent[1], temp.shape[1], temp.shape[2]))
                 pvdcube[self.phasecent[1]:, :, :] = temp
             elif self.phasecent[1] < 0:
-                pvdcube = np.zeros((temp.shape[0] + self.phasecent[1], temp.shape[1], temp.shape[2]))
-                pvdcube[:-self.phasecent[1], :, :] = temp
+                pvdcube = np.zeros((temp.shape[0] + abs(self.phasecent[1]), temp.shape[1], temp.shape[2]))
+                pvdcube[:-abs(self.phasecent[1]), :, :] = temp
             else:
                 pvdcube = temp
         elif len(self.phasecent) == 1 and self.phasecent[0]:
