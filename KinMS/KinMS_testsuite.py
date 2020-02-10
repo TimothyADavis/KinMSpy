@@ -47,6 +47,7 @@ def expdisk(scalerad=10, inc=90):
     dv = 10
     beamsize = [4, 4, 0]
     posang = 90
+    phasecent = None
 
     # Set up exponential disk SB profile/velocity
     x = np.arange(0, 100, 0.1)
@@ -60,11 +61,12 @@ def expdisk(scalerad=10, inc=90):
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:
-    #KinMS_plotter(cube, xsize, ysa.sum(axis=0).Tize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='exp_disk',
-    #              pdf=True).makeplots()
+    KinMS_plotter(cube, xsize, ysize, vsize, cellsize, dv, beamsize, posang=posang, savepath='.', savename='exp_disk',
+                  phasecent=phasecent, pdf=True).makeplots()
     
     return cube
 
+expdisk()
 
 def expdisk_gasgrav(scalerad=5, inc=45, gasmass=5e10, distance=16.5):
     """

@@ -96,9 +96,13 @@ class KinMS_plotter:
         self.vsize = vsize
         self.cellsize = cellsize
         self.dv = dv
-        self.beamsize = beamsize
+        self.beamsize = np.array(beamsize)
         self.posang = posang or 0
-        self.phasecent = np.array([phasecent])
+        try:
+            len(phasecent) == 0
+            self.phasecent = np.array(phasecent)
+        except:
+            self.phasecent = np.array([phasecent])
         self.pvdthick = pvdthick or 2
         self.savepath = savepath or None
         self.savename = savename or None
@@ -141,8 +145,8 @@ class KinMS_plotter:
                 otherwise default return is the untrimmed psf.
         """
 
-        cent = [self.xs / 2, self.ys / 2]
-        beamsize = self.beamSize.copy()
+        cent = [self.xsize / 2, self.ysize / 2]
+        beamsize = self.beamsize.copy()
 
         try:
             if len(beamsize) == 2:
@@ -154,7 +158,7 @@ class KinMS_plotter:
         except:
             beamsize = np.array([beamsize, beamsize, 0])
 
-        st_dev = beamsize[0:2] / self.cellSize / 2.355
+        st_dev = beamsize[0:2] / self.cellsize / 2.355
 
         rot = beamsize[2]
 
@@ -163,7 +167,7 @@ class KinMS_plotter:
         else:
             dirfac = np.sign(np.tan(np.radians(rot)))
 
-        x, y = np.indices((int(self.xs), int(self.ys)), dtype=float)
+        x, y = np.indices((int(self.xsize), int(self.ysize)), dtype=float)
 
         x -= cent[0]
         y -= cent[1]
@@ -234,14 +238,16 @@ class KinMS_plotter:
             else:
                 temp = self.f
                 x1_pvd = x1
+
             if self.phasecent[1] > 0:
                 pvdcube = np.zeros((temp.shape[0] + self.phasecent[1], temp.shape[1], temp.shape[2]))
-                pvdcube[self.phasecent[1]:, :, :] = temp
+                pvdcube[:-self.phasecent[1], :, :] = temp
             elif self.phasecent[1] < 0:
                 pvdcube = np.zeros((temp.shape[0] + abs(self.phasecent[1]), temp.shape[1], temp.shape[2]))
-                pvdcube[:-abs(self.phasecent[1]), :, :] = temp
+                pvdcube[abs(self.phasecent[1]):, :, :] = temp
             else:
                 pvdcube = temp
+
         elif len(self.phasecent) == 1 and self.phasecent[0]:
             raise KinMSError('Please provide a list or array of length 2 for "phasecent".')
         elif len(self.phasecent) > 2:
