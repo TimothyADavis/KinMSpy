@@ -20,10 +20,10 @@ This software is provided as is without any warranty whatsoever. For details of 
 
 ----
 
-.. autoclass:: KinMS.KinMS.KinMSError
+.. autoclass:: KinMS.KinMS_core.KinMSError
    :members:
 
-.. autoclass:: KinMS.KinMS.KinMS
+.. autoclass:: KinMS.KinMS_core.KinMS
    :members:
 
 .. autoclass:: KinMS.utils.KinMS_figures.KinMS_plotter

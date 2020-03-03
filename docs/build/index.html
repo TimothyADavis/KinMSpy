@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>KinMSpy &mdash; kinmspytest 2.0.8 documentation</title>
+  <title>KinMSpy &mdash; kinmspytest 2.0.10 documentation</title>
   
 
   
@@ -155,7 +155,7 @@
 <h1>KinMSpy<a class="headerlink" href="#kinmspy" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Current version: 2.0.8</p>
+<p>Current version: 2.0.10</p>
 </div>
 <p>Welcome to the KinMSpy documentation. Here you will find information regarding
 the ins-and-outs of operating KinMSpy.</p>
@@ -166,8 +166,8 @@ We would appreciate an acknowledgment to the use of the
 <p>This software is provided as is without any warranty whatsoever. For details of permissions granted please see the <a class="reference external" href="https://github.com/TimothyADavis/KinMSpy/blob/dev/LICENSE">official license</a>.</p>
 <hr class="docutils" />
 <dl class="class">
-<dt id="KinMS.KinMS.KinMSError">
-<em class="property">class </em><code class="sig-prename descclassname">KinMS.KinMS.</code><code class="sig-name descname">KinMSError</code><a class="headerlink" href="#KinMS.KinMS.KinMSError" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMSError">
+<em class="property">class </em><code class="sig-prename descclassname">KinMS.KinMS_core.</code><code class="sig-name descname">KinMSError</code><a class="headerlink" href="#KinMS.KinMS_core.KinMSError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates errors under the flag ‘KinMSError’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Class KinMSError</dt>
@@ -178,8 +178,8 @@ and exceptions.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="KinMS.KinMS.KinMS">
-<em class="property">class </em><code class="sig-prename descclassname">KinMS.KinMS.</code><code class="sig-name descname">KinMS</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">ys</em>, <em class="sig-param">vs</em>, <em class="sig-param">cellSize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamSize</em>, <em class="sig-param">inc</em>, <em class="sig-param">posAng</em>, <em class="sig-param">gasSigma=0</em>, <em class="sig-param">diskThick=0</em>, <em class="sig-param">flux_clouds=0</em>, <em class="sig-param">sbProf=[]</em>, <em class="sig-param">sbRad=[]</em>, <em class="sig-param">velRad=[]</em>, <em class="sig-param">velProf=[]</em>, <em class="sig-param">inClouds=[]</em>, <em class="sig-param">vLOS_clouds=[]</em>, <em class="sig-param">massDist=[]</em>, <em class="sig-param">vRadial=[]</em>, <em class="sig-param">ra=None</em>, <em class="sig-param">dec=None</em>, <em class="sig-param">nSamps=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">intFlux=None</em>, <em class="sig-param">vSys=None</em>, <em class="sig-param">phaseCent=None</em>, <em class="sig-param">vOffset=None</em>, <em class="sig-param">vPosAng=None</em>, <em class="sig-param">vPhaseCent=None</em>, <em class="sig-param">restFreq=None</em>, <em class="sig-param">fileName=''</em>, <em class="sig-param">fixSeed=False</em>, <em class="sig-param">cleanOut=False</em>, <em class="sig-param">returnClouds=False</em>, <em class="sig-param">huge_beam=False</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">toplot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS">
+<em class="property">class </em><code class="sig-prename descclassname">KinMS.KinMS_core.</code><code class="sig-name descname">KinMS</code><span class="sig-paren">(</span><em class="sig-param">xs</em>, <em class="sig-param">ys</em>, <em class="sig-param">vs</em>, <em class="sig-param">cellSize</em>, <em class="sig-param">dv</em>, <em class="sig-param">beamSize</em>, <em class="sig-param">inc</em>, <em class="sig-param">posAng</em>, <em class="sig-param">gasSigma=0</em>, <em class="sig-param">diskThick=0</em>, <em class="sig-param">flux_clouds=0</em>, <em class="sig-param">sbProf=[]</em>, <em class="sig-param">sbRad=[]</em>, <em class="sig-param">velRad=[]</em>, <em class="sig-param">velProf=[]</em>, <em class="sig-param">inClouds=[]</em>, <em class="sig-param">vLOS_clouds=[]</em>, <em class="sig-param">massDist=[]</em>, <em class="sig-param">vRadial=[]</em>, <em class="sig-param">ra=None</em>, <em class="sig-param">dec=None</em>, <em class="sig-param">nSamps=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">intFlux=None</em>, <em class="sig-param">vSys=None</em>, <em class="sig-param">phaseCent=None</em>, <em class="sig-param">vOffset=None</em>, <em class="sig-param">vPosAng=None</em>, <em class="sig-param">vPhaseCent=None</em>, <em class="sig-param">restFreq=None</em>, <em class="sig-param">fileName=''</em>, <em class="sig-param">fixSeed=False</em>, <em class="sig-param">cleanOut=False</em>, <em class="sig-param">returnClouds=False</em>, <em class="sig-param">huge_beam=False</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">toplot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Class KinMS</dt>
 <dd class="field-odd"><p>Main workhorse of KinMSpy, used to gerenate spectral cubes.</p>
@@ -286,8 +286,8 @@ If True, moment 0 and 1 maps, and a PVD and spectrum of the output cube are plot
 </dd>
 </dl>
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.add_fluxes">
-<code class="sig-name descname">add_fluxes</code><span class="sig-paren">(</span><em class="sig-param">clouds2do</em>, <em class="sig-param">subs</em>, <em class="sig-param">x_size</em>, <em class="sig-param">y_size</em>, <em class="sig-param">v_size</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.add_fluxes" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.add_fluxes">
+<code class="sig-name descname">add_fluxes</code><span class="sig-paren">(</span><em class="sig-param">clouds2do</em>, <em class="sig-param">subs</em>, <em class="sig-param">x_size</em>, <em class="sig-param">y_size</em>, <em class="sig-param">v_size</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.add_fluxes" title="Permalink to this definition">¶</a></dt>
 <dd><p>If there are clouds to use, and we know the flux of each cloud, add them to the cube.
 If not, bin each position to get a relative flux.</p>
 <dl class="field-list simple">
@@ -307,8 +307,8 @@ If not, bin each position to get a relative flux.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.create_warp">
-<code class="sig-name descname">create_warp</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">r_flat</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.create_warp" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.create_warp">
+<code class="sig-name descname">create_warp</code><span class="sig-paren">(</span><em class="sig-param">array</em>, <em class="sig-param">r_flat</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.create_warp" title="Permalink to this definition">¶</a></dt>
 <dd><p>If the array provided has a length &gt; 1, create a warp. If it’s a single value, create a flat profile.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -324,8 +324,8 @@ If not, bin each position to get a relative flux.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.find_clouds_in_cube">
-<code class="sig-name descname">find_clouds_in_cube</code><span class="sig-paren">(</span><em class="sig-param">los_vel</em>, <em class="sig-param">cent</em>, <em class="sig-param">x2</em>, <em class="sig-param">y2</em>, <em class="sig-param">x_size</em>, <em class="sig-param">y_size</em>, <em class="sig-param">v_size</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.find_clouds_in_cube" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.find_clouds_in_cube">
+<code class="sig-name descname">find_clouds_in_cube</code><span class="sig-paren">(</span><em class="sig-param">los_vel</em>, <em class="sig-param">cent</em>, <em class="sig-param">x2</em>, <em class="sig-param">y2</em>, <em class="sig-param">x_size</em>, <em class="sig-param">y_size</em>, <em class="sig-param">v_size</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.find_clouds_in_cube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the clouds that lie inside the cube.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -346,8 +346,8 @@ If not, bin each position to get a relative flux.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.gasGravity_velocity">
-<code class="sig-name descname">gasGravity_velocity</code><span class="sig-paren">(</span><em class="sig-param">x_pos</em>, <em class="sig-param">y_pos</em>, <em class="sig-param">z_pos</em>, <em class="sig-param">massDist</em>, <em class="sig-param">velRad</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.gasGravity_velocity" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.gasGravity_velocity">
+<code class="sig-name descname">gasGravity_velocity</code><span class="sig-paren">(</span><em class="sig-param">x_pos</em>, <em class="sig-param">y_pos</em>, <em class="sig-param">z_pos</em>, <em class="sig-param">massDist</em>, <em class="sig-param">velRad</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.gasGravity_velocity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates an array of line-of-sight velocity alterations, accounting for the effects 
 of internal gas in the disk.</p>
 <dl class="field-list simple">
@@ -367,8 +367,8 @@ of internal gas in the disk.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.generate_cloudlets">
-<code class="sig-name descname">generate_cloudlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.generate_cloudlets" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.generate_cloudlets">
+<code class="sig-name descname">generate_cloudlets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.generate_cloudlets" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper function for generating cloudlets by running kinms_sampleFromArbDist_oneSided. Raises
 a KinMSError if generate_cloudlets is called but sbRad and sbProf are not.</p>
 <dl class="field-list simple">
@@ -379,8 +379,8 @@ a KinMSError if generate_cloudlets is called but sbRad and sbProf are not.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.inclination_projection">
-<code class="sig-name descname">inclination_projection</code><span class="sig-paren">(</span><em class="sig-param">ang</em>, <em class="sig-param">x1</em>, <em class="sig-param">y1</em>, <em class="sig-param">z1</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.inclination_projection" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.inclination_projection">
+<code class="sig-name descname">inclination_projection</code><span class="sig-paren">(</span><em class="sig-param">ang</em>, <em class="sig-param">x1</em>, <em class="sig-param">y1</em>, <em class="sig-param">z1</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.inclination_projection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the projection as a result of inclination to the cloudlets.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -398,8 +398,8 @@ a KinMSError if generate_cloudlets is called but sbRad and sbProf are not.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.kinms_create_velField_oneSided">
-<code class="sig-name descname">kinms_create_velField_oneSided</code><span class="sig-paren">(</span><em class="sig-param">velRad</em>, <em class="sig-param">posAng_rad=None</em>, <em class="sig-param">inc_rad=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.kinms_create_velField_oneSided" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.kinms_create_velField_oneSided">
+<code class="sig-name descname">kinms_create_velField_oneSided</code><span class="sig-paren">(</span><em class="sig-param">velRad</em>, <em class="sig-param">posAng_rad=None</em>, <em class="sig-param">inc_rad=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.kinms_create_velField_oneSided" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates an array of line-of-sight velocities, accounting for velocity dispersion and projection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -422,8 +422,8 @@ inclination as a function of the radius vector ‘velrad’ (in order to model w
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.kinms_sampleFromArbDist_oneSided">
-<code class="sig-name descname">kinms_sampleFromArbDist_oneSided</code><span class="sig-paren">(</span><em class="sig-param">sbRad</em>, <em class="sig-param">sbProf</em>, <em class="sig-param">nSamps</em>, <em class="sig-param">diskThick</em>, <em class="sig-param">fixSeed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.kinms_sampleFromArbDist_oneSided" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.kinms_sampleFromArbDist_oneSided">
+<code class="sig-name descname">kinms_sampleFromArbDist_oneSided</code><span class="sig-paren">(</span><em class="sig-param">sbRad</em>, <em class="sig-param">sbProf</em>, <em class="sig-param">nSamps</em>, <em class="sig-param">diskThick</em>, <em class="sig-param">fixSeed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.kinms_sampleFromArbDist_oneSided" title="Permalink to this definition">¶</a></dt>
 <dd><p>Samples cloudlets from radial profiles provided given that inClouds is not provided in the __init__.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -444,8 +444,8 @@ then it should have the same length as ‘sbrad’, and will be the disc thickne
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.makebeam">
-<code class="sig-name descname">makebeam</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.makebeam" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.makebeam">
+<code class="sig-name descname">makebeam</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.makebeam" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a psf with which one can convolve their cube based on the beam provided.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return psf or trimmed_psf</dt>
@@ -456,8 +456,8 @@ otherwise default return is the untrimmed psf.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.model_cube">
-<code class="sig-name descname">model_cube</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.model_cube" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.model_cube">
+<code class="sig-name descname">model_cube</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.model_cube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Do the actual modelling of the spectral cube</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -467,8 +467,8 @@ otherwise default return is the untrimmed psf.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.normalise_cube">
-<code class="sig-name descname">normalise_cube</code><span class="sig-paren">(</span><em class="sig-param">cube</em>, <em class="sig-param">psf</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.normalise_cube" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.normalise_cube">
+<code class="sig-name descname">normalise_cube</code><span class="sig-paren">(</span><em class="sig-param">cube</em>, <em class="sig-param">psf</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.normalise_cube" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalise cube by the known integrated flux.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -481,8 +481,8 @@ otherwise default return is the untrimmed psf.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.position_angle_rotation">
-<code class="sig-name descname">position_angle_rotation</code><span class="sig-paren">(</span><em class="sig-param">ang</em>, <em class="sig-param">x2</em>, <em class="sig-param">y2</em>, <em class="sig-param">z2</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.position_angle_rotation" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.position_angle_rotation">
+<code class="sig-name descname">position_angle_rotation</code><span class="sig-paren">(</span><em class="sig-param">ang</em>, <em class="sig-param">x2</em>, <em class="sig-param">y2</em>, <em class="sig-param">z2</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.position_angle_rotation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the projection as a result of the position angle to the cloudlets.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -500,8 +500,8 @@ otherwise default return is the untrimmed psf.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.print_variables">
-<code class="sig-name descname">print_variables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.print_variables" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.print_variables">
+<code class="sig-name descname">print_variables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.print_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>If “verbose”, prints a summary of parameters for the user’s convenience.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -511,8 +511,8 @@ otherwise default return is the untrimmed psf.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.save_fits">
-<code class="sig-name descname">save_fits</code><span class="sig-paren">(</span><em class="sig-param">cube</em>, <em class="sig-param">cent</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.save_fits" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.save_fits">
+<code class="sig-name descname">save_fits</code><span class="sig-paren">(</span><em class="sig-param">cube</em>, <em class="sig-param">cent</em><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.save_fits" title="Permalink to this definition">¶</a></dt>
 <dd><p>Outputs a .fits file containing the datacube and relevant header information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -529,8 +529,8 @@ and index of the central velocity channel.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.set_cloud_positions">
-<code class="sig-name descname">set_cloud_positions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.set_cloud_positions" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.set_cloud_positions">
+<code class="sig-name descname">set_cloud_positions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.set_cloud_positions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the positions and velocities of the cloudlets in inClouds,
 and the radial distance in the x and y plane.</p>
 <dl class="field-list simple">
@@ -541,8 +541,8 @@ and the radial distance in the x and y plane.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="KinMS.KinMS.KinMS.set_cloud_velocities">
-<code class="sig-name descname">set_cloud_velocities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS.KinMS.set_cloud_velocities" title="Permalink to this definition">¶</a></dt>
+<dt id="KinMS.KinMS_core.KinMS.set_cloud_velocities">
+<code class="sig-name descname">set_cloud_velocities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#KinMS.KinMS_core.KinMS.set_cloud_velocities" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the los velocity and cube position of the clouds. If los velocity specified, 
 assume that the clouds have already been projected correctly.</p>
 <dl class="field-list simple">
