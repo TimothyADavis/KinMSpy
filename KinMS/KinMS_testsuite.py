@@ -18,7 +18,7 @@ For details of permissions granted please see LICENCE.md
 #/// IMPORT PACKAGES /////////////////////////////////////////////////////////#
 #=============================================================================#
 
-from KinMS import KinMS
+from KinMS_core import KinMS
 from utils.KinMS_figures import KinMS_plotter
 import numpy as np
 from scipy import interpolate
