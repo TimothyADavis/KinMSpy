@@ -226,25 +226,31 @@ class KinMS_plotter:
                     mom1[i, j] = (v1 * self.f[i, j, :]).sum() / self.f[i, j, :].sum()
 
         if len(self.phasecent) == 2:
-            if self.phasecent[0] > 0:
-                temp = np.zeros((self.f.shape[0], self.f.shape[1] + self.phasecent[0], self.f.shape[2]))
-                temp[:, :-self.phasecent[0], :] = self.f
-                x1_pvd = np.arange(-self.xsize / 2 - self.phasecent[0] / 2, self.xsize / 2 + self.phasecent[0] / 2, self.cellsize)
-            elif self.phasecent[0] < 0:
-                temp = np.zeros((self.f.shape[0], self.f.shape[1] + abs(self.phasecent[0]), self.f.shape[2]))
-                temp[:, abs(self.phasecent[0]):, :] = self.f
-                x1_pvd = np.arange(-self.xsize / 2 - abs(self.phasecent[0]) / 2, self.xsize / 2 + abs(self.phasecent[0]) / 2,
-                               self.cellsize)
+            shift_x = self.phasecent[0]
+            shift_y = self.phasecent[1]
+
+            if shift_x > 0:
+                temp = np.zeros((self.f.shape[0], self.f.shape[1] + shift_x * 2, self.f.shape[2]))
+                temp[:, 0:self.f.shape[1], :] = self.f.data
+                x1_pvd = np.arange(-self.xsize / 2 - shift_x / 2, self.xsize / 2 + shift_x / 2,
+                                   self.cellsize)
+            elif shift_x < 0:
+                temp = np.zeros((self.f.shape[0], self.f.shape[1] + abs(shift_x) * 2, self.f.shape[2]))
+                temp[:, temp.shape[1] - self.f.shape[1]:temp.shape[1], :] = self.f.data
+                x1_pvd = np.arange(-self.xsize / 2 - abs(shift_x) / 2,
+                                   self.xsize / 2 + abs(shift_x) / 2,
+                                   self.cellsize)
             else:
-                temp = self.f
+                temp = self.f.data
                 x1_pvd = x1
 
-            if self.phasecent[1] > 0:
-                pvdcube = np.zeros((temp.shape[0] + self.phasecent[1], temp.shape[1], temp.shape[2]))
-                pvdcube[:-self.phasecent[1], :, :] = temp
-            elif self.phasecent[1] < 0:
-                pvdcube = np.zeros((temp.shape[0] + abs(self.phasecent[1]), temp.shape[1], temp.shape[2]))
-                pvdcube[abs(self.phasecent[1]):, :, :] = temp
+            # Same in the y-direction
+            if shift_y > 0:
+                pvdcube = np.zeros((temp.shape[0], temp.shape[1], temp.shape[2] + shift_y * 2))
+                pvdcube[:, :, 0:temp.shape[2]] = temp
+            elif shift_y < 0:
+                pvdcube = np.zeros((temp.shape[0], temp.shape[1], temp.shape[2] + abs(shift_y) * 2))
+                pvdcube[:, :, pvdcube.shape[2] - temp.shape[2]:pvdcube.shape[2]] = temp
             else:
                 pvdcube = temp
 
