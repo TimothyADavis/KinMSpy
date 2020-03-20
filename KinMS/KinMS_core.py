@@ -1041,9 +1041,10 @@ class KinMS:
         cube = self.add_fluxes(clouds2do, subs, x_size, y_size, v_size)
             
         # Convolve with the beam point spread function to obtain a dirty cube
+        
+        psf = self.makebeam()
+        
         if not self.cleanOut:
-
-            psf = self.makebeam()
 
             if not self.huge_beam:  # For very large beams convolve_fft is faster
                     
