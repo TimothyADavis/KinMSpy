@@ -20,9 +20,6 @@ It requires the following modules:
 
 ### Documentation
 
-
-To run the test suite, which demonstrates some of the functionality of this code, please install the software as above. Once this is done then run the following from within an ipython terminal:
-
 A simple iPython notebook tutorial on the basics of KinMS can be found here: [KinMS simple tutorial](https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/docs/KinMS_example_notebook.ipynb)
 
 A further suite of examples can be found in examples/KinMS_testsuite.py, which can be modified and updated for most use cases. To run these tests you can run the following commands from within python:
@@ -37,11 +34,11 @@ To get you started fitting observations with KinMS, see the walk through here: [
 
 ### Extensions 
 
-Unlike previous generations of KinMS, KinMSpy uses Python classes for a more modular and adjustable experience. Plotting routines can be changed and cube modelling can be probed at different stages if required. 
+Unlike previous generations of KinMS, version 2.0+ uses Python classes for a more modular and adjustable experience. Plotting routines can be changed and cube modelling can be probed at different stages if required. 
 
 ### Commumication
 
-If you find any bugs, or wish to be kept up to date when new versions of this software are released, please email us at DavisT -at- cardiff.ac.uk, Zabelnj -at- cardiff.ac.uk, Dawsonj5 -at- cardiff.ac.uk
+If you find any bugs, or wish to be kept up to date when new versions of this software are released, please raise an issue here on github, or email us at DavisT -at- cardiff.ac.uk, Zabelnj -at- cardiff.ac.uk, Dawsonj5 -at- cardiff.ac.uk
 
 ### License
 
@@ -53,5 +50,3 @@ Many thanks,
 Dr Timothy A. Davis, Nikki Zabel, and James M. Dawson
 
 Cardiff, UK
-
----
