@@ -1,4 +1,4 @@
-<img style="float:top,right" src="https://www.astro.cardiff.ac.uk/pub/Tim.Davis/KinMS_New_Logo.png" width="400">
+<img style="float:top,right" src="kinms/utils/Logo.png" width="400">
 
 
 [![Documentation Status](https://readthedocs.org/projects/kinmspydocs/badge/?version=latest)](https://kinmspydocs.readthedocs.io/en/latest/?badge=latest) [![Python 3.6](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-382/) [![PyPI version](https://badge.fury.io/py/kinms.svg)](https://badge.fury.io/py/kinms) 
