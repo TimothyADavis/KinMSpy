@@ -34,7 +34,7 @@ To get you started fitting observations with KinMS, see the walk through here: [
 
 ### Upgrading from version 1 
 
-Unlike previous generations of KinMS, version 2.0+ uses Python classes for a more modular and adjustable experience. Plotting routines can be changed and cube modelling can be probed at different stages if required. The main change you will need if upgrading from version 1.0 is to change all calls to `KinMS(..)` to `KinMS().model_cube()'. The tutorial notebooks above have full details of the new features.
+Unlike previous generations of KinMS, version 2.0+ uses Python classes for a more modular and adjustable experience. Plotting routines can be changed and cube modelling can be probed at different stages if required. The main change you will need if upgrading from version 1.0 is to change all calls to `KinMS(..)` to `KinMS().model_cube()`. The tutorial notebooks above have full details of the new features.
 
 ### Commumication
 
