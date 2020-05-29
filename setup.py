@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
  
 setup(name='kinms',
-       version='1.0.5',
+       version='2.0.0',
        description='The KinMS (KINematic Molecular Simulation) package can be used to simulate observations of arbitary molecular/atomic cold gas distributions.',
        url='https://github.com/TimothyADavis/KinMSpy',
        author='Timothy A. Davis',
@@ -13,7 +13,7 @@ setup(name='kinms',
        long_description=long_description,
        long_description_content_type="text/markdown",
        license='MIT',
-       packages=['kinms'],
+       packages=['kinms','kinms.examples','kinms.utils'],
        install_requires=[
            'numpy',
            'matplotlib',

@@ -1,9 +1,13 @@
-The KinMS (KINematic Molecular Simulation) package can be used to simulate observations of arbitary molecular/atomic cold gas distributions. The routines are written with flexibility in mind, and have been used in various different applications, including investigating the kinematics of molecular gas in early-type galaxies (e.g. Davis et al, MNRAS, Volume 429, Issue 1, p.534-555, 2013), and determining supermassive black-hole masses from CO interfermetric observations (e.g. Davis et al., Nature, 2013). They are also useful for creating input datacubes for further simulation in e.g. CASA's sim_observe tool.
+<img style="float:top,right" src="http://www.astro.cardiff.ac.uk/pub/Tim.Davis/KinMS_New_Logo.png" width="400">
 
-If you find any bugs, or wish to be kept up to date when new versions of this software are released, please email me at DavisT -at- cardiff.ac.uk
+[![Documentation Status](https://readthedocs.org/projects/kinmspydocs/badge/?version=latest)](https://kinmspydocs.readthedocs.io/en/latest/?badge=latest) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/) [![PyPI version](https://badge.fury.io/py/kinmspytest.svg)](https://badge.fury.io/py/kinmspytest) 
+
+The KinMS (KINematic Molecular Simulation) package can be used to simulate observations of arbitary molecular/atomic cold gas distributions. The routines are written with flexibility in mind, and have been used in various different applications, including investigating the kinematics of molecular gas in early-type galaxies ([Davis et al, MNRAS, Volume 429, Issue 1, p.534-555, 2013](https://academic.oup.com/mnras/article/429/1/534/1022845)), and determining supermassive black-hole masses from CO interfermetric observations (Davis et al., Nature, 2013). They are also useful for creating input datacubes for further simulation in e.g. [CASA](https://casa.nrao.edu/)'s sim_observe tool.
+
 
 ### Install
-You can install KinMS with `pip install kinms`.  Alternatively you can download the code, navigate to the directory you unpack it too, and run `python setup.py install`.
+
+KinMSpy is designed with Python users in mind. Lots of work has gone into making it lightweight and fast. You can use it in the same way that you would use [NumPy](https://numpy.org/) or [Astropy](https://www.astropy.org/) etc. You can install KinMS with `pip install kinms`. Alternatively you can download the code, navigate to the directory you unpack it too, and run `python setup.py install`.
     
 It requires the following modules:
 
@@ -12,23 +16,41 @@ It requires the following modules:
 * scipy
 * astropy
 
+
 ### Documentation
 
 
-To run the test suite, which demonstrates some of the functionality of this code, please install the software. If you want to run the full suite of tests you also need to download the two fits files included in this repo, and put them in your working directory, however the rest of the tests will still run without this. Once this is done then run the following from within an ipython terminal:
+To run the test suite, which demonstrates some of the functionality of this code, please install the software as above. Once this is done then run the following from within an ipython terminal:
+
+A simple iPython notebook tutorial on the basics of KinMS can be found here: [KinMS simple tutorial](https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/docs/KinMS_example_notebook.ipynb)
+
+A further suite of examples can be found in examples/KinMS_testsuite.py, which can be modified and updated for most use cases. To run these tests you can run the following commands from within python:
 
 ```
 from kinms.examples.KinMS_testsuite import *
 run_tests()
 ```
-examples/KinMS_testsuite.py contains the example code, which can be modified and updated for most use cases.
 
-To get you started fitting galaxies with KinMS, see the walk through here: https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/documentation/KinMSpy_tutorial.ipynb
+To get you started fitting observations with KinMS, see the walk through here: [Example fitting tutorial](https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/docs/KinMSpy_tutorial.ipynb)
 
 
-Author & License
------------------
+### Extensions 
 
-Copyright 2019 Timothy A. Davis
+Unlike previous generations of KinMS, KinMSpy uses Python classes for a more modular and adjustable experience. Plotting routines can be changed and cube modelling can be probed at different stages if required. 
 
-Built by Timothy A. Davis <https://github.com/TimothyADavis>. Licensed under the MIT License (see ``LICENSE``).
+### Commumication
+
+If you find any bugs, or wish to be kept up to date when new versions of this software are released, please email us at DavisT -at- cardiff.ac.uk, Zabelnj -at- cardiff.ac.uk, Dawsonj5 -at- cardiff.ac.uk
+
+### License
+
+KinMSpy is MIT-style licensed, as found in the LICENSE file.
+
+
+Many thanks,
+
+Dr Timothy A. Davis, Nikki Zabel, and James M. Dawson
+
+Cardiff, UK
+
+---
