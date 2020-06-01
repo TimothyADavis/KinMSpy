@@ -1065,7 +1065,8 @@ class KinMS:
                     if np.sum(cube[:, :, i]) > 0:
                         cube[:, :, i] = convolve_fft(cube[:, :, i], psf)  
         
-
+        else:
+            psf=1
                             
         # Normalise the cube by known integrated flux
         self.normalise_cube(cube, psf)
