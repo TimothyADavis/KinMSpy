@@ -477,7 +477,7 @@ class KinMS:
             print('Generating cloudlets,', end =' ')
 
         if not fixSeed:
-            seed = np.random.uniform(0, 100, 4).astype('int')
+            seed = (np.random.uniform(0, 100, 1)*[1,3,5,17]).astype('int')
         else:
             seed = self.seed
         
