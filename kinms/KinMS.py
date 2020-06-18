@@ -27,7 +27,7 @@ from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 import warnings; warnings.filterwarnings("ignore")
 from kinms.utils.KinMS_figures import KinMS_plotter
-import sys; sys.tracebacklimit = 0
+# import sys; sys.tracebacklimit = 0
 
 class KinMSError(Exception):
     """
@@ -213,7 +213,10 @@ class KinMS:
         self.verbose = verbose
 
         if not nSamps:
-            self.nSamps = int(5e5)
+            if self.inClouds.size == 0:
+                self.nSamps = int(5e5)
+            else:
+                self.nSamps = self.inClouds.shape[0]
         else:
             self.nSamps = int(nSamps)
 
@@ -477,7 +480,7 @@ class KinMS:
             print('Generating cloudlets,', end =' ')
 
         if not fixSeed:
-            seed = (np.random.uniform(0, 100, 1)*[1,3,5,17]).astype('int')
+            seed = (np.random.uniform(0, 1000, 1)*[1,3,5,17]).astype('int')
         else:
             seed = self.seed
         
