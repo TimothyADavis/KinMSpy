@@ -27,7 +27,7 @@ from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 import warnings; warnings.filterwarnings("ignore")
 from kinms.utils.KinMS_figures import KinMS_plotter
-# import sys; sys.tracebacklimit = 0
+import sys; sys.tracebacklimit = 0
 
 class KinMSError(Exception):
     """
@@ -199,7 +199,7 @@ class KinMS:
         self.ra = ra 
         self.dec = dec
         self.seed = seed or np.array([100, 101, 102, 103], dtype='int')
-        self.intFlux = intFlux or 1
+        self.intFlux = intFlux or 0
         self.vSys = vSys
         self.phaseCent = np.array(phaseCent) 
         self.vOffset = vOffset or 0
@@ -959,10 +959,9 @@ class KinMS:
                     raise KinMSError('\nPlease make sure \"flux_clouds\" is a 1D array matching the length of \"inClouds\".')
 
                 cube = np.zeros((np.int(x_size), np.int(y_size), np.int(v_size)))
-                self.flux_clouds = self.flux_clouds[subs]
                 
                 cube, edges = np.histogramdd(clouds2do, bins=(x_size, y_size, v_size),
-                                                 range=((0, x_size), (0, y_size), (0, v_size)),weights=self.flux_clouds)                                 
+                                                 range=((0, x_size), (0, y_size), (0, v_size)),weights=self.flux_clouds[subs])                                 
                     
             else:
                 cube, edges = np.histogramdd(clouds2do, bins=(x_size, y_size, v_size),
@@ -1109,6 +1108,7 @@ class KinMS:
         else:
             if self.verbose:
                 print('_' * 37 + '\n\n *** Cube successfully created ***')
+
 
             return cube
     
