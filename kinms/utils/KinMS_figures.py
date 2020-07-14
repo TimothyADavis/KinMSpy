@@ -225,7 +225,7 @@ class KinMS_plotter:
                       np.int((self.ysize / (self.cellsize * 2)) - self.pvdthick):
                       np.int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
 
-        beamtot = self.makebeam(self.xsize, self.ysize, self.beamsize, cellSize=self.cellsize).sum()
+        beamtot = self.makebeam(self.xsize/self.cellsize, self.ysize/self.cellsize, self.beamsize, cellSize=self.cellsize).sum()
 
         spec = self.f.sum(axis=0).sum(axis=0) / beamtot
 
