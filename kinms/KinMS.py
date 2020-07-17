@@ -200,7 +200,7 @@ class KinMS:
         self.dec = dec
         self.seed = seed or np.array([100, 101, 102, 103], dtype='int')
         self.intFlux = intFlux or 0
-        self.vSys = vSys
+        self.vSys = vSys or 0
         self.phaseCent = np.array(phaseCent) 
         self.vOffset = vOffset or 0
         self.vPhaseCent = np.array(vPhaseCent) 
@@ -630,10 +630,7 @@ class KinMS:
         hdu.header['CRPIX3'] = (cent[2] -1)
         hdu.header['CRVAL1'] = (self.ra) or "None given" 
         hdu.header['CRVAL2'] = (self.dec) or "None given"
-        try:
-            hdu.header['CRVAL3'] = (self.vSys * 1000.), 'm/s'
-        except:
-            "None given"
+        hdu.header['CRVAL3'] = (self.vSys * 1000.), 'm/s'
         hdu.header['CUNIT1'] = 'deg'
         hdu.header['CUNIT2'] = 'deg'
         hdu.header['CUNIT3'] = 'm/s     '
