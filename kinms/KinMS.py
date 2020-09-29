@@ -27,7 +27,7 @@ from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 import warnings; warnings.filterwarnings("ignore")
 from kinms.utils.KinMS_figures import KinMS_plotter
-import sys; sys.tracebacklimit = 0
+#import sys; sys.tracebacklimit = 0
 
 class KinMSError(Exception):
     """
@@ -625,11 +625,11 @@ class KinMS:
         hdu.header['CDELT1'] = (self.cellSize / -3600)
         hdu.header['CDELT2'] = (self.cellSize / 3600)
         hdu.header['CDELT3'] = (self.dv * 1000.)
-        hdu.header['CRPIX1'] = (cent[0] - 1)
-        hdu.header['CRPIX2'] = (cent[1] - 1)
-        hdu.header['CRPIX3'] = (cent[2] -1)
-        hdu.header['CRVAL1'] = (self.ra) or "None given" 
-        hdu.header['CRVAL2'] = (self.dec) or "None given"
+        hdu.header['CRPIX1'] = (cent[0] + 1)
+        hdu.header['CRPIX2'] = (cent[1] + 1)
+        hdu.header['CRPIX3'] = (cent[2] + 1)
+        hdu.header['CRVAL1'] = (self.ra) or 0.0 
+        hdu.header['CRVAL2'] = (self.dec) or 0.0
         hdu.header['CRVAL3'] = (self.vSys * 1000.), 'm/s'
         hdu.header['CUNIT1'] = 'deg'
         hdu.header['CUNIT2'] = 'deg'
