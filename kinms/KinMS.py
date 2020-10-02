@@ -54,7 +54,7 @@ class KinMS:
     #=========================================================================#
 
     def __init__(self, xs, ys, vs, cellSize, dv, beamSize, inc, posAng, gasSigma=0, diskThick=0, flux_clouds=None, 
-                 sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], 
+                 sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], inflowVel=0,
                  ra=None, dec=None, nSamps=None, seed=None, intFlux=None, vSys=None, phaseCent=[0,0], vOffset=0,
                  vPosAng=[], vPhaseCent=[0,0], restFreq=None, fileName='', fixSeed=False,
                  cleanOut=False, returnClouds=False, huge_beam=False, verbose=False):
@@ -196,6 +196,7 @@ class KinMS:
         self.inClouds = np.array(inClouds)
         self.vLOS_clouds = np.array(vLOS_clouds) 
         self.massDist = np.array(massDist)
+
         self.ra = ra 
         self.dec = dec
         self.seed = seed or np.array([100, 101, 102, 103], dtype='int')
@@ -262,6 +263,12 @@ class KinMS:
                 self.sbProf = np.array(sbProf)
         except:
             self.sbProf = np.array([sbProf])
+
+        try:
+            if len(inflowVel) > -1:
+                self.inflowVel = np.array(inflowVel)
+        except:
+            self.inflowVel = np.array([inflowVel])            
 
         try:
             if len(sbRad) > -1:
@@ -563,8 +570,6 @@ class KinMS:
             seed = self.seed
                                                                 
         vRad = np.interp(r_flatv, velRad, self.velProf)  # Evaluate the velocity profile at the sampled radii
-        
-
 
         # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
         rng4 = np.random.RandomState(seed[3]) 
@@ -603,7 +608,18 @@ class KinMS:
         los_vel = velDisp + ((-1) * vRad * (np.cos(np.arctan2((self.y_pos - self.vPhaseCent[1]),
                 (self.x_pos - self.vPhaseCent[0])) + (np.radians(posAng_rad - vPosAng_rad))) * np.sin(np.radians(inc_rad))))
 
-
+        
+        # add a radial velocity component
+        if len(self.inflowVel) > 1:
+            inflow_rad=np.interp(r_flatv, velRad, self.inflowVel)
+            los_vel+=inflow_rad*(np.sin(np.arctan2((self.y_pos - self.vPhaseCent[1]),
+                (self.x_pos - self.vPhaseCent[0])) + (np.radians(posAng_rad - vPosAng_rad))) * np.sin(np.radians(inc_rad)))
+        else:
+            if self.inflowVel != 0:
+               los_vel+=self.inflowVel*(np.sin(np.arctan2((self.y_pos - self.vPhaseCent[1]),
+                   (self.x_pos - self.vPhaseCent[0])) + (np.radians(posAng_rad - vPosAng_rad))) * np.sin(np.radians(inc_rad)))         
+            
+                
         # Output the array of los velocities
         return los_vel
         
