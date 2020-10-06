@@ -288,12 +288,16 @@ class KinMS:
         except:
             self.velProf = np.array([velProf])
 
-        try:
-            if len(flux_clouds) > -1:
-                self.flux_clouds = np.array(flux_clouds)
-        except:
-            self.flux_clouds = np.array([flux_clouds])
 
+        if np.any(flux_clouds) != None:
+            try:
+                if len(flux_clouds) > -1:
+                    self.flux_clouds = np.array(flux_clouds)
+            except:
+                self.flux_clouds = np.array([flux_clouds])
+        else:
+            self.flux_clouds = None
+            
         if self.verbose:
             self.print_variables()
         
@@ -962,7 +966,7 @@ class KinMS:
 
         if nsubs > 0:
 
-            if len(self.flux_clouds) > 1:
+            if np.any(self.flux_clouds) != None:
 
                 if not self.inClouds_given:
                     raise KinMSError('\n\"flux_clouds\" can only be used in combination with \"inClouds\". '
@@ -1005,7 +1009,7 @@ class KinMS:
             else:
                 cube *= (self.intFlux / (cube.sum() * self.dv))
 
-        elif len(self.flux_clouds) > 0:
+        elif np.any(self.flux_clouds) != None:
             cube *= (self.flux_clouds.sum() / cube.sum())
 
         else:
