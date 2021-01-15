@@ -33,6 +33,8 @@ run_tests()
 
 To get you started fitting observations with KinMS, see the walk through here: [Example fitting tutorial](https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/docs/KinMSpy_tutorial.ipynb)
 
+<b>NEW!</b> If you want a really simple way to fit observations, check out the new KinMS_fitter, which wraps KinMS and automates many tasks for you! Check it out here: [KinMS_fitter](https://github.com/TimothyADavis/KinMS_fitter).
+
 
 ### Upgrading from version 1 
 
