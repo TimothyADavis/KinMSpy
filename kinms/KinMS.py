@@ -518,9 +518,9 @@ class KinMS:
                 if self.verbose: print('Using the scale height profile provided.')
             else:
                 diskThick_here = diskThick
-                if self.verbose: print('Using a constant scale height of ' + str(diskThick) + '.')
+                if self.verbose: print('Using an exponential scale height of ' + str(diskThick) + '.')
             rng3 = np.random.RandomState(seed[3])
-            z_pos = diskThick_here * rng3.uniform(-1, 1, nSamps)
+            z_pos = diskThick_here * rng3.exponential(1,nSamps)*rng3.choice([-1,1],size=nSamps)
         else:
             if self.verbose: print('Using a thin disc assumption.')
             z_pos = np.zeros(nSamps)
