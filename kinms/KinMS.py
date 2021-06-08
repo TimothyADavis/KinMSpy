@@ -199,7 +199,7 @@ class KinMS:
 
         self.ra = ra 
         self.dec = dec
-        self.seed = seed or np.array([100, 101, 102, 103], dtype='int')
+        self.seed = seed*np.array([100, 101, 102, 103], dtype='int') or np.array([100, 101, 102, 103], dtype='int')
         self.intFlux = intFlux or 0
         self.vSys = vSys or 0
         self.phaseCent = np.array(phaseCent) 
@@ -491,7 +491,7 @@ class KinMS:
             print('Generating cloudlets,', end =' ')
 
         if not fixSeed:
-            seed = (np.random.uniform(0, 1000, 1)*[1,3,5,17]).astype('int')
+            seed = np.random.randint(1, 100)*np.array([1,3,5,9])
         else:
             seed = self.seed
         
@@ -569,7 +569,7 @@ class KinMS:
             r_flatv = self.r_flat
         
         if not self.fixSeed:
-            seed = np.random.uniform(0, 100, 4).astype('int')
+            seed = np.random.randint(100, 200)*np.array([17,14,21,102])
         else:
             seed = self.seed
                                                                 
