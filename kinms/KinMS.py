@@ -519,7 +519,7 @@ class KinMS:
             else:
                 diskThick_here = diskThick
                 if self.verbose: print('Using an exponential scale height of ' + str(diskThick) + '.')
-            rng3 = np.random.RandomState(seed[3])
+            rng3 = np.random.RandomState(seed[2])
             z_pos = diskThick_here * rng3.exponential(1,nSamps)*rng3.choice([-1,1],size=nSamps)
         else:
             if self.verbose: print('Using a thin disc assumption.')
