@@ -40,6 +40,10 @@ To get you started fitting observations with KinMS, see the walk through here: [
 
 Unlike previous generations of KinMS, version 2.0+ uses Python classes for a more modular and adjustable experience. Plotting routines can be changed and cube modelling can be probed at different stages if required. The main change you will need if upgrading from version 1.0 is to change all calls to `KinMS(...)` to `KinMS(...).model_cube()`. The tutorial notebooks above have full details of the new features.
 
+### New non-circular motions capability
+
+As of version 2.2.0 KinMS now has the capability to model lopsided and bisymmetric gas flows, in addition to the pure radial motions included previously. To get started with this you need to add `from kinms.radial_motion import radial_motion`, and then pass one of the new methods to KinMS with the `radial_motion_func` keyword. `radial_motion.lopsided_flow` and `radial_motion.bisymmetric_flow` both take four arguments (a radial vector, the transverse and radial velocity as a function of that radius, and an angle for the perterbation). `radial_motion.pure_radial` replicates previous funcationality, and requires two arguments (a radius vector, and a vector for the radial velocity as a function of radius). E.g. To replicate the previous functionality pass `radial_motion_func=radial_motion.pure_radial(radius,inflowVel)`.
+
 ### Commumication
 
 If you find any bugs, or wish to be kept up to date when new versions of this software are released, please raise an issue here on github, or email us at DavisT -at- cardiff.ac.uk, Zabelnj -at- cardiff.ac.uk, Dawsonj5 -at- cardiff.ac.uk
