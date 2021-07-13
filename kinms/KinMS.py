@@ -27,7 +27,7 @@ from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 import warnings; warnings.filterwarnings("ignore")
 from kinms.utils.KinMS_figures import KinMS_plotter
-#import sys; sys.tracebacklimit = 0
+
 
 class KinMSError(Exception):
     """
@@ -54,7 +54,7 @@ class KinMS:
     #=========================================================================#
 
     def __init__(self, xs, ys, vs, cellSize, dv, beamSize, inc, posAng, gasSigma=0, diskThick=0, flux_clouds=None, 
-                 sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], inflowVel=0,
+                 sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], radial_motion_func=None,
                  ra=None, dec=None, nSamps=None, seed=None, intFlux=None, vSys=None, phaseCent=[0,0], vOffset=0,
                  vPosAng=[], vPhaseCent=[0,0], restFreq=None, fileName='', fixSeed=False,
                  cleanOut=False, returnClouds=False, huge_beam=False, verbose=False):
@@ -173,6 +173,10 @@ class KinMS:
             (bool) Optional, default value is False.
             If True then do not convolve with the beam, and output the "clean components". Useful to create
             input for other simulation tools (e.g sim_observe in CASA).
+        ;param radial_motion_func:
+            (callable) Optional, default is to not use. 
+            If a method of kinms.radial_motion is supplied then will include the effect of radial (non-circular) motions using
+            that formalism. Current options include pure radial flows, along with lopsided and bisymmetric (bar-type) flows.
         :param returnClouds: 
             (bool) Optional, default value is False.
             If set True then KinMS returns the created 'inclouds' and 'vlos_clouds' in addition to the cube.
@@ -199,7 +203,11 @@ class KinMS:
 
         self.ra = ra 
         self.dec = dec
-        self.seed = seed*np.array([100, 101, 102, 103], dtype='int') or np.array([100, 101, 102, 103], dtype='int')
+        if seed != None:
+            self.seed = seed*np.array([100, 101, 102, 103], dtype='int')
+        else:
+            self.seed = np.array([100, 101, 102, 103], dtype='int')
+        self.fixSeed = fixSeed
         self.intFlux = intFlux or 0
         self.vSys = vSys or 0
         self.phaseCent = np.array(phaseCent) 
@@ -207,12 +215,13 @@ class KinMS:
         self.vPhaseCent = np.array(vPhaseCent) 
         self.restFreq = restFreq or  230.542e9
         self.fileName = fileName
-        self.fixSeed = fixSeed
+
         self.cleanOut = cleanOut
         self.returnClouds = returnClouds
         self.huge_beam = huge_beam
         self.verbose = verbose
-
+        self.radial_motion_func=radial_motion_func
+        
         if not nSamps:
             if self.inClouds.size == 0:
                 self.nSamps = int(5e5)
@@ -262,13 +271,7 @@ class KinMS:
             if len(sbProf) > -1:
                 self.sbProf = np.array(sbProf)
         except:
-            self.sbProf = np.array([sbProf])
-
-        try:
-            if len(inflowVel) > -1:
-                self.inflowVel = np.array(inflowVel)
-        except:
-            self.inflowVel = np.array([inflowVel])            
+            self.sbProf = np.array([sbProf])         
 
         try:
             if len(sbRad) > -1:
@@ -586,9 +589,7 @@ class KinMS:
         else:
             velDisp *= self.gasSigma
         
-        
 
-                
         # Find the rotation angle so the velocity field has the correct position angle (allows warps)
 
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
@@ -606,24 +607,16 @@ class KinMS:
 
 
 
-
+        theta=np.arctan2((self.y_pos - self.vPhaseCent[1]),(self.x_pos - self.vPhaseCent[0])) + (np.radians(posAng_rad - vPosAng_rad))
 
         #Calculate the los velocity for each cloudlet                                                                                                          
-        los_vel = velDisp + ((-1) * vRad * (np.cos(np.arctan2((self.y_pos - self.vPhaseCent[1]),
-                (self.x_pos - self.vPhaseCent[0])) + (np.radians(posAng_rad - vPosAng_rad))) * np.sin(np.radians(inc_rad))))
+        los_vel = velDisp + ((-1) * vRad * (np.cos(theta) * np.sin(np.radians(inc_rad))))
 
         
-        # add a radial velocity component
-        if len(self.inflowVel) > 1:
-            inflow_rad=np.interp(r_flatv, velRad, self.inflowVel)
-            los_vel+=inflow_rad*(np.sin(np.arctan2((self.y_pos - self.vPhaseCent[1]),
-                (self.x_pos - self.vPhaseCent[0])) + (np.radians(posAng_rad - vPosAng_rad))) * np.sin(np.radians(inc_rad)))
-        else:
-            if self.inflowVel != 0:
-               los_vel+=self.inflowVel*(np.sin(np.arctan2((self.y_pos - self.vPhaseCent[1]),
-                   (self.x_pos - self.vPhaseCent[0])) + (np.radians(posAng_rad - vPosAng_rad))) * np.sin(np.radians(inc_rad)))         
-            
-                
+        # add a radial velocity component if needed            
+        if callable(self.radial_motion_func):
+            los_vel+=self.radial_motion_func(r_flatv,theta,inc_rad)
+                    
         # Output the array of los velocities
         return los_vel
         
@@ -1017,7 +1010,7 @@ class KinMS:
 
         return cube       
         
-    def model_cube(self,toplot=False):
+    def model_cube(self,toplot=False,**kwargs):
         """
         Do the actual modelling of the spectral cube
         
@@ -1106,7 +1099,7 @@ class KinMS:
                 posAng_plotting = float(self.posAng)
                       
             KinMS_plotter(cube, self.xs, self.ys, self.vs, self.cellSize, self.dv, self.beamSize,
-                          posang = posAng_plotting).makeplots()
+                          posang = posAng_plotting,**kwargs).makeplots()
                           
                           
         
