@@ -48,7 +48,7 @@ class KinMS:
         
     """
     :class KinMS:
-        Main workhorse of KinMSpy, used to gerenate spectral cubes.
+        Main workhorse of KinMSpy, used to generate spectral cubes.
     """
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#
@@ -616,7 +616,8 @@ class KinMS:
         
         # add a radial velocity component if needed            
         if callable(self.radial_motion_func):
-            los_vel+=self.radial_motion_func(r_flatv,theta,inc_rad)
+            los_vel+=self.radial_motion_func(r_flatv*self.cellSize,theta,inc_rad)
+
                     
         # Output the array of los velocities
         return los_vel

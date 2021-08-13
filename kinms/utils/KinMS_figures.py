@@ -33,7 +33,7 @@ import warnings; warnings.filterwarnings("ignore", module="matplotlib")
 class KinMS_plotter:
 
     def __init__(self, f, xsize, ysize, vsize, cellsize, dv, beamSize, posang=None, pvdthick=None,
-                 savepath=None, savename=None, pdf=True, overcube=False, title=False,rms=0.0,rmsfac=1.0):
+                 savepath=None, savename=None, pdf=True, overcube=False, title=False,rms=0,rmsfac=1.0):
         
         """
         :class KinMS_plotter:
@@ -92,6 +92,8 @@ class KinMS_plotter:
         self.title = title
         self.mask=None
         self.rms=rms
+        if self.rms == 0:
+            self.rms = np.nanmax(self.f)*0.05
         self.rmsfac=rmsfac
         
         beamSize = np.array(beamSize)
@@ -108,8 +110,8 @@ class KinMS_plotter:
         self.beamsize = beamSize
             
         
-        matplotlib.rcParams['text.usetex'] = True
-        matplotlib.rcParams['font.family'] = 'Latin Modern Roman'
+        #matplotlib.rcParams['text.usetex'] = True
+        #matplotlib.rcParams['font.family'] = 'Latin Modern Roman'
         matplotlib.rcParams.update({'font.size': 20})
         matplotlib.rcParams['legend.fontsize'] = 17.5
         matplotlib.rcParams['axes.linewidth'] = 1.5
@@ -239,9 +241,9 @@ class KinMS_plotter:
 
         # Plot the moment 0
         ax1 = fig.add_subplot(221, aspect='equal')
-        ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(mom0rot),cmap="YlOrBr",origin="upper")
+        ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(self.rms*self.rmsfac, np.nanmax(mom0rot), num=20),cmap="YlOrBr",origin="upper")
         if np.any(self.overcube):
-            ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.arange(0.1, 1.1, 0.1) * np.max(mom0over))
+            ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.linspace(self.rms*self.rmsfac, np.nanmax(mom0over), num=10))
 
         if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
         if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
@@ -251,7 +253,7 @@ class KinMS_plotter:
 
         # Plot moment 1
         ax2 = fig.add_subplot(222, aspect='equal')
-        mom1[mom0rot < 0.1*np.max(mom0rot)]=-1e4
+        mom1[mom0rot < self.rms*self.rmsfac]=-1e4
         ax2.contourf(x1, y1, mom1.T, levels=levs, cmap=sauron)
         plt.xlabel(r'Offset ($^{\prime\prime}$)');
         plt.ylabel(r'Offset ($^{\prime\prime}$)')
@@ -261,10 +263,10 @@ class KinMS_plotter:
         # Plot PVD
         ax3 = fig.add_subplot(223)
 
-        ax3.contourf(x1, v1, pvd.T, levels=np.linspace(1, 0, num=10, endpoint=False)[::-1] * np.max(pvd),
+        ax3.contourf(x1, v1, pvd.T, levels=np.linspace(self.rms*self.rmsfac, np.nanmax(pvd), num=20),
                      cmap="YlOrBr", aspect='auto')
         if np.any(self.overcube):
-            ax3.contour(x1, v1, pvdover.T, colors='black', levels=np.arange(0.1, 1.1, 0.1) * np.max(pvdover))
+            ax3.contour(x1, v1, pvdover.T, colors='black', levels=np.linspace(self.rms*self.rmsfac, np.nanmax(pvdover), num=10))
 
         if 'vrange' in kwargs: ax3.set_ylim(kwargs['vrange'])
         if 'xrange' in kwargs: ax3.set_xlim(kwargs['xrange'])
@@ -287,7 +289,6 @@ class KinMS_plotter:
         plt.xlabel(r'Velocity (km s$^{-1}$)')
 
         plt.tight_layout()
-        plt.show()
         if self.savepath:
             if self.savename:
                 if self.pdf:
@@ -299,7 +300,7 @@ class KinMS_plotter:
                     plt.savefig(self.savepath + '/' + 'KinMS_plots.pdf', bbox_inches='tight')
                 else:
                     plt.savefig(self.savepath + '/' + 'KinMS_plots.png', bbox_inches='tight')
-                    
+        plt.show()            
 #=============================================================================#
 #/// END OF CLASS ////////////////////////////////////////////////////////////#
 #=============================================================================#
