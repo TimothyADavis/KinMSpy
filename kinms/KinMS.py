@@ -58,7 +58,7 @@ class KinMS:
                  sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], radial_motion_func=None,
                  ra=None, dec=None, nSamps=None, seed=None, intFlux=None, vSys=None, phaseCent=[0,0], vOffset=0,
                  vPosAng=[], vPhaseCent=[0,0], restFreq=None, fileName='', fixSeed=False,
-                 cleanOut=False, returnClouds=False, huge_beam=False, verbose=False):
+                 cleanOut=False, returnClouds=False, huge_beam=False, verbose=False,skySampler=False):
 
         """       
         :param xs:
@@ -201,7 +201,7 @@ class KinMS:
         self.inClouds = np.array(inClouds)
         self.vLOS_clouds = np.array(vLOS_clouds) 
         self.massDist = np.array(massDist)
-
+        self.skySampler = skySampler
         self.ra = ra 
         self.dec = dec
         if seed != None:
@@ -1044,7 +1044,7 @@ class KinMS:
         
         x2, y2, z2, los_vel = self.set_cloud_velocities()
 
-     
+        
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#       
         #~~~   POPULATE THE CUBE AND FIND NON-ZERO ELEMENTS   ~~~#~~~~~~~~~~~~#
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

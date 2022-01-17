@@ -33,7 +33,7 @@ import warnings; warnings.filterwarnings("ignore", module="matplotlib")
 class KinMS_plotter:
 
     def __init__(self, f, xsize, ysize, vsize, cellsize, dv, beamSize, posang=None, pvdthick=None,
-                 savepath=None, savename=None, pdf=True, overcube=False, title=False,rms=0,rmsfac=1.0):
+                 savepath=None, savename=None, pdf=True, overcube=False, title=False,rms=0,rmsfac=1.5):
         
         """
         :class KinMS_plotter:
@@ -71,7 +71,7 @@ class KinMS_plotter:
             (bool) Optional, default value is True.
             saves the plots as a .pdf file
         :param overcube:
-            (bool) UNDER CONSTRUCTION
+            (numpy array) Cube for overplotting
         :param title:
             (bool) Optional, default value is False.
             assigns a title to the plots
@@ -95,7 +95,6 @@ class KinMS_plotter:
         if self.rms == 0:
             self.rms = np.nanmax(self.f)*0.05
         self.rmsfac=rmsfac
-        
         beamSize = np.array(beamSize)
         try:
             if len(beamSize) == 2:
@@ -132,7 +131,9 @@ class KinMS_plotter:
         params = {'mathtext.default': 'regular'}
         matplotlib.rcParams.update(params)
         matplotlib.rcParams['axes.labelsize'] = 30
-
+        
+                                                                             
+        
     def gaussian(self, x, x0, sigma):
         return np.exp(-np.power((x - x0) / (sigma), 2) / 2)
 
@@ -241,9 +242,9 @@ class KinMS_plotter:
 
         # Plot the moment 0
         ax1 = fig.add_subplot(221, aspect='equal')
-        ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(self.rms*self.rmsfac, np.nanmax(mom0rot), num=20),cmap="YlOrBr",origin="upper")
+        ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(0.1*np.nanmax(mom0rot), np.nanmax(mom0rot), num=20),cmap="YlOrBr",origin="upper")
         if np.any(self.overcube):
-            ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.linspace(self.rms*self.rmsfac, np.nanmax(mom0over), num=10))
+            ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.linspace(0.1*np.nanmax(mom0over), np.nanmax(mom0over), num=10))
 
         if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
         if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
@@ -263,10 +264,10 @@ class KinMS_plotter:
         # Plot PVD
         ax3 = fig.add_subplot(223)
 
-        ax3.contourf(x1, v1, pvd.T, levels=np.linspace(self.rms*self.rmsfac, np.nanmax(pvd), num=20),
+        ax3.contourf(x1, v1, pvd.T, levels=np.linspace(0.1*np.nanmax(pvd), np.nanmax(pvd), num=20),
                      cmap="YlOrBr", aspect='auto')
         if np.any(self.overcube):
-            ax3.contour(x1, v1, pvdover.T, colors='black', levels=np.linspace(self.rms*self.rmsfac, np.nanmax(pvdover), num=10))
+            ax3.contour(x1, v1, pvdover.T, colors='black', levels=np.linspace(0.1*np.nanmax(pvdover), np.nanmax(pvdover), num=10))
 
         if 'vrange' in kwargs: ax3.set_ylim(kwargs['vrange'])
         if 'xrange' in kwargs: ax3.set_xlim(kwargs['xrange'])
