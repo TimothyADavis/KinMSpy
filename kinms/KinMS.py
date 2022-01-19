@@ -651,8 +651,8 @@ class KinMS:
         hdu.header['CUNIT3'] = 'm/s     '
         hdu.header['BSCALE'] = 1.0
         hdu.header['BZERO'] = 0.0
-        hdu.header['BMIN'] = (self.beamSize[0] / 3600)
-        hdu.header['BMAJ'] = (self.beamSize[1] / 3600)
+        hdu.header['BMIN'] = (self.beamSize[1] / 3600)
+        hdu.header['BMAJ'] = (self.beamSize[0] / 3600)
         hdu.header['BTYPE'] = 'Intensity'
         hdu.header['BPA'] = (self.beamSize[2])
         hdu.header['CTYPE1'] = 'RA---SIN'
