@@ -198,7 +198,7 @@ class KinMS_plotter:
         mask[mask > 0] =1
         return mask
 
-    def makeplots(self, **kwargs):
+    def makeplots(self, block=True, **kwargs):
 
         # Create plot data from the cube
         self.mask=self.smoothmask(self.f)
@@ -237,8 +237,10 @@ class KinMS_plotter:
 
         # Plot the results
         levs = v1[np.min(np.where(spec != 0)): np.max(np.where(spec != 0))]
-
+        
+        
         fig = plt.figure(figsize=(10, 10))
+        
 
         # Plot the moment 0
         ax1 = fig.add_subplot(221, aspect='equal')
@@ -301,7 +303,12 @@ class KinMS_plotter:
                     plt.savefig(self.savepath + '/' + 'KinMS_plots.pdf', bbox_inches='tight')
                 else:
                     plt.savefig(self.savepath + '/' + 'KinMS_plots.png', bbox_inches='tight')
-        plt.show()            
+        if block==False:
+            plt.draw()
+            plt.pause(1e-6)
+        else:
+            plt.show()   
+                 
 #=============================================================================#
 #/// END OF CLASS ////////////////////////////////////////////////////////////#
 #=============================================================================#
