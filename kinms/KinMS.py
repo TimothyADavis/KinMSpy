@@ -636,16 +636,15 @@ class KinMS:
         """
 
         hdu = fits.PrimaryHDU(cube.T)
-
         hdu.header['CDELT1'] = (self.cellSize / -3600)
         hdu.header['CDELT2'] = (self.cellSize / 3600)
         hdu.header['CDELT3'] = (self.dv * 1000.)
         hdu.header['CRPIX1'] = (cent[0] + 1)
         hdu.header['CRPIX2'] = (cent[1] + 1)
-        hdu.header['CRPIX3'] = (cent[2] + 1)
+        hdu.header['CRPIX3'] = 1
         hdu.header['CRVAL1'] = (self.ra) or 0.0 
         hdu.header['CRVAL2'] = (self.dec) or 0.0
-        hdu.header['CRVAL3'] = (self.vSys * 1000.), 'm/s'
+        hdu.header['CRVAL3'] = ((self.vSys-self.dv*(cent[2]-0.5)) * 1000.), 'm/s'
         hdu.header['CUNIT1'] = 'deg'
         hdu.header['CUNIT2'] = 'deg'
         hdu.header['CUNIT3'] = 'm/s     '

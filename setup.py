@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
  
 setup(name='kinms',
-       version='2.2.5',
+       version='2.2.7',
        description='The KinMS (KINematic Molecular Simulation) package can be used to simulate observations of arbitary molecular/atomic cold gas distributions.',
        url='https://github.com/TimothyADavis/KinMSpy',
        author='Timothy A. Davis',
