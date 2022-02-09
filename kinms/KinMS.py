@@ -58,7 +58,7 @@ class KinMS:
                  sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], radial_motion_func=None,
                  ra=None, dec=None, nSamps=None, seed=None, intFlux=None, vSys=None, phaseCent=[0,0], vOffset=0,
                  vPosAng=[], vPhaseCent=[0,0], restFreq=None, fileName='', fixSeed=False,
-                 cleanOut=False, returnClouds=False, huge_beam=False, verbose=False,skySampler=False):
+                 cleanOut=False, returnClouds=False, huge_beam=False, verbose=False,skySampler=False,bunit='Jy/beam'):
 
         """       
         :param xs:
@@ -222,7 +222,7 @@ class KinMS:
         self.huge_beam = huge_beam
         self.verbose = verbose
         self.radial_motion_func=radial_motion_func
-        
+        self.bunit=bunit
         if not nSamps:
             if self.inClouds.size == 0:
                 self.nSamps = int(5e5)
@@ -659,7 +659,7 @@ class KinMS:
         hdu.header['CTYPE3'] = 'VRAD    ' 
         hdu.header['EQUINOX'] = 2000.
         hdu.header['RADESYS'] = 'FK5'
-        hdu.header['BUNIT'] = 'Jy/beam'
+        hdu.header['BUNIT'] = self.bunit
         hdu.header['SPECSYS'] = 'BARYCENT'
         hdu.header['RESTFRQ'] = self.restFreq
 
