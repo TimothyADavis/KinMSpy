@@ -458,12 +458,19 @@ class KinMS:
         idx = np.where(flat > 0)[0]  # find the location of the non-zero values of the psf
         
         newsize = (idx[-1] - idx[0])  # the size of the actual (non-zero) beam is this
-
+        #
         if newsize % 2 == 0:
             newsize += 1  # add 1 pixel just in case
         else:
             newsize += 2  # if necessary to keep the kernel size odd, add 2 pixels
-
+        #breakpoint()
+        if newsize>np.min([xpixels,ypixels]):
+            if np.min([xpixels,ypixels]) % 2 == 0:
+                newsize = np.min([xpixels,ypixels])-1  # keep the kernel size odd
+            else:
+                newsize = np.min([xpixels,ypixels])  
+                
+                
         trimmed_psf = Cutout2D(psf, (cent[1], cent[0]), newsize).data  # cut around the psf in the right location
 
         return trimmed_psf

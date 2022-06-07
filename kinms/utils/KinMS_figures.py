@@ -198,7 +198,7 @@ class KinMS_plotter:
         mask[mask > 0] =1
         return mask
 
-    def makeplots(self, block=True, **kwargs):
+    def makeplots(self, block=True, plot2screen=True, **kwargs):
 
         # Create plot data from the cube
         self.mask=self.smoothmask(self.f)
@@ -235,6 +235,7 @@ class KinMS_plotter:
         if np.any(self.overcube):
             specover = self.overcube.sum(axis=0).sum(axis=0) / beamtot
 
+        #breakpoint()
         # Plot the results
         levs = v1[np.min(np.where(spec != 0)): np.max(np.where(spec != 0))]
         
@@ -292,6 +293,7 @@ class KinMS_plotter:
         plt.xlabel(r'Velocity (km s$^{-1}$)')
 
         plt.tight_layout()
+        self.figure=fig
         if self.savepath:
             if self.savename:
                 if self.pdf:
@@ -303,11 +305,12 @@ class KinMS_plotter:
                     plt.savefig(self.savepath + '/' + 'KinMS_plots.pdf', bbox_inches='tight')
                 else:
                     plt.savefig(self.savepath + '/' + 'KinMS_plots.png', bbox_inches='tight')
-        if block==False:
-            plt.draw()
-            plt.pause(1e-6)
-        else:
-            plt.show()   
+        if plot2screen:            
+            if block==False:
+                plt.draw()
+                plt.pause(1e-6)
+            else:
+                plt.show()   
                  
 #=============================================================================#
 #/// END OF CLASS ////////////////////////////////////////////////////////////#
