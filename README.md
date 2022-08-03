@@ -5,12 +5,12 @@
 [![ASCL](https://img.shields.io/badge/ascl-2006.003-blue.svg?colorB=262255)](http://ascl.net/2006.003)
 
 
-The KinMS (KINematic Molecular Simulation) package can be used to simulate observations of arbitary molecular/atomic cold gas distributions. The routines are written with flexibility in mind, and have been used in various different applications, including investigating the kinematics of molecular gas in early-type galaxies ([Davis et al, MNRAS, Volume 429, Issue 1, p.534-555, 2013](https://academic.oup.com/mnras/article/429/1/534/1022845)), and determining supermassive black-hole masses from CO interfermetric observations (Davis et al., Nature, 2013). They are also useful for creating input datacubes for further simulation in e.g. [CASA](https://casa.nrao.edu/)'s sim_observe tool.
+The KinMS (KINematic Molecular Simulation) package can be used to simulate observations of arbitary molecular/atomic cold gas distributions. The routines are written with flexibility in mind, and have been used in various different applications, including investigating the kinematics of molecular gas in early-type galaxies ([Davis et al, MNRAS, Volume 429, Issue 1, p.534-555, 2013](https://academic.oup.com/mnras/article/429/1/534/1022845)), and determining supermassive black-hole masses from CO interfermetric observations (e.g. Davis et al., Nature, 2013). They are also useful for creating input datacubes for further simulation in e.g. [CASA](https://casa.nrao.edu/)'s sim_observe tool.
 
 
 ### Install
 
-KinMSpy is designed with Python users in mind. Lots of work has gone into making it lightweight and fast. You can use it in the same way that you would use [NumPy](https://numpy.org/) or [Astropy](https://www.astropy.org/) etc. You can install KinMS with `pip install kinms`. Alternatively you can download the code, navigate to the directory you unpack it too, and run `python setup.py install`.
+KinMSpy is designed with Python users in mind. Lots of work has gone into making it lightweight and fast. You can install KinMS with `pip install kinms`. Alternatively you can download the code, navigate to the directory you unpack it too, and run `python setup.py install`.
     
 It requires the following modules:
 
@@ -31,14 +31,14 @@ from kinms.examples.KinMS_testsuite import *
 run_tests()
 ```
 
-To get you started fitting observations with KinMS, see the walk through here: [Example fitting tutorial](https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/docs/KinMSpy_tutorial.ipynb)
-
-<b>NEW!</b> If you want a really simple way to fit observations, check out the new KinMS_fitter, which wraps KinMS and automates many tasks for you! Check it out here: [KinMS_fitter](https://github.com/TimothyADavis/KinMS_fitter).
+To get you started fitting observations with KinMS, check out KinMS_fitter, which wraps KinMS and automates many tasks for you! Check it out here: [KinMS_fitter](https://github.com/TimothyADavis/KinMS_fitter).
 
 
-### Upgrading from version 1 
+If you need go through the nuts and bolts of fitting, see the walk through here: [Example fitting tutorial](https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/docs/KinMSpy_tutorial.ipynb)
 
-Unlike previous generations of KinMS, version 2.0+ uses Python classes for a more modular and adjustable experience. Plotting routines can be changed and cube modelling can be probed at different stages if required. The main change you will need if upgrading from version 1.0 is to change all calls to `KinMS(...)` to `KinMS(...).model_cube()`. The tutorial notebooks above have full details of the new features.
+### New: KinMS 3.0 is here!
+As of August 2022 KinMS 3.0 has been released. This version has subtantial speed improvements, being around 35% faster in my tests. However, to implement this the interface has had to slightly change. Now only the interferometer/observation parameters are passed to the KinMS class at instantiation, while the parameters that can change (e.g. surface brightness/velocity profiles) are passed in the `model_cube()` call. The tutorial notebooks/examples have been updated to reflect this. If you *need* to keep using the old version then it can still be imported as `from kinms import KinMS2`, although this dual support will be removed in future updates.
+
 
 ### New non-circular motions capability
 
