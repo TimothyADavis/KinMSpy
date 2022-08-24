@@ -1,4 +1,4 @@
-<img style="float:top,right" src="kinms/docs/Logo.png" width="400">
+<img style="float:top,right" src="https://kinms.space/assets/img/logo_small.png">
 
 
 [![Documentation Status](https://readthedocs.org/projects/kinmspydocs/badge/?version=latest)](https://kinmspydocs.readthedocs.io/en/latest/?badge=latest) [![Python 3.6](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-382/) [![PyPI version](https://badge.fury.io/py/kinms.svg)](https://badge.fury.io/py/kinms) 
@@ -36,6 +36,7 @@ To get you started fitting observations with KinMS, check out KinMS_fitter, whic
 
 If you need go through the nuts and bolts of fitting, see the walk through here: [Example fitting tutorial](https://github.com/TimothyADavis/KinMSpy/blob/master/kinms/docs/KinMSpy_tutorial.ipynb)
 
+API documentation is available [here](https://timothyadavis.github.io/KinMS_fitter/index.html).
 ### New: KinMS 3.0 is here!
 As of August 2022 KinMS 3.0 has been released. This version has subtantial speed improvements, being around 35% faster in my tests. However, to implement this the interface has had to slightly change. Now only the interferometer/observation parameters are passed to the KinMS class at instantiation, while the parameters that can change (e.g. surface brightness/velocity profiles) are passed in the `model_cube()` call. The tutorial notebooks/examples have been updated to reflect this. If you *need* to keep using the old version then it can still be imported as `from kinms import KinMS2`, although this dual support will be removed in future updates.
 

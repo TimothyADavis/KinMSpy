@@ -1,5 +1,7 @@
 # coding: utf-8
 """
+Legacy version 2 version of Kinematic modelling code KinMS.
+
 Copyright (C) 2019, Timothy A. Davis, Nikki Zabel, James M. Dawson
 E-mail: DavisT -at- cardiff.ac.uk, zabelnj -at- cardiff.ac.uk, dawsonj5 -at- cardiff.ac.uk
 Updated versions of the software are available through github:
