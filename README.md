@@ -1,7 +1,7 @@
 <img style="float:top,right" src="https://kinms.space/assets/img/logo_small.png">
 
 
-[![Documentation Status](https://readthedocs.org/projects/kinmspydocs/badge/?version=latest)](https://kinmspydocs.readthedocs.io/en/latest/?badge=latest) [![Python 3.6](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-382/) [![PyPI version](https://badge.fury.io/py/kinms.svg)](https://badge.fury.io/py/kinms) 
+[![Documentation Status](https://readthedocs.org/projects/kinmspydocs/badge/?version=latest)](https://timothyadavis.github.io/KinMS_fitter/index.html) [![Python 3.6](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-382/) [![PyPI version](https://badge.fury.io/py/kinms.svg)](https://badge.fury.io/py/kinms) 
 [![ASCL](https://img.shields.io/badge/ascl-2006.003-blue.svg?colorB=262255)](http://ascl.net/2006.003)
 
 
