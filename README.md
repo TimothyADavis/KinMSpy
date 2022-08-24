@@ -7,7 +7,7 @@
 
 The KinMS (KINematic Molecular Simulation) package can be used to simulate observations of arbitary molecular/atomic cold gas distributions. The routines are written with flexibility in mind, and have been used in various different applications, including investigating the kinematics of molecular gas in early-type galaxies ([Davis et al, MNRAS, Volume 429, Issue 1, p.534-555, 2013](https://academic.oup.com/mnras/article/429/1/534/1022845)), and determining supermassive black-hole masses from CO interfermetric observations (e.g. Davis et al., Nature, 2013). They are also useful for creating input datacubes for further simulation in e.g. [CASA](https://casa.nrao.edu/)'s sim_observe tool.
 
-
+Note: Most users dont need to install KinMS directly, but likely want [KinMS_fitter](https://github.com/TimothyADavis/KinMS_fitter). Find out more at the KinMS website: [https://www.kinms.space](https://www.kinms.space).
 ### Install
 
 KinMSpy is designed with Python users in mind. Lots of work has gone into making it lightweight and fast. You can install KinMS with `pip install kinms`. Alternatively you can download the code, navigate to the directory you unpack it too, and run `python setup.py install`.
