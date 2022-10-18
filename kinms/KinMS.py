@@ -295,7 +295,7 @@ class KinMS:
             newsize += 1  # add 1 pixel just in case
         else:
             newsize += 2  # if necessary to keep the kernel size odd, add 2 pixels
-        #breakpoint()
+        
         if newsize>np.min([xpixels,ypixels]):
             if np.min([xpixels,ypixels]) % 2 == 0:
                 newsize = np.min([xpixels,ypixels])-1  # keep the kernel size odd
@@ -411,7 +411,7 @@ class KinMS:
 
         # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
         if self.inClouds_given:
-            velDisp=self.randompick_vdisp[0:self.nSamps]
+            velDisp=self.randompick_vdisp[0:self.nSamps].copy()
         else:
             velDisp = self.randompick_vdisp.copy()
         if len(self.gasSigma) > 1:
@@ -1141,7 +1141,6 @@ class KinMS:
         else:
             if self.verbose:
                 print('_' * 37 + '\n\n *** Cube successfully created ***')
-
 
             return cube
     
