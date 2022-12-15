@@ -208,10 +208,10 @@ class KinMS_plotter:
 
         if np.any(self.overcube):
             mom0over = self.overcube.sum(axis=2)
-
-        x1 = np.arange(-self.xsize / 2, self.xsize / 2, self.cellsize)
-        y1 = np.arange(-self.ysize / 2, self.ysize / 2, self.cellsize)
-        v1 = np.arange(-self.vsize / 2, self.vsize / 2, self.dv)
+        #breakpoint()
+        x1 = np.arange(-self.xsize / 2, self.xsize / 2, self.xsize/mom0rot.shape[0])
+        y1 = np.arange(-self.ysize / 2, self.ysize / 2, self.xsize/mom0rot.shape[1])
+        v1 = np.arange(-self.vsize / 2, self.vsize / 2, self.vsize/self.f.shape[2])
 
         mom1 = (self.f*v1).sum(axis=2)/(self.f.sum(axis=2))
 
