@@ -468,8 +468,8 @@ class KinMS:
         hdu.header['CDELT1'] = (self.cellSize / -3600)
         hdu.header['CDELT2'] = (self.cellSize / 3600)
         hdu.header['CDELT3'] = (self.dv * 1000.)
-        hdu.header['CRPIX1'] = (cent[0] + 1)
-        hdu.header['CRPIX2'] = (cent[1] + 1)
+        hdu.header['CRPIX1'] = (self.x_size//2) + 1#(cent[0] + 1)
+        hdu.header['CRPIX2'] = (self.y_size//2) + 1#(cent[1] + 1)
         hdu.header['CRPIX3'] = 1
         hdu.header['CRVAL1'] = (self.ra) or 0.0 
         hdu.header['CRVAL2'] = (self.dec) or 0.0
