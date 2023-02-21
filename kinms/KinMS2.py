@@ -979,7 +979,7 @@ class KinMS:
                 if not (len(self.flux_clouds.shape) == 1 and len(self.flux_clouds) == max(self.inClouds.shape)):
                     raise KinMSError('\nPlease make sure \"flux_clouds\" is a 1D array matching the length of \"inClouds\".')
 
-                #cube = np.zeros((np.int(x_size), np.int(y_size), np.int(v_size)))
+                #cube = np.zeros((int(x_size), int(y_size), int(v_size)))
                 
                 cube, edges = np.histogramdd(clouds2do, bins=(x_size, y_size, v_size),
                                                  range=((0, x_size), (0, y_size), (0, v_size)),weights=self.flux_clouds[subs])                                 
@@ -988,7 +988,7 @@ class KinMS:
                 cube, edges =np.histogramdd(clouds2do, bins=(x_size, y_size, v_size),range=((0, x_size), (0, y_size), (0, v_size)))
 
         else:
-            cube = np.zeros((np.int(x_size), np.int(y_size), np.int(v_size)))
+            cube = np.zeros((int(x_size), int(y_size), int(v_size)))
 
         return cube
         
