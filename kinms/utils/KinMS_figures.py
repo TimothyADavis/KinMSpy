@@ -222,11 +222,11 @@ class KinMS_plotter:
         if np.any(self.overcube):
             pvdcubeover = ndimage.interpolation.rotate(self.overcube, 90-self.posang, axes=(1, 0), reshape=False)
 
-        pvd = pvdcube[:, np.int((self.ysize / (self.cellsize * 2)) - self.pvdthick):np.int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
+        pvd = pvdcube[:, int((self.ysize / (self.cellsize * 2)) - self.pvdthick):int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
         if np.any(self.overcube):
             pvdover = pvdcubeover[:,
-                      np.int((self.ysize / (self.cellsize * 2)) - self.pvdthick):
-                      np.int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
+                      int((self.ysize / (self.cellsize * 2)) - self.pvdthick):
+                      int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
 
         beamtot = self.makebeam(self.xsize/self.cellsize, self.ysize/self.cellsize, self.beamsize, cellSize=self.cellsize).sum()
 

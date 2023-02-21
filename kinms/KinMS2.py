@@ -1029,9 +1029,9 @@ class KinMS:
         """
 
         # Work out images sizes
-        x_size = np.round(self.xs / self.cellSize).astype(np.int)
-        y_size = np.round(self.ys / self.cellSize).astype(np.int)
-        v_size = np.round(self.vs / self.dv).astype(np.int)
+        x_size = np.round(self.xs / self.cellSize).astype(int)
+        y_size = np.round(self.ys / self.cellSize).astype(int)
+        v_size = np.round(self.vs / self.dv).astype(int)
 
         cent = [(x_size / 2) + (self.phaseCent[0] / self.cellSize), (y_size / 2) + (self.phaseCent[1] / self.cellSize),
                 (v_size / 2) + (self.vOffset / self.dv)]

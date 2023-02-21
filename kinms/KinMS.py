@@ -120,9 +120,9 @@ class KinMS:
             self.nSamps = int(nSamps)
         
         # Work out images sizes
-        self.x_size = np.round(self.xs / self.cellSize).astype(np.int)
-        self.y_size = np.round(self.ys / self.cellSize).astype(np.int)
-        self.v_size = np.round(self.vs / self.dv).astype(np.int)    
+        self.x_size = np.round(self.xs / self.cellSize).astype(int)
+        self.y_size = np.round(self.ys / self.cellSize).astype(int)
+        self.v_size = np.round(self.vs / self.dv).astype(int)    
 
         if not self.cleanOut:
             self.psf = self.makebeam(self.x_size, self.y_size, self.beamSize,cellSize=self.cellSize)
@@ -769,7 +769,7 @@ class KinMS:
         cd = vals[:,2]
         cd += bins[2]*(vals[:,1])
         cd += (bins[2]*bins[1])*(vals[:,0])
-        return np.bincount(cd.astype(np.int_), minlength=np.product(bins)).reshape(*bins).astype(np.float64)
+        return np.bincount(cd.astype(int), minlength=np.product(bins)).reshape(*bins).astype(np.float64)
             
     def add_fluxes(self, clouds2do, subs):
         """
