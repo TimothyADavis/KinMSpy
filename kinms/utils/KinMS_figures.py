@@ -77,7 +77,7 @@ class KinMS_plotter:
             assigns a title to the plots
         """
 
-        self.f = f
+        self.f = np.copy(f)
         self.xsize = xsize
         self.ysize = ysize
         self.vsize = vsize
