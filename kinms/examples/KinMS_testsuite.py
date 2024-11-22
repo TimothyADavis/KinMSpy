@@ -44,7 +44,7 @@ def internet(host="8.8.8.8", port=53, timeout=3):
     return False
 
 
-def expdisk(scalerad=10, inc=60,fileName=None):
+def expdisk(scalerad=10, inc=60,fileName=None, toplot=True):
     """
     A test procedure to demonstrate the KinMS code, and check if it works on your system. This procedure demonstrates how
     to create a simulation of an exponential disk of molecular gas. The user can input values for the scalerad and inc
@@ -71,7 +71,7 @@ def expdisk(scalerad=10, inc=60,fileName=None):
 
     # Create the cube
     cube = KinMS(xsize, ysize, vsize, cellsize, dv, beamsize, huge_beam=False).model_cube(inc, sbProf=fx, sbRad=x, velProf=vel, intFlux=30,
-                 posAng=posang, gasSigma=10, toplot=True,fileName=fileName,ra=12,dec=10)
+                 posAng=posang, gasSigma=10, toplot=toplot,fileName=fileName,ra=12,dec=10)
 
     # If you want to change something about the plots, or save them directly to your disk, you can use the plotting
     # script separately:

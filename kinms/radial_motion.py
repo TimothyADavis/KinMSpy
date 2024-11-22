@@ -33,7 +33,7 @@ class radial_motion:
             radial_vel=np.interp(r_flatv, self.radius, self.v1r)
             transverse_vel=np.interp(r_flatv, self.radius, self.v1t)
             theta_b=theta-np.deg2rad(self.phib)
-            return (-1)*(transverse_vel*np.cos(theta_b)*np.cos(theta) + (radial_vel*np.sin(theta_b)*np.sin(theta))) * np.sin(np.radians(inc_rad))
+            return (-1)*(transverse_vel*np.cos(2*theta_b)*np.cos(theta) + (radial_vel*np.sin(2*theta_b)*np.sin(theta))) * np.sin(np.radians(inc_rad))
                     
             
             

@@ -29,6 +29,9 @@ from astropy.convolution import convolve_fft
 from astropy.convolution import convolve
 import warnings; warnings.filterwarnings("ignore")
 from kinms.utils.KinMS_figures import KinMS_plotter
+import jax.numpy as jnp
+import jax
+import jax.scipy as jscipy
 
 def doppler_opt_freq(f0,f):
      c=299792.4580
@@ -39,6 +42,27 @@ def doppler_opt_lam(l0,l):
     f0=c/l0
     f=c/l
     return c*((f0-f)/f) 
+    
+def doconvolve(plane,psf):
+    plane = jscipy.signal.convolve2d(plane, psf,mode="same")
+    return plane    
+batch_doconvolve = jax.vmap(doconvolve, in_axes=[2, None], out_axes=2)
+
+
+# @jit
+# def cumtrapz(sbProf,sbRad):
+#     out=jnp.zeros(len(sbRad))
+#     for i in range(1,len(out)):
+#         out=out.at[i].set(jnp.trapz(sbProf[0:i+1], abs(sbRad[0:i+1])))
+#     return out
+# @jit
+# def picker(sbRad,sbProf,randompicks):
+#     #breakpoint()
+#     px = cumtrapz(sbProf * 2 * np.pi * jnp.abs(sbRad), jnp.abs(sbRad)) #  Integrates the surface brightness profile
+#     px /= jnp.nanmax(px) # Normalised integral of the surface brightness profile
+#     return jnp.interp(randompicks,px,sbRad)
+
+
     
 class KinMSError(Exception):
     """
@@ -349,15 +373,12 @@ class KinMS:
 
 
         
-        # Randomly generate the radii of clouds based on the distribution given by the brightness profile.
+        # # Randomly generate the radii of clouds based on the distribution given by the brightness profile.
         px = scipy.integrate.cumulative_trapezoid(sbProf * 2 * np.pi * abs(sbRad), abs(sbRad), initial=0) #  Integrates the surface brightness profile
         px /= max(px) # Normalised integral of the surface brightness profile
+        r_flat = jnp.interp(self.randompick_r,px,sbRad)
         
-        r_flat = np.interp(self.randompick_r,px,sbRad)
-        
-        # Generates a random phase around the galaxy's axis for each cloud.
-        
-        phi = self.randompick_phi
+        phi = self.randompick_phi   # Generates a random phase around the galaxy's axis for each cloud.
 
         
         # Find the thickness of the disk at the radius of each cloud, and generates a random (uniform) z-position satisfying |z|<disk_here.
@@ -367,7 +388,7 @@ class KinMS:
 
             elif len(diskThick) > 1:
                 diskThick = np.array(diskThick)
-                diskThick_here = np.interp(r_flat,sbRad, diskThick)
+                diskThick_here = jnp.interp(r_flat,sbRad, diskThick)
                 if self.verbose: print('Using the scale height profile provided.')
             else:
                 diskThick_here = diskThick
@@ -380,10 +401,10 @@ class KinMS:
         
 
         # Calculate the x & y position of the clouds in the x-y plane of the disk.
-        r_3d = np.sqrt(r_flat ** 2 + z_pos ** 2)
-        sintheta=np.sqrt(1-(z_pos / r_3d)**2)
-        x_pos = r_3d * np.cos(phi) * sintheta
-        y_pos = r_3d * np.sin(phi) * sintheta
+        r_3d = jnp.sqrt(r_flat ** 2 + z_pos ** 2)
+        sintheta=jnp.sqrt(1-(z_pos / r_3d)**2)
+        x_pos = r_3d * jnp.cos(phi) * sintheta
+        y_pos = r_3d * jnp.sin(phi) * sintheta
 
         # Generates the output array
         inClouds = np.empty((nSamps, 3))
@@ -418,12 +439,12 @@ class KinMS:
         """
         
         if np.any(self.vPhaseCent != [0,0]):
-            r_flatv = np.sqrt((self.x_pos - self.vPhaseCent[0]) ** 2 + (self.y_pos - self.vPhaseCent[1]) ** 2)
+            r_flatv = jnp.sqrt((self.x_pos - self.vPhaseCent[0]) ** 2 + (self.y_pos - self.vPhaseCent[1]) ** 2)
         else:
             r_flatv = self.r_flat
         
                                                                 
-        vRad = np.interp(r_flatv, velRad, self.velProf)  # Evaluate the velocity profile at the sampled radii
+        vRad = jnp.interp(r_flatv, velRad, self.velProf)  # Evaluate the velocity profile at the sampled radii
 
         # Calculate a peculiar velocity for each cloudlet based on the velocity dispersion
         if self.inClouds_given:
@@ -433,9 +454,9 @@ class KinMS:
         
  
         if len(self.gasSigma) > 1:
-            velDisp *=  np.interp(r_flatv, velRad, np.sqrt(self.gasSigma**2 + self.spectral_resolution**2))
+            velDisp *=  jnp.interp(r_flatv, velRad, np.sqrt(self.gasSigma**2 + self.spectral_resolution**2))
         else:
-            velDisp *= np.sqrt(self.gasSigma**2 + self.spectral_resolution**2)
+            velDisp *= jnp.sqrt(self.gasSigma**2 + self.spectral_resolution**2)
         
 
         # Find the rotation angle so the velocity field has the correct position angle (allows warps)
@@ -451,15 +472,15 @@ class KinMS:
             vPosAng_rad =self.vPosAng
 
         elif len(self.vPosAng) > 1:
-            vPosAng_rad = np.interp(r_flatv, velRad, self.vPosAng)
+            vPosAng_rad = jnp.interp(r_flatv, velRad, self.vPosAng)
 
 
 
-        theta=np.arctan2((self.y_pos - self.vPhaseCent[1]),(self.x_pos - self.vPhaseCent[0])) + (np.radians(posAng_rad - vPosAng_rad))
+        theta=jnp.arctan2((self.y_pos - self.vPhaseCent[1]),(self.x_pos - self.vPhaseCent[0])) + (jnp.radians(posAng_rad - vPosAng_rad))
 
         #Calculate the los velocity for each cloudlet                                                                                              
                    
-        los_vel = velDisp + ((-1) * vRad * (np.cos(theta) * np.sin(np.radians(inc_rad))))
+        los_vel = velDisp + ((-1) * vRad * (jnp.cos(theta) * jnp.sin(np.radians(inc_rad))))
 
         
         # add a radial velocity component if needed            
@@ -587,7 +608,7 @@ class KinMS:
         self.x_pos = (self.inClouds[:, 0] / self.cellSize)
         self.y_pos = (self.inClouds[:, 1] / self.cellSize)
         self.z_pos = (self.inClouds[:, 2] / self.cellSize)
-        self.r_flat = np.sqrt(self.x_pos ** 2 + self.y_pos ** 2)
+        self.r_flat = jnp.sqrt(self.x_pos ** 2 + self.y_pos ** 2)
         
         
     def create_warp(self, array, r_flat):
@@ -605,10 +626,10 @@ class KinMS:
         if len(array) > 1:
             if not len(self.sbRad) == len(self.velRad):
                 raise KinMSError('\n If you want to create a warp, please make sure "sbRad" and "velRad" have the same length.')
-            radial_profile = np.interp(r_flat * self.cellSize,self.velRad, array)
+            radial_profile = jnp.interp(r_flat * self.cellSize,self.velRad, array)
 
         else:
-            radial_profile = np.full(len(r_flat), array)
+            radial_profile = jnp.full(len(r_flat), array)
 
         return radial_profile
 
@@ -632,8 +653,8 @@ class KinMS:
             x-, y-, and z-positions of the projected cloudlets
         """
 
-        c = np.cos(np.radians(ang))
-        s = np.sin(np.radians(ang))
+        c = jnp.cos(np.radians(ang))
+        s = jnp.sin(np.radians(ang))
         x2 = x1
         y2 = (c * y1) + (s * z1)
         z2 = (-s * y1) + (c * z1)
@@ -661,8 +682,8 @@ class KinMS:
             x-, y-, and z-positions of the projected cloudlets
         """
 
-        c = np.cos(np.radians(90-ang))
-        s = np.sin(np.radians(90-ang))
+        c = jnp.cos(np.radians(90-ang))
+        s = jnp.sin(np.radians(90-ang))
         x3 = (c * x2) + (s * y2)
         y3 = (-s * x2) + (c * y2)
         z3 = z2
@@ -699,7 +720,7 @@ class KinMS:
 
             if len(self.massDist) > 1:
                 gasGravVel_sqr = self.gasGravity_velocity(self.x_pos * self.cellSize, self.y_pos * self.cellSize, self.z_pos * self.cellSize, self.massDist, self.velRad)
-                self.velProf = np.sqrt((self.velProf ** 2) + (gasGravVel_sqr))
+                self.velProf = jnp.sqrt((self.velProf ** 2) + (gasGravVel_sqr))
                 
             
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -759,9 +780,9 @@ class KinMS:
 
         
         # Centre the clouds in the cube on the centre of the object.
-        los_vel_dv_cent2 = np.round((los_vel / self.dv) + cent[2])
-        x2_cent0 = np.round(x2 + cent[0])
-        y2_cent1 = np.round(y2 + cent[1])
+        los_vel_dv_cent2 = jnp.round((los_vel / self.dv) + cent[2])
+        x2_cent0 = jnp.round(x2 + cent[0])
+        y2_cent1 = jnp.round(y2 + cent[1])
 
         # Find the reduced set of clouds that lie inside the cube.
         subs = (((x2_cent0 >= 0) & (x2_cent0 < self.x_size) & (y2_cent1 >= 0) & (y2_cent1 < self.y_size) & \
@@ -788,7 +809,7 @@ class KinMS:
         cd = vals[:,2]
         cd += bins[2]*(vals[:,1])
         cd += (bins[2]*bins[1])*(vals[:,0])
-        return np.bincount(cd.astype(int), minlength=np.prod(bins)).reshape(*bins).astype(np.float64)
+        return jnp.bincount(cd.astype(int), minlength=np.prod(bins)).reshape(*bins).astype(np.float64)
             
     def add_fluxes(self, clouds2do, subs):
         """
@@ -807,6 +828,7 @@ class KinMS:
         if nsubs > 0:
 
             if np.any(self.flux_clouds != None):
+
                 if not self.inClouds_given:
                     raise KinMSError('\n\"flux_clouds\" can only be used in combination with \"inClouds\". '
                           'Please specify \"inClouds\" if you would like to define \"flux_clouds\".')
@@ -816,7 +838,7 @@ class KinMS:
 
                 #cube = np.zeros((int(x_size), int(y_size), int(v_size)))
                 
-                cube, edges = np.histogramdd(clouds2do, bins=(self.x_size, self.y_size, self.v_size),
+                cube, edges = jnp.histogramdd(clouds2do, bins=(self.x_size, self.y_size, self.v_size),
                                                  range=((0, self.x_size), (0, self.y_size), (0, self.v_size)),weights=self.flux_clouds[subs])                                 
                     
             else:
@@ -824,7 +846,7 @@ class KinMS:
                 #cube, edges =np.histogramdd(clouds2do, bins=(x_size, y_size, v_size),range=((0, x_size), (0, y_size), (0, v_size)))
 
         else:
-            cube = np.zeros((int(self.x_size), int(self.y_size), int(self.v_size)))
+            cube = jnp.zeros((int(self.x_size), int(self.y_size), int(self.v_size)))
 
         return cube
         
@@ -844,17 +866,16 @@ class KinMS:
 
         if self.intFlux > 0:
             if not self.cleanOut:
-                cube *= ((self.intFlux * psf.sum()) / (cube.sum() * self.dv))
+                multfac=(((self.intFlux * psf.sum()) / (cube.sum() * self.dv)))
             else:
-                cube *= (self.intFlux / (cube.sum() * self.dv))
+                multfac = (self.intFlux / (cube.sum() * self.dv))
 
         elif np.any(self.flux_clouds) != None:
-            cube *= (self.flux_clouds.sum() / cube.sum())
+            multfac = (self.flux_clouds.sum() / cube.sum())
 
         else:
-            cube /= cube.sum()
-
-        return cube       
+            multfac = (1.0/cube.sum())
+        return multfac       
         
     def model_cube(self,inc, posAng, gasSigma=0, diskThick=0, flux_clouds=None, 
                  sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], radial_motion_func=None, intFlux=None, phaseCent=[0,0], vOffset=0,
@@ -1101,12 +1122,11 @@ class KinMS:
             # Find the clouds inside the cube
             clouds2do, subs = self.find_clouds_in_cube(los_vel+dvshift, cent, x2, y2)
 
-
-
+            #breakpoint()
+            if 'cube' in locals():
             # Add fluxes to the clouds
-            try:
                 cube += self.add_fluxes(clouds2do, subs)*fboost
-            except:
+            else:
                 cube = self.add_fluxes(clouds2do, subs)*fboost    
         
         
@@ -1115,25 +1135,33 @@ class KinMS:
         # Convolve with the beam point spread function to obtain a dirty cube
         if not self.cleanOut:
 
-            if not self.huge_beam:  # For very large beams convolve_fft is faster
-                    
-                for i in range(cube.shape[2]):
-                    if np.sum(cube[:, :, i]) > 0:
-                        cube[:, :, i] = convolve(cube[:, :, i], self.psf) 
+            # if not self.huge_beam:  # For very large beams convolve_fft is faster
+            #     method='auto'
+            # else:
+            #     method='fft'
+                #cube=batch_doconvolve(cube,self.psf)   
+            w=cube.sum(axis=0).sum(axis=0) > 0
+ 
+            p1=convolve(np.array(cube)[:, :, 50], self.psf)
+            cube=cube.at[:, :, w].set(batch_doconvolve(cube[:,:,w],self.psf))   
+            #breakpoint()     
+                # for i in range(cube.shape[2]):
+                #     if np.sum(cube[:, :, i]) > 0:
+                #         #cube[:,:,i]=convolve(cube[:, :, i], self.psf)
+                #         #breakpoint()
+                #         cube = cube.at[:, :, i].set(jscipy.signal.convolve2d(cube[:, :, i], self.psf,mode="same"))
 
              
-            else:
-                    
-                for i in range(cube.shape[2]):
-                    if np.sum(cube[:, :, i]) > 0:
-                        cube[:, :, i] = convolve_fft(cube[:, :, i], self.psf)  
-        
+            # else:
+            #
+            #     for i in range(cube.shape[2]):
+            #         if np.sum(cube[:, :, i]) > 0:
+            #             cube = cube.at[:, :, i].set(jscipy.signal.convolve2d(cube[:, :, i], self.psf,mode="same",method='fft'))
+            #             #cube[:,:,i]=convolve_fft(cube[:, :, i], self.psf)
 
                             
         # Normalise the cube by known integrated flux
-        self.normalise_cube(cube, self.psf)
-        
-
+        cube*=self.normalise_cube(cube, self.psf)
         # If appropriate, generate the FITS file header and save to disc.
         if self.fileName:
             self.save_fits(cube, cent)
@@ -1169,7 +1197,7 @@ class KinMS:
             if self.verbose:
                 print('_' * 37 + '\n\n *** Cube successfully created ***')
 
-            return cube
+            return np.array(cube)
     
     #=========================================================================#
     #/////////////////////////////////////////////////////////////////////////#

@@ -203,10 +203,13 @@ class KinMS_plotter:
         # Create plot data from the cube
         self.mask=self.smoothmask(self.f)
         self.f*=self.mask
+
         
         mom0rot = np.sum(self.f, axis=2)
 
         if np.any(self.overcube):
+            self.overmask=self.smoothmask(self.overcube)
+            self.overcube*=self.overmask
             mom0over = self.overcube.sum(axis=2)
 
         x1 = np.arange(-self.xsize / 2, self.xsize / 2, self.xsize/mom0rot.shape[0])
@@ -214,6 +217,8 @@ class KinMS_plotter:
         v1 = np.arange(-self.vsize / 2, self.vsize / 2, self.vsize/self.f.shape[2])
 
         mom1 = (self.f*v1).sum(axis=2)/(self.f.sum(axis=2))
+        
+        
 
         pvdcube = self.f
 
@@ -221,7 +226,8 @@ class KinMS_plotter:
 
         if np.any(self.overcube):
             pvdcubeover = ndimage.interpolation.rotate(self.overcube, 90-self.posang, axes=(1, 0), reshape=False)
-
+            mom1mod = (self.overcube*v1).sum(axis=2)/(self.overcube.sum(axis=2))
+            
         pvd = pvdcube[:, int((self.ysize / (self.cellsize * 2)) - self.pvdthick):int((self.ysize / (self.cellsize * 2)) + self.pvdthick), :].sum(axis=1)
         if np.any(self.overcube):
             pvdover = pvdcubeover[:,
@@ -239,12 +245,13 @@ class KinMS_plotter:
         # Plot the results
         levs = v1[np.min(np.where(spec != 0)): np.max(np.where(spec != 0))]
         
-        
-        fig = plt.figure(figsize=(10, 10))
-        
+        if np.any(self.overcube):
+            fig,((ax1,ax2,ax3),(ax6,ax5,ax4)) = plt.subplots(2,3,figsize=(15, 10))
+        else:
+            fig,((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,figsize=(10, 10))
 
         # Plot the moment 0
-        ax1 = fig.add_subplot(221, aspect='equal')
+        ax1.set_aspect('equal')
         ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(0.1*np.nanmax(mom0rot), np.nanmax(mom0rot), num=20),cmap="YlOrBr",origin="upper")
         if np.any(self.overcube):
             ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.linspace(0.1*np.nanmax(mom0over), np.nanmax(mom0over), num=10))
@@ -252,21 +259,39 @@ class KinMS_plotter:
         if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
         if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
 
-        plt.xlabel(r'Offset ($^{\prime\prime}$)');
-        plt.ylabel(r'Offset ($^{\prime\prime}$)')
+        ax1.set_xlabel(r'Offset ($^{\prime\prime}$)');
+        ax1.set_ylabel(r'Offset ($^{\prime\prime}$)')
+        
+        if np.any(self.overcube):
+            ax6.set_aspect('equal')
+            ax6.contourf(x1, y1, mom0over.T, levels=np.linspace(0.1*np.nanmax(mom0over), np.nanmax(mom0over), num=20),cmap="YlOrBr",origin="upper")
+            if 'yrange' in kwargs: ax6.set_ylim(kwargs['yrange'])
+            if 'xrange' in kwargs: ax6.set_xlim(kwargs['xrange'])
+            ax6.set_xlabel(r'Offset ($^{\prime\prime}$)');
+            ax6.set_ylabel(r'Offset ($^{\prime\prime}$)')
+        
+        
 
         # Plot moment 1
-        ax2 = fig.add_subplot(222, aspect='equal')
+        ax2.set_aspect('equal')
         mom1[mom0rot < self.rms*self.rmsfac]=-1e4
         ax2.contourf(x1, y1, mom1.T, levels=levs, cmap=sauron)
-        plt.xlabel(r'Offset ($^{\prime\prime}$)');
-        plt.ylabel(r'Offset ($^{\prime\prime}$)')
+        ax2.set_xlabel(r'Offset ($^{\prime\prime}$)');
+        ax2.set_ylabel(r'Offset ($^{\prime\prime}$)')
         if 'yrange' in kwargs: ax2.set_ylim(kwargs['yrange'])
         if 'xrange' in kwargs: ax2.set_xlim(kwargs['xrange'])
+        
+        if np.any(self.overcube):
+            # Plot moment 1
+            ax5.set_aspect('equal')
+            mom1mod[mom0over < self.rms*self.rmsfac]=-1e4
+            ax5.contourf(x1, y1, mom1mod.T, levels=levs, cmap=sauron)
+            ax5.set_xlabel(r'Offset ($^{\prime\prime}$)');
+            ax5.set_ylabel(r'Offset ($^{\prime\prime}$)')
+            if 'yrange' in kwargs: ax5.set_ylim(kwargs['yrange'])
+            if 'xrange' in kwargs: ax5.set_xlim(kwargs['xrange'])
 
         # Plot PVD
-        ax3 = fig.add_subplot(223)
-
         ax3.contourf(x1, v1, pvd.T, levels=np.linspace(0.1*np.nanmax(pvd), np.nanmax(pvd), num=20),
                      cmap="YlOrBr", aspect='auto')
         if np.any(self.overcube):
@@ -275,11 +300,11 @@ class KinMS_plotter:
         if 'vrange' in kwargs: ax3.set_ylim(kwargs['vrange'])
         if 'xrange' in kwargs: ax3.set_xlim(kwargs['xrange'])
 
-        plt.xlabel(r'Offset ($^{\prime\prime}$)');
-        plt.ylabel(r'Velocity (km s$^{-1}$)')
+        ax3.set_xlabel(r'Offset ($^{\prime\prime}$)');
+        ax3.set_ylabel(r'Velocity (km s$^{-1}$)')
 
         # Plot spectrum
-        ax4 = fig.add_subplot(224)
+        
         if np.any(self.overcube):
             ax4.plot(v1, spec, drawstyle='steps', c='r')
             ax4.plot(v1, specover, 'k', drawstyle='steps')
@@ -289,8 +314,8 @@ class KinMS_plotter:
         if 'vrange' in kwargs: ax4.set_xlim(kwargs['vrange'])
         if self.title: plt.suptitle(self.title)
 
-        plt.ylabel('Flux');
-        plt.xlabel(r'Velocity (km s$^{-1}$)')
+        ax4.set_ylabel('Flux');
+        ax4.set_xlabel(r'Velocity (km s$^{-1}$)')
 
         plt.tight_layout()
         self.figure=fig
