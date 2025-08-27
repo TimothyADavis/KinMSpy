@@ -249,7 +249,7 @@ class KinMS_plotter:
             fig,((ax1,ax2,ax3),(ax6,ax5,ax4)) = plt.subplots(2,3,figsize=(15, 10))
         else:
             fig,((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,figsize=(10, 10))
-
+        
         # Plot the moment 0
         ax1.set_aspect('equal')
         ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(0.1*np.nanmax(mom0rot), np.nanmax(mom0rot), num=20),cmap="YlOrBr",origin="upper")

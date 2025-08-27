@@ -431,6 +431,11 @@ class KinMS:
         else:
             velDisp = self.randompick_vdisp.copy()
         
+        if self.asymmetric_drift:
+            if len(self.gasSigma) > 1:
+                vRad=np.sqrt(np.clip(vRad**2 - np.interp(r_flatv, velRad, self.gasSigma**2),0,np.inf))
+            else:
+                vRad=np.sqrt(np.clip(vRad**2 - self.gasSigma**2,0,np.inf))
  
         if len(self.gasSigma) > 1:
             velDisp *=  np.interp(r_flatv, velRad, np.sqrt(self.gasSigma**2 + self.spectral_resolution**2))
@@ -858,7 +863,7 @@ class KinMS:
         
     def model_cube(self,inc, posAng, gasSigma=0, diskThick=0, flux_clouds=None, 
                  sbProf=[], sbRad=[], velRad=[], velProf=[], inClouds=[], vLOS_clouds=[], massDist=[], radial_motion_func=None, intFlux=None, phaseCent=[0,0], vOffset=0,
-                 vPosAng=[], vPhaseCent=[0,0],returnClouds=False, toplot=False,fileName='',vSys=0,bunit='Jy/beam', ra=None, dec=None,restFreq=None,multiple_line_relflux=False,**kwargs):
+                 vPosAng=[], vPhaseCent=[0,0],returnClouds=False, toplot=False,fileName='',vSys=0,bunit='Jy/beam', ra=None, dec=None,restFreq=None,multiple_line_relflux=False,asymmetric_drift=False,**kwargs):
         """
         Do the actual modelling of the spectral cube
         
@@ -986,7 +991,7 @@ class KinMS:
         self.y_pos = None
         self.z_pos = None
         self.r_flat=None
-        
+        self.asymmetric_drift=asymmetric_drift
             
         if np.any(multiple_line_relflux):
             self.multiple_line_relflux=np.array(multiple_line_relflux)
