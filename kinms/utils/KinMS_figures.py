@@ -198,8 +198,8 @@ class KinMS_plotter:
         mask[mask > 0] =1
         return mask
 
-    def makeplots(self, block=True, plot2screen=True, **kwargs):
-
+    def makeplots(self, block=True, plot2screen=True,overrad=None,overvrad=None, **kwargs):
+        #breakpoint()
         # Create plot data from the cube
         self.mask=self.smoothmask(self.f)
         self.f*=self.mask
@@ -296,7 +296,9 @@ class KinMS_plotter:
                      cmap="YlOrBr", aspect='auto')
         if np.any(self.overcube):
             ax3.contour(x1, v1, pvdover.T, colors='black', levels=np.linspace(0.1*np.nanmax(pvdover), np.nanmax(pvdover), num=10))
-
+        if np.any(overrad!=None):
+            ax3.errorbar(overrad,-overvrad,fmt='o',xerr=np.zeros(len(overrad))+(0.5*np.median(np.diff(overrad))),c='#ff7f00')
+            ax3.errorbar(-overrad,overvrad,fmt='o',xerr=np.zeros(len(overrad))+(0.5*np.median(np.diff(overrad))),c='#ff7f00')
         if 'vrange' in kwargs: ax3.set_ylim(kwargs['vrange'])
         if 'xrange' in kwargs: ax3.set_xlim(kwargs['xrange'])
 

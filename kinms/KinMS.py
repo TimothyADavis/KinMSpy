@@ -853,7 +853,7 @@ class KinMS:
             else:
                 cube *= (self.intFlux / (cube.sum() * self.dv))
 
-        elif np.any(self.flux_clouds) != None:
+        elif np.any(self.flux_clouds != None):
             cube *= (self.flux_clouds.sum() / cube.sum())
 
         else:
@@ -1062,7 +1062,7 @@ class KinMS:
             self.velProf = np.array([velProf])
 
 
-        if np.any(flux_clouds) != None:
+        if np.any(flux_clouds != None):
             try:
                 if len(flux_clouds) > -1:
                     self.flux_clouds = np.array(flux_clouds)
