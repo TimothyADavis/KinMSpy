@@ -111,6 +111,9 @@ class KinMS:
         self.beamSize = beamSize
         self.fixSeed = fixSeed
         self.spectral_resolution=spectral_resolution
+        self.specsys='BARYCENT'
+        self.radesys='FK5'
+        self.equinox=2000.
         
         if np.any(multiple_line_lams):
             self.multiple_line_lams=np.array(multiple_line_lams)
@@ -510,10 +513,10 @@ class KinMS:
         hdu.header['CTYPE1'] = 'RA---SIN'
         hdu.header['CTYPE2'] = 'DEC--SIN'
         hdu.header['CTYPE3'] = 'VRAD    ' 
-        hdu.header['EQUINOX'] = 2000.
-        hdu.header['RADESYS'] = 'FK5'
+        hdu.header['EQUINOX'] = self.equinox
+        hdu.header['RADESYS'] = self.radesys
         hdu.header['BUNIT'] = self.bunit
-        hdu.header['SPECSYS'] = 'BARYCENT'
+        hdu.header['SPECSYS'] = self.specsys
         hdu.header['RESTFRQ'] = self.restFreq
 
         hdu.writeto(self.fileName + '_simcube.fits', overwrite=True, output_verify='fix')
