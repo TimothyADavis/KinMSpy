@@ -33,7 +33,7 @@ import warnings; warnings.filterwarnings("ignore", module="matplotlib")
 class KinMS_plotter:
 
     def __init__(self, f, xsize, ysize, vsize, cellsize, dv, beamSize, posang=None, pvdthick=None,
-                 savepath=None, savename=None, pdf=True, overcube=False, title=False,rms=0,rmsfac=1.5):
+                 savepath=None, savename=None, pdf=True, overcube=None, title=False,rms=0,rmsfac=1.5):
         
         """
         :class KinMS_plotter:
@@ -211,7 +211,9 @@ class KinMS_plotter:
             self.overmask=self.smoothmask(self.overcube)
             self.overcube*=self.overmask
             mom0over = self.overcube.sum(axis=2)
-
+        if np.nansum(self.overmask) ==0:
+            print("KinMS Plotting Warning: No pixels remain in the overplotted cube after masking! Check your inputs.")
+            
         x1 = np.arange(-self.xsize / 2, self.xsize / 2, self.xsize/mom0rot.shape[0])
         y1 = np.arange(-self.ysize / 2, self.ysize / 2, self.ysize/mom0rot.shape[1])
         v1 = np.arange(-self.vsize / 2, self.vsize / 2, self.vsize/self.f.shape[2])
@@ -245,7 +247,7 @@ class KinMS_plotter:
         # Plot the results
         levs = v1[np.min(np.where(spec != 0)): np.max(np.where(spec != 0))]
         
-        if np.any(self.overcube):
+        if np.all(self.overcube != None):
             fig,((ax1,ax2,ax3),(ax6,ax5,ax4)) = plt.subplots(2,3,figsize=(15, 10))
         else:
             fig,((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,figsize=(10, 10))
@@ -254,7 +256,7 @@ class KinMS_plotter:
         ax1.set_aspect('equal')
         ax1.contourf(x1, y1, mom0rot.T, levels=np.linspace(0.1*np.nanmax(mom0rot), np.nanmax(mom0rot), num=20),cmap="YlOrBr",origin="upper")
         if np.any(self.overcube):
-            ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.linspace(0.1*np.nanmax(mom0over), np.nanmax(mom0over), num=10))
+            ax1.contour(x1, y1, mom0over.T, colors=('black'), levels=np.linspace(0.1*np.nanmax(mom0over), np.nanmax(mom0over)+1e-5, num=10))
 
         if 'yrange' in kwargs: ax1.set_ylim(kwargs['yrange'])
         if 'xrange' in kwargs: ax1.set_xlim(kwargs['xrange'])
@@ -264,7 +266,7 @@ class KinMS_plotter:
         
         if np.any(self.overcube):
             ax6.set_aspect('equal')
-            ax6.contourf(x1, y1, mom0over.T, levels=np.linspace(0.1*np.nanmax(mom0over), np.nanmax(mom0over), num=20),cmap="YlOrBr",origin="upper")
+            ax6.contourf(x1, y1, mom0over.T, levels=np.linspace(0.1*np.nanmax(mom0over), np.nanmax(mom0over)+1e-5, num=20),cmap="YlOrBr",origin="upper")
             if 'yrange' in kwargs: ax6.set_ylim(kwargs['yrange'])
             if 'xrange' in kwargs: ax6.set_xlim(kwargs['xrange'])
             ax6.set_xlabel(r'Offset ($^{\prime\prime}$)');
