@@ -211,8 +211,8 @@ class KinMS_plotter:
             self.overmask=self.smoothmask(self.overcube)
             self.overcube*=self.overmask
             mom0over = self.overcube.sum(axis=2)
-        if np.nansum(self.overmask) ==0:
-            print("KinMS Plotting Warning: No pixels remain in the overplotted cube after masking! Check your inputs.")
+            if np.nansum(self.overmask) ==0:
+                print("KinMS Plotting Warning: No pixels remain in the overplotted cube after masking! Check your inputs.")
             
         x1 = np.arange(-self.xsize / 2, self.xsize / 2, self.xsize/mom0rot.shape[0])
         y1 = np.arange(-self.ysize / 2, self.ysize / 2, self.ysize/mom0rot.shape[1])
